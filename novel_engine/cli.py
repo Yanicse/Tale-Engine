@@ -246,6 +246,35 @@ def example(args):
     print('Next: novel read   (or novel play --engine manual)')
 
 
+def target_campaign(args):
+    """The campaign named by --campaign, else the active one."""
+    from .campaign import Campaign
+    from .resume import active_campaign
+    if args.campaign:
+        return Campaign(Path(args.campaign).resolve())
+    try:
+        campaign = active_campaign()[1]
+    except (OSError, ValueError, KeyError) as error:
+        raise SystemExit(f'No usable active campaign ({error}): pass --campaign <path to campaign.sqlite>.')
+    if campaign is None:
+        raise SystemExit('No campaign is selected: create one with `novel campaign new <novel>`.')
+    return campaign
+
+
+def unblock(args):
+    from .campaign_tools import unblock as run
+    print(json.dumps(run(target_campaign(args), args.apply), indent=2, ensure_ascii=False))
+    return 0
+
+
+def configure(args):
+    from .campaign_tools import configure as run
+    flag = {'on': True, 'off': False, None: None}
+    print(json.dumps(run(target_campaign(args), args.apply, flag[args.creations], flag[args.bounded_recovery]),
+                     indent=2, ensure_ascii=False))
+    return 0
+
+
 def run_script(name, rest):
     script = PACKAGE / 'scripts' / SCRIPTS[name]
     sys.argv = [str(script)] + list(rest)
@@ -310,6 +339,17 @@ def main(argv=None):
     p.add_argument('novel')
     p.add_argument('--start', default='start', help='starting place identifier')
     p.set_defaults(func=campaign_new)
+    p = subs.add_parser('unblock', help='grant one more generation to a pending action whose budget is spent')
+    p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
+    p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
+    p.set_defaults(func=unblock)
+    p = subs.add_parser('configure', help='switch the creations format or the bounded automatic recovery')
+    p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
+    p.add_argument('--creations', choices=('on', 'off'), help='persistent register of invented NPCs, places and quests')
+    p.add_argument('--bounded-recovery', choices=('on', 'off'),
+                   help='one automatic correction after a technical failure, within the action budget')
+    p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
+    p.set_defaults(func=configure)
     for name in SCRIPTS:
         p = subs.add_parser(name, help=f'run the {name} script (arguments are passed on)')
         p.add_argument('rest', nargs=argparse.REMAINDER)

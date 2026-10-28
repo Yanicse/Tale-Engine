@@ -135,8 +135,8 @@ class RecoveryBudget:
         state = self.state()
         return {'status': 'required_memory', 'request_id': self.action_request_id,
                 'search_status': 'blocked', 'diagnostic_code': 'recovery_blocked',
-                'reason': reason+(' Action and scene kept. A diagnostic or a local fix is needed; /resume, /reminder and '
-                                     '/retry do not reset this budget.'),
+                'reason': reason+(' Action and scene kept. /resume, /reminder and /retry do not reset this budget: '
+                                     '`novel unblock` previews granting one more generation.'),
                 'recovery_budget': {key: state[key] for key in ('generations', 'searches')}}
 
     def record_search(self, query, packet, satisfied):
