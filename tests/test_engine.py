@@ -240,7 +240,7 @@ class EngineTests(unittest.TestCase):
         self.assertFalse(any(i['id']=='resource:player_gold' for i in faction))
 
     def test_sources_are_protected_from_campaign_writes(self):
-        for path in ('canon/canon.sqlite','corpus/library.sqlite','Sources/test.sqlite'):
+        for path in ('canon/canon.sqlite','corpus/library.sqlite','sources/test.sqlite'):
             with self.assertRaises(ValueError):Campaign(ROOT/path)
 
     def test_equivalent_json_key_order_has_same_idempotency_digest(self):
