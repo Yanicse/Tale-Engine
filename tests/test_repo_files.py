@@ -6,7 +6,8 @@ from pathlib import Path
 from novel_engine import cli
 
 ROOT = Path(__file__).resolve().parents[1]
-COMMANDS = set(cli.SCRIPTS) | {'doctor', 'init', 'ingest', 'canon', 'character', 'campaign', 'example', 'validate'}
+COMMANDS = set(cli.SCRIPTS) | {'doctor', 'init', 'ingest', 'canon', 'character', 'campaign', 'example', 'validate', 'unblock',
+                                 'configure'}
 LINK = re.compile(r'(?:\]\(|src=")([^)"#\s]+)')
 
 
