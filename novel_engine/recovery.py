@@ -110,6 +110,11 @@ class RecoveryBudget:
                          (self.request_id,))
         return None
 
+    def release_generation(self):
+        """Give back a reservation when no generation happened (a request written for a person to answer)."""
+        self.con.execute('UPDATE action_recovery_budget SET generations=MAX(generations-1,0) WHERE request_id=?',
+                         (self.request_id,))
+
     def limits(self):
         limits={'generations':MAX_GENERATIONS,'searches':MAX_SEARCHES}
         repairs=[item for item in self.state()['history'] if item.get('repair_id')]

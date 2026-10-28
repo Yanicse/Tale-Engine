@@ -11,6 +11,10 @@ class ModelUnavailable(RuntimeError):
     pass
 
 
+class AwaitingAnswer(ModelUnavailable):
+    """The request was written for a person to answer: no generation took place, so none is charged."""
+
+
 class DisabledAdapter:
     def proposed(self, context, task):
         raise ModelUnavailable('No model configured; no call made')

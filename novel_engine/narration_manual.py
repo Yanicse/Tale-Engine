@@ -11,7 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from .adapters import ModelUnavailable
+from .adapters import AwaitingAnswer
 from .narration_claude import MARKERS, split_prompt
 from .narration_codex import CodexNarrator
 from .planner import CodexPlanner
@@ -70,7 +70,7 @@ class ManualNarrator(CodexNarrator):
         paths['prompt.md'].write_text(self.request_text(prompt, wire_schema), encoding='utf-8')
         paths['state.json'].write_text(json.dumps({'sha256': digest}), encoding='utf-8')
         paths['response.json'].unlink(missing_ok=True)
-        raise ModelUnavailable(
+        raise AwaitingAnswer(
             f"Manual engine: send {paths['prompt.md']} to a model, save its JSON answer as "
             f"{paths['response.json']}, then run: novel play --resume --retry --engine manual")
 
