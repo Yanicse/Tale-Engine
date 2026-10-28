@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 PKG_PARENT = Path(__file__).resolve().parents[2]
-KIT = PKG_PARENT / "engine" / "assets" / "docs" / "engine"
+KIT = PKG_PARENT / "novel_engine" / "assets" / "docs" / "engine"
 import sys
 if str(PKG_PARENT) not in sys.path:
     sys.path.insert(0, str(PKG_PARENT))
