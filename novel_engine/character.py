@@ -3,11 +3,10 @@
 character_rules.charges ties each charge resource to its period (`night` or `combat`),
 optionally to the ability (`ability`) or the operation (`consumed_by`) that consumes it.
 character_rules.forbidden_resources lists resources the story may never create (for example a
-gauge the campaign removed); character_rules.hunger_from_health optionally exposes a sensation
-derived from low HP.
+gauge the campaign removed).
 """
 from copy import deepcopy
-from decimal import Decimal, ROUND_FLOOR
+from decimal import Decimal
 
 
 def solar_form(minute, schedule):
@@ -35,27 +34,6 @@ def charge_resources(rules):
     return set(charges(rules)) | cooldowns
 
 
-def hunger_from_health(current, maximum):
-    if type(maximum) is not int or maximum <= 0 or not 0 <= current <= maximum:
-        raise ValueError('Invalid vitality.')
-    ratio = current / maximum
-    if ratio <= .10:
-        return 'critical'
-    if ratio <= .25:
-        return 'strong'
-    if ratio < .50:
-        return 'perceivable'
-    return 'absent'
-
-
-def regeneration_amount(maximum, seconds, rate):
-    if type(maximum) is not int or maximum <= 0 or seconds < 0:
-        raise ValueError('Invalid duration or vitality.')
-    value = Decimal(maximum) * Decimal(str(rate['percent'])) * Decimal(str(seconds))
-    value /= Decimal(100) * Decimal(str(rate['seconds']))
-    return int(value.to_integral_value(rounding=ROUND_FLOOR))
-
-
 def scaled_parameters(spec, output):
     factor = Decimal(str(output)) / 100
     if not 0 < factor <= 1:
@@ -75,7 +53,7 @@ def scaled_parameters(spec, output):
 
 def ability_context(state, rules, costs):
     """Abilities and vitality facts given to the narrator. A pack may declare only some rules: no day/night
-    schedule, no regeneration, no cost table are needed, and then those facts are simply absent."""
+    schedule or cost table are needed, and then those facts are simply absent."""
     maximum = state['resources']['player_hp_max']
     current = state['resources']['player_hp']
     schedule = rules.get('solar_schedule')
@@ -96,13 +74,6 @@ def ability_context(state, rules, costs):
         context['version'] = rules['version']
     if phase:
         context['form'] = phase
-    if rules.get('regeneration'):
-        context['regeneration_per_second'] = {name: maximum * rate['percent'] / (100 * rate['seconds'])
-                                              for name, rate in rules['regeneration'].items()}
-        context['regeneration_rules'] = rules['regeneration']
-    if rules.get('hunger_from_health'):
-        context['subjective_hunger'] = hunger_from_health(current, maximum)
-        context['hunger_without_gauge'] = True
     return context
 
 

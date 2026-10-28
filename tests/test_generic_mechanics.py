@@ -9,10 +9,9 @@ from novel_engine.mechanics import materialize
 from novel_engine.character import validate_character_transition
 
 RULES = {
-    'version': 'fictional-1', 'hp_max': 100, 'hunger_from_health': True, 'forbidden_resources': ['player_hunger'],
+    'version': 'fictional-1', 'hp_max': 100, 'forbidden_resources': ['player_hunger'],
     'solar_schedule': {'first_sunrise_minute': 360, 'first_sunset_minute': 1080},
-    'regeneration': {'day': {'percent': 1, 'seconds': 3600}, 'night': {'percent': 2, 'seconds': 3600},
-                     'drunk_blood': {'percent': 5, 'seconds': 60}},
+    'resurrection_hp_percent': 50,
     'passives': {'lantern': {'label': 'Watch lantern', 'phase': 'always', 'free': True}},
     'abilities': {
         'dawn_shield': {'phase': 'always', 'effect': 'death_prevention',

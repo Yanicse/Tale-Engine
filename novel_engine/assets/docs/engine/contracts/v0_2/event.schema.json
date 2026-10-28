@@ -186,7 +186,7 @@
               "ability",
               "damage",
               "elapsed",
-              "blood_interval",
+              "heal",
               "combat_start",
               "combat_end",
               "resurrection",

@@ -211,10 +211,9 @@ class GroupTests(Fixture):
 
 # Fictional rule set: no story-specific ability. Costs are percentages of the maximum HP.
 MECHANICS_RULES={
-    'version':'fictional-1','hp_max':10000,'hunger_from_health':True,'forbidden_resources':['player_hunger'],
+    'version':'fictional-1','hp_max':10000,'forbidden_resources':['player_hunger'],
     'solar_schedule':{'first_sunrise_minute':360,'first_sunset_minute':1080},
-    'regeneration':{'day':{'percent':1,'seconds':3},'night':{'percent':1,'seconds':1},
-                    'drunk_blood':{'percent':5,'seconds':1}},
+    'resurrection_hp_percent': 50,
     'abilities':{
         'bolt':{'phase':'always','catalogue':{'offensive':True,'aliases':['lightning']}},
         'ward':{'phase':'always'},
@@ -305,34 +304,24 @@ class MechanicsTests(MechanicFixture):
         self.assertEqual(result['status'],'rejected')
         self.assertEqual(self.c.state(),before)
 
-    def test_fraction_preserved_across_three_seconds_and_reads(self):
+    def test_elapsed_time_and_reads_do_not_heal(self):
         start=instant(self.c.state());before=self.c.state()
         for i in range(1,4):
             self.assertEqual(self.apply_ops([],start+i)[0]['status'],'recorded')
         split=self.c.state()['resources']
-        self.assertEqual(split['player_hp'],5100)
-        self.assertEqual(split['player_regen_rest_num'],0)
+        self.assertEqual(split['player_hp'],5000)
         with self.c.transaction() as con:con.execute('UPDATE campaign SET state=?',(json.dumps(before),))
         self.apply_ops([],start+3)
         self.assertEqual(self.c.state()['resources'],split)
         saved=self.c.state();self.c.resume();self.loop().run_turn(resume=True)
         self.assertEqual(self.c.state(),saved)
 
-    def test_solar_boundary_and_no_blood_double_count(self):
+    def test_solar_boundary_refills_only_declared_night_charges(self):
         self.set_state(world_minute=1079,world_second=59,resources={'player_resurrections_left':0,'player_domains_left':0})
         self.apply_ops([],1080*60+1)
-        self.assertEqual(self.c.state()['resources']['player_hp'],5133)
+        self.assertEqual(self.c.state()['resources']['player_hp'],5000)
         self.assertEqual(self.c.state()['resources']['night_id'],2)
         self.assertEqual(self.c.state()['resources']['player_resurrections_left'],1)
-        start=1080*60+1
-        result,p=self.apply_ops([self.operation('blood_interval',at=start+1,start=start)],start+1)
-        self.assertEqual(result['status'],'recorded')
-        self.assertEqual(self.c.state()['resources']['player_hp'],5633)
-        self.c.apply(p)
-        self.assertEqual(self.c.state()['resources']['player_hp'],5633)
-        before=self.c.state()
-        self.assertEqual(self.apply_ops([self.operation('blood_interval',at=start+1,start=start)],start+1)[0]['status'],'rejected')
-        self.assertEqual(self.c.state(),before)
 
     def test_combat_cycles_domain_charge_and_resurrection(self):
         self.apply_ops([self.operation('combat_start')])
@@ -358,7 +347,7 @@ class MechanicsTests(MechanicFixture):
     def test_death_stays_dead_and_health_capped_and_ambiguous_prevention_refused(self):
         self.set_state(resources={'player_hp':9950})
         start=instant(self.c.state());self.apply_ops([],start+3)
-        self.assertEqual(self.c.state()['resources']['player_hp'],10000)
+        self.assertEqual(self.c.state()['resources']['player_hp'],9950)
         self.apply_ops([self.operation('damage',amount=10000)])
         self.apply_ops([],start+6)
         self.assertEqual(self.c.state()['resources']['player_hp'],0)
@@ -450,10 +439,10 @@ class PublicTests(MechanicFixture):
         self.c.apply(p)
         self.assertEqual(self.c.state()['resources']['player_hp'],4850)
 
-    def test_healing_without_elapsed_time_is_rejected(self):
+    def test_healing_requires_an_explicit_operation(self):
         self.assertEqual(self.apply_ops([],claims=[self.claim('healing','/resources/player_hp',5100)])[0]['status'],'rejected')
         end=instant(self.c.state())+3
-        self.assertEqual(self.apply_ops([],end,claims=[self.claim('healing','/resources/player_hp',5100)])[0]['status'],'recorded')
+        self.assertEqual(self.apply_ops([self.operation('heal',amount=100)],end,claims=[self.claim('healing','/resources/player_hp',5100)])[0]['status'],'recorded')
 
     def test_secret_knowledge_rejected_but_public_manifestation_keeps_private_cause(self):
         state=self.c.state();private=event(state,'Fictional secret.',[],audience=['narrator'])

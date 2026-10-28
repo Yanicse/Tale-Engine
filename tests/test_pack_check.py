@@ -182,11 +182,11 @@ class RulesInTheCampaign(PackFiles):
 
     def test_the_narrator_context_works_with_partial_rules(self):
         state = {'resources': {'player_hp': 30, 'player_hp_max': 40}, 'world_minute': 0}
-        context = ability_context(state, {'abilities': {'gale': {'label': 'Gale'}}, 'hunger_from_health': True}, None)
+        context = ability_context(state, {'abilities': {'gale': {'label': 'Gale'}}}, None)
         self.assertEqual((context['active_abilities'], context['default_power_pct'], context['max_hp']), (['gale'], 10, 40))
         self.assertNotIn('form', context)
         self.assertNotIn('regeneration_rules', context)
-        self.assertEqual(context['subjective_hunger'], 'absent')
+        self.assertNotIn('subjective_hunger', context)
 
 
 if __name__ == '__main__':

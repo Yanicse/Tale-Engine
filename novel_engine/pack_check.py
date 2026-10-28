@@ -13,7 +13,7 @@ from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening'}
 THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock'}
 SHEET_KEYS = {'name', 'hp_max', 'description', 'rules'}
-RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'hunger_from_health', 'costs'}
+RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'costs'}
 NEEDS_VITALITY = {'charges': 'charges that refill per night or per combat', 'regeneration': 'regeneration by form',
                   'solar_schedule': 'a day and night schedule', 'version': 'the vitality mechanics version'}
 ABILITY_KEYS = {'label', 'phase', 'free', 'description', 'limits'}
@@ -278,8 +278,6 @@ def check_sheet(sheet, report):
     if 'forbidden_resources' in rules and not (isinstance(rules['forbidden_resources'], list)
                                                and all(isinstance(r, str) and r for r in rules['forbidden_resources'])):
         report.error(name, 'rules.forbidden_resources must be a list of resource names')
-    if 'hunger_from_health' in rules and not isinstance(rules['hunger_from_health'], bool):
-        report.error(name, 'rules.hunger_from_health must be true or false')
     if 'costs' in rules:
         check_costs(rules['costs'], abilities, report)
     elif abilities and not any(isinstance(spec, dict) and spec.get('free') for spec in abilities.values()):

@@ -4,7 +4,6 @@ Charges (character_rules.charges) and cooldowns (abilities.<id>.cooldown) come f
 An ability with `effect: death_prevention` arms the neutralization of a lethal blow (prevent_death operation).
 """
 from copy import deepcopy
-from fractions import Fraction
 
 from .magic import spell_cost
 from .character import charge_resources, charges, solar_form
@@ -12,7 +11,6 @@ from .validation import validate
 
 VERSION='vitality-1.0'
 BASE_PROTECTED={'player_hp','player_hp_max','night_id','player_combat_id','player_combat_active',
-    'player_regen_rest_num','player_regen_rest_den',
     'player_prevention_until_second','player_death_refusal_capacity_hp'}
 
 
@@ -31,7 +29,7 @@ def _consumer(rules,operation):
 
 def operation_schema():
     fields={
-        'kind':{'type':'string','enum':['ability','damage','elapsed','blood_interval','combat_start','combat_end','resurrection','prevent_death']},
+        'kind':{'type':'string','enum':['ability','damage','elapsed','heal','combat_start','combat_end','resurrection','prevent_death']},
         'at_second':{'type':'integer','minimum':0},
         'ability_id':{'type':['string','null']},
         'output_percent':{'type':['number','null'],'minimum':0,'maximum':100},
@@ -46,31 +44,18 @@ def instant(state):
     return state['world_minute']*60+state.get('world_second',0)
 
 
-def _advance(resources,start,end,rules,blood=False):
-    schedule=rules['solar_schedule']
-    boundaries={start,end}
-    for day in range(start//86400-1,end//86400+2):
-        for key in ('first_sunrise_minute','first_sunset_minute'):
-            boundary=(schedule[key]+day*1440)*60
-            if start<boundary<=end:boundaries.add(boundary)
-    points=sorted(boundaries)
-    rest=Fraction(resources.get('player_regen_rest_num',0),resources.get('player_regen_rest_den',1))
-    for left,right in zip(points,points[1:]):
-        phase=solar_form(left//60,schedule)
-        if blood and phase!='night':raise ValueError('Confirmed blood regimen reserved to the vampiric form.')
-        if resources['player_hp']>0:
-            rate=rules['regeneration']['drunk_blood' if blood else phase]
-            value=rest+Fraction(resources['player_hp_max'])*Fraction(str(rate['percent']))*(right-left)/(100*Fraction(str(rate['seconds'])))
-            gain=value.numerator//value.denominator
-            resources['player_hp']=min(resources['player_hp_max'],resources['player_hp']+gain)
-            rest=value-gain if resources['player_hp']<resources['player_hp_max'] else Fraction(0)
-        # Real solar boundary, with no retroactive recovery at installation.
-        sunset=schedule['first_sunset_minute']*60
-        if right>=sunset and (right-sunset)%86400==0 and right>left:
-            resources['night_id']+=1
-            _reset(resources,rules,'night')
-    resources['player_regen_rest_num']=rest.numerator
-    resources['player_regen_rest_den']=rest.denominator
+def _advance(resources, start, end, rules):
+    """Advance only declared charge clocks. Passing time never heals the character."""
+    schedule = rules.get('solar_schedule')
+    if not schedule:
+        return
+    sunset = schedule['first_sunset_minute'] * 60
+    first = max(0, (start - sunset) // 86400 + 1)
+    last = (end - sunset) // 86400
+    crossed = max(0, last - first + 1)
+    if crossed:
+        resources['night_id'] += crossed
+        _reset(resources, rules, 'night')
 
 
 def materialize(state,event,config):
@@ -91,19 +76,15 @@ def materialize(state,event,config):
     for op in operations:
         at=op['at_second'];kind=op['kind']
         used={'ability':{'ability_id','output_percent'},'damage':{'amount'},
-              'prevent_death':{'amount'},'blood_interval':{'start_second'}}.get(kind,set())
+              'prevent_death':{'amount'},'heal':{'amount'}}.get(kind,set())
         if any(op[key] is not None for key in ('ability_id','output_percent','amount','start_second') if key not in used):
             raise ValueError('Mechanical field without purpose; use null.')
         if not current<=at<=end:raise ValueError('Operations out of order or outside the interval.')
         if op['source_reference'] not in event['causes']:
             raise ValueError("Mechanical cause missing from the event's causes.")
-        if kind=='blood_interval':
-            if op['start_second']!=current or at<=current:
-                raise ValueError('Blood intake or interval already used or not contiguous.')
-            _advance(resources,current,at,rules,blood=True)
-        else:
-            if op['start_second'] is not None:raise ValueError('Interval reserved to blood actually drunk.')
-            _advance(resources,current,at,rules)
+        if op['start_second'] is not None:
+            raise ValueError('start_second must be null.')
+        _advance(resources,current,at,rules)
         current=at
         if kind=='ability':
             key=op['ability_id'];spec=rules['abilities'].get(key)
@@ -134,6 +115,12 @@ def materialize(state,event,config):
         elif kind=='damage':
             if type(op['amount']) is not int or op['amount']<=0:raise ValueError('Positive damage required.')
             resources['player_hp']=max(0,resources['player_hp']-op['amount'])
+        elif kind=='heal':
+            if resources['player_hp'] == 0:
+                raise ValueError('Healing cannot revive a dead character.')
+            if type(op['amount']) is not int or op['amount'] <= 0:
+                raise ValueError('Positive healing required.')
+            resources['player_hp'] = min(resources['player_hp_max'], resources['player_hp'] + op['amount'])
         elif kind=='combat_start':
             if 'player_combat_active' not in resources:raise ValueError('Combat status to be established before the transition; no implicit refill.')
             if resources.get('player_combat_active'):raise ValueError('Combat already active; no refill.')
@@ -150,7 +137,10 @@ def materialize(state,event,config):
             phase=charges(rules)[charge].get('phase')
             if phase and solar_form(at//60,rules['solar_schedule'])!=phase:raise ValueError('Resurrection outside its form: '+phase)
             resources[charge]-=1
-            resources['player_hp']=(resources['player_hp_max']+1)//2
+            percent = rules.get('resurrection_hp_percent')
+            if type(percent) is not int or not 1 <= percent <= 100:
+                raise ValueError('Resurrection requires an explicit recovery percentage.')
+            resources['player_hp']=(resources['player_hp_max'] * percent + 99)//100
         elif kind=='prevent_death':
             charge=_consumer(rules,'prevent_death')
             if (charge is None or not resources.get(charge) or

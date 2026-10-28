@@ -18,8 +18,7 @@
       "full_power_cost_percent": {"tide_sense": 0, "second_wind": 30},
       "free_output_up_to_percent": {}
     },
-    "forbidden_resources": ["player_hunger"],
-    "hunger_from_health": false
+    "forbidden_resources": []
   }
 }
 ```
@@ -33,7 +32,6 @@
 | `costs.default_output_percent` | the power used when the player does not say (default 10) |
 | `costs.free_output_up_to_percent` | per ability, a power under which use is free |
 | `forbidden_resources` | resources the story may never create (for example a hunger gauge you removed) |
-| `hunger_from_health` | when true, the narrator is given a hunger sensation derived from low HP, with no gauge |
 
 ## The cost formula
 
@@ -60,6 +58,9 @@ session asks for abilities one by one. `novel validate` checks the result.
 
 ## Not available to packs yet
 
-Charges that refill per night or per combat, cooldowns, regeneration by form, a day and night schedule and the
+Charges that refill per night or per combat, cooldowns, a day and night schedule and the
 vitality mechanics that drive them exist in the engine's tests, but a pack cannot enable them yet. `novel validate`
-reports `charges`, `regeneration`, `solar_schedule`, `version` and `cooldown` as errors rather than ignoring them.
+reports `charges`, `solar_schedule`, `version` and `cooldown` as errors rather than ignoring them.
+
+Passing time never restores hit points. Recovery requires an explicit healing operation. Automatic regeneration and
+health-derived hunger rules are not supported.
