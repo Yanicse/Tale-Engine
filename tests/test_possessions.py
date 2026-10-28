@@ -214,6 +214,12 @@ class PossessionTests(unittest.TestCase):
         self.rejected([], narration='You pay three silver coins.')
         self.rejected([], narration='You bring back the beams to the site.')
 
+    def test_the_word_or_after_a_payment_verb_is_not_a_currency(self):
+        # "or" is French for gold: the English conjunction must not announce a payment.
+        result, _ = self.apply([], description='Mira pays or leaves; she decides to leave the stall.')
+        self.assertEqual(result['status'], 'recorded', result)
+        self.rejected([], description='Mira pays two gold coins to the carter.')
+
     def test_negotiation_and_unknown_information_do_not_require_mutations(self):
         result, _ = self.apply([], description='Mira receives information about the materials. No purchase made.',
                                narration='The seller offers three coins. You do not pay anything yet.')

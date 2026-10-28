@@ -225,7 +225,7 @@ def validate_transition(before, after, event, config):
                 raise ValueError('Quantity changed without an operation or an in-game count: ' + key)
     positive = _positive(event['description'])
     amount_words = ('(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|and|[a-z]+-[a-z]+)')
-    payment_claim = re.search(('\\b(?:pays?|paid|receives?|received|collects?|collected|spends?|spent|settles?|settled)\\b\\s+(?:(?:the|some|his|her|their|your)\\s+)?(?:') + amount_words + r'\s+)*(?:pieces?|currency|silver|or|copper)\b', positive)
+    payment_claim = re.search(('\\b(?:pays?|paid|receives?|received|collects?|collected|spends?|spent|settles?|settled)\\b\\s+(?:(?:the|some|his|her|their|your)\\s+)?(?:') + amount_words + r'\s+)*(?:pieces?|coins?|currency|gold|silver|copper)\b', positive)
     if payment_claim and not any(op['money_delta'] for op in operations):
         raise ValueError('Payment announced without a monetary operation')
     goods_claim = _goods_claim(positive)
