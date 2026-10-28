@@ -307,7 +307,8 @@ class NarrativeTests(unittest.TestCase):
         self.assertTrue(narrator.called)
         self.assertEqual(json.loads(preference.read_text(encoding='utf-8')),{'engine':'claude'})
         error=io.StringIO()
-        with patch('novel_engine.narration_claude.ClaudeNarrator',return_value=self.narrator) as narrator, \
+        # The saved choice only counts while the engine is usable: a machine without the Claude CLI would offer manual.
+        with patch('novel_engine.engines.available',return_value=['claude','manual']),              patch('novel_engine.narration_claude.ClaudeNarrator',return_value=self.narrator) as narrator, \
              patch('novel_engine.narration_claude.ClaudePlanner'), \
              patch('builtins.input',side_effect=['','/quit']), \
              patch('sys.stdin.isatty',return_value=True), \
