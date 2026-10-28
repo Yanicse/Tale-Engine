@@ -16,7 +16,7 @@ NOVEL_JSON = {'title': '', 'language': 'en', 'tracked_npcs': [], 'currency_rates
 THEME_JSON = {'preset': 'auto', 'title': '', 'subtitle': '',
               'input_hint': '', 'clock': True, 'colors': {}, 'labels': {}, 'icons': {}}
 SCRIPTS = {'play': 'play_narrative.py', 'resume': 'resume_game.py', 'read': 'read_game.py',
-           'routine': 'routine.py'}
+           'routine': 'routine.py', 'diagnose': 'diagnose_context.py'}
 
 
 def pack(slug):

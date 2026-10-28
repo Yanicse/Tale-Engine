@@ -18,6 +18,7 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `novel read [--port P] [--no-browser]` | serves the reading page on 127.0.0.1 (port 8765 by default) |
 | `novel unblock [--campaign P] [--apply]` | previews, then with `--apply` grants one more generation (backed up first) to a pending action whose budget of two generations is spent |
 | `novel configure [--creations on\|off] [--bounded-recovery on\|off] [--campaign P] [--apply]` | previews, then switches the creations register or the bounded automatic recovery of an existing campaign (backed up first) |
+| `novel diagnose <campaign.sqlite> [--request ID]` | read-only view of how the context of one attempt was selected (what memory was kept or left out, and why); never changes the save |
 | `novel routine ...` | handles periods of several days delegated to the narrator, see `novel routine --help` |
 
 ## `novel play`
