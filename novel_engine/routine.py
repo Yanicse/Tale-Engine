@@ -105,7 +105,7 @@ def normalize_policy(policy=None):
     stops = sorted(set(merged['stop_on']) | {'critical'}, key=LEVELS.index) \
         if set(merged['stop_on']) <= set(LEVELS) else None
     if stops is None:
-        raise ValueError('stop_on : values among ' + ', '.join(LEVELS) + '.')
+        raise ValueError('stop_on: values among ' + ', '.join(LEVELS) + '.')
     merged['stop_on'] = [s for s in stops if s != 'info']
     for key in ('pause_period', 'bulletins', 'signals'):
         merged[key] = bool(merged[key])

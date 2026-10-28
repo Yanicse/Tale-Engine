@@ -120,13 +120,13 @@ class DocumentaryFixture(unittest.TestCase):
         self.n.transform=lambda packet,result:self.memory()
         before=self.c.state();scene=self.c.resume()['session']['scene']
         first=NarrativeLoop(self.c,self.n).run_turn('I ask for a clarification.')
-        self.assertEqual(first['status'],'required_memory')
+        self.assertEqual(first['status'],'memory_required')
         second=NarrativeLoop(Campaign(self.c.path),self.n).run_turn(resume=True)
         self.assertEqual(second['diagnostic_code'],'recovery_blocked')
         for options in ({},{'retry':True},{'query':'canon: Maera'},{'retry':True,'query':'Guilde'}):
             planner=FakePlanner();loop=NarrativeLoop(Campaign(self.c.path),self.n,planner=planner)
             result=loop.run_turn(resume=True,**options)
-            self.assertEqual(result['status'],'required_memory')
+            self.assertEqual(result['status'],'memory_required')
             self.assertEqual(loop.last_metrics['model_calls'],0)
             self.assertEqual(planner.calls,0)
         self.assertEqual(self.n.calls,2)

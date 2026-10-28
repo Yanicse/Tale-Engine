@@ -89,7 +89,7 @@ def materialize(state, event, config):
         if resource:
             balance = working['resources'][resource] + delta
             if balance < 0:
-                raise ValueError('Solde insuffisant : ' + resource)
+                raise ValueError('Insufficient balance: ' + resource)
             working['resources'][resource] = balance
             generated.append({'operation': 'increment', 'path': '/resources/' + resource, 'value': delta})
             touched.add('/resources/' + resource)
@@ -123,7 +123,7 @@ def materialize(state, event, config):
                     if item['quantity'] is None or item.get('quantity_precision') != 'exact':
                         raise ValueError('Count the lot in play before a numbered consumption: ' + key)
                     if count > item['quantity']:
-                        raise ValueError('Stock insuffisant : ' + key)
+                        raise ValueError('Insufficient stock: ' + key)
                     value = deepcopy(item)
                     value['quantity'] -= count
                     if value['quantity'] == 0:

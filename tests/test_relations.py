@@ -37,7 +37,7 @@ class RelationTests(unittest.TestCase):
         e = event(before, detail, [{'operation': 'set', 'path': '/relations/partner', 'value': invalid}])
         rejected = self.c.apply(proposal(before, events=[e]))
         self.assertEqual(rejected['status'], 'rejected')
-        self.assertIn('fields absents', rejected['reason'])
+        self.assertIn('missing fields', rejected['reason'])
         self.assertEqual(self.c.state(), before)
         valid = {'from_id': 'player', 'to_id': 'partner', 'attitude': 'friendly',
                  'references': refs, 'audience': audience}

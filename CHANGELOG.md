@@ -24,6 +24,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Time no longer restores health. Recovery requires a sourced healing or mana recovery operation.
 - Pack inventories and currencies support acquisitions, purchases and sales with explicit starting balances.
 - Character descriptions reach the narrator; the bundled game kit verifier resolves its installed assets.
+- Leftover French and word-for-word wording is corrected in messages (validation errors, insufficient balance or stock,
+  diagnostics, the reading server). The `--json` statuses `required_memory`, `stop_technique` and the planner status
+  `non_required` are now `memory_required`, `technical_stop` and `not_required`. Passives show as `passive` in `--skills`.
 - New feature wording is English. Existing saves are not converted to the new mana mode automatically.
 
 ## 0.1.0

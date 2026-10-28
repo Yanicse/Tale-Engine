@@ -23,7 +23,7 @@ def packet(state, config, recipient='player', query=''):
             continue
         info = catalog.get(key, {})
         name = info.get('label') or power['description'].split(' : ', 1)[0]
-        phase = info.get('phase', 'unspecified')
+        phase = info.get('phase', 'passive' if key in character.get('passives', {}) else 'unspecified')
         if query and query.casefold() not in (key + ' ' + name + ' ' + power['description']).casefold():
             continue
         cost = spell_cost(key, maximum, rules) if key in costs else (0 if info.get('free') else None)

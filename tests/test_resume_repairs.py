@@ -91,7 +91,7 @@ class DocumentaryRepairTests(unittest.TestCase):
         repair(self.c.path, True)
         self.n.transform = lambda packet, response: self.memory('exchange:1')
         loop = NarrativeLoop(self.c, self.n)
-        self.assertEqual(loop.run_turn(resume=True)['status'], 'required_memory')
+        self.assertEqual(loop.run_turn(resume=True)['status'], 'memory_required')
         self.assertEqual(loop.run_turn(resume=True)['diagnostic_code'], 'recovery_blocked')
         self.assertEqual(self.n.calls, 2)
         repair(self.c.path, True)
@@ -379,7 +379,7 @@ class StoppedDiagnosticTests(ResumeFixture):
         self.assertEqual((value['generations'], value['searches']), (2, 2))
         result = stopped(self.c, self.rid, 'sources_or_budget',
                          {'model_calls': 1, 'prompt': 'PRIVATE PROMPT', 'reason': 'RAW MESSAGE'}, 'search')
-        self.assertEqual(result['status'], 'stop_technique')
+        self.assertEqual(result['status'], 'technical_stop')
         self.assertEqual(result['recovery_budget'], {'generations': 2, 'searches': 2})
         text = Path(result['diagnostic_path']).read_text(encoding='utf-8')
         for private in ('PRIVATE PROMPT', 'RAW MESSAGE', 'Reread exchange'):

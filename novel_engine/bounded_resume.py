@@ -60,7 +60,7 @@ def stopped(campaign, request_id, code, metrics=None, phase=None):
         'measures':public_metrics(metrics or {})}
     path = campaign.path.with_suffix('.diagnostic.json')
     path.write_text(json.dumps(diagnostic,ensure_ascii=True,indent=2),encoding='utf-8')
-    return {'status':'stop_technique', 'request_id':request_id, 'diagnostic_code':code,
+    return {'status':'technical_stop', 'request_id':request_id, 'diagnostic_code':code,
         'reason':'Action and scene kept. Local diagnostic available; no new consequence can be displayed.',
         'operation_possible':'fix_then_resume' if code=='local_application' else 'diagnostic_local',
         'diagnostic_path':str(path), 'recovery_budget':diagnostic['budget']}

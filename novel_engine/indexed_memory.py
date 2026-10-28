@@ -403,5 +403,5 @@ class MemoryIndex:
             reason = 'Memories recovered locally. Use /resume to allow a new generation.'
         self.con.execute('INSERT OR REPLACE INTO memory_recovery VALUES (?,?,?,?,?,?)',
                          (request_id,query,status,count,check_json(packet),reason))
-        return {'status':'required_memory','request_id':request_id,'reason':reason,
+        return {'status':'memory_required','request_id':request_id,'reason':reason,
                 'recovered_sources':len(packet['proofs']),'search_status':status}

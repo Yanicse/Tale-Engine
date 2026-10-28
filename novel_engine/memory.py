@@ -143,7 +143,7 @@ class ContextBuilder:
         for event in journal:
             add(event['event_id'],event['description'],'fact',[event['event_id']],event['audience'])
         for holder,intention in state['intentions'].items():
-            add('intention:'+holder,'Intention current : '+intention,'fact',
+            add('intention:'+holder,'Current intention: '+intention,'fact',
                 [f"state:{state['state_version']}:/intentions/{holder}"],
                 ['narrator','player' if holder=='player' else f'npc:{holder}'])
         for resource,amount in state['resources'].items():
@@ -173,7 +173,7 @@ class ContextBuilder:
                 if group=='inventory':
                     text += f" Quantity: {value['quantity']} ({value.get('quantity_precision','exact')}); equipped: {value['equipped']}; location: {value.get('location','unknown')}."
                 if group=='projects':
-                    text = value['title'] + ' : ' + '; '.join(value['completed'] + value['remaining'] + value['unknowns'])
+                    text = value['title'] + ': ' + '; '.join(value['completed'] + value['remaining'] + value['unknowns'])
                 if group=='powers':
                     text += ' Limits: '+value['limits']
                 add(group+':'+identifier,text,'fact',value['references'],value['audience'])
@@ -196,7 +196,7 @@ class ContextBuilder:
             unknowns.append('Limited context; refine the search to retrieve the other relevant memories.')
         position = state['positions'].get(actor,'position not provided')
         label='Demo scene' if config.get('fictional') else 'Campaign scene'
-        scene = f"{label} : {state['positions'].get('player')}" if recipient=='narrator' else f'Position : {position}'
+        scene = f"{label}: {state['positions'].get('player')}" if recipient=='narrator' else f'Position: {position}'
         return check('context',{'schema_version':'0.2','context_id':f"context:{recipient}:{state['state_version']}",
                     'campaign_id':state['campaign_id'],'state_version':state['state_version'],
                     'world_minute':state['world_minute'],'versions':state['versions'],'recipient':recipient,

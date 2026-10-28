@@ -74,7 +74,7 @@ class BoundedRecoveryTests(Fixture):
         self.policy()
         self.transient_once(stopped_process=False)
         result = NarrativeLoop(self.c, self.n).run_turn('Hello')
-        self.assertEqual(result['status'], 'stop_technique')
+        self.assertEqual(result['status'], 'technical_stop')
         self.assertEqual(self.n.calls, 1)
 
         def interrupted(packet, answer):
@@ -84,7 +84,7 @@ class BoundedRecoveryTests(Fixture):
             NarrativeLoop(self.c, self.n).run_turn(resume=True, retry=True)
         self.assertEqual(self.n.calls, 2)
         self.n.transform = lambda p, r: r
-        self.assertEqual(NarrativeLoop(self.c, self.n).run_turn(resume=True)['status'], 'stop_technique')
+        self.assertEqual(NarrativeLoop(self.c, self.n).run_turn(resume=True)['status'], 'technical_stop')
         self.assertEqual(self.n.calls, 2)
 
     def test_double_encoded_json_is_accepted_and_a_persistently_invalid_answer_stops_at_the_budget(self):
@@ -95,7 +95,7 @@ class BoundedRecoveryTests(Fixture):
         self.policy()
         self.n.transform = lambda p, r: {**r, 'events': [{}]}
         result = NarrativeLoop(self.c, self.n).run_turn(resume=True)
-        self.assertEqual(result['status'], 'stop_technique')
+        self.assertEqual(result['status'], 'technical_stop')
         self.assertEqual(result['recovery_budget']['generations'], 2)
 
     def test_a_planning_call_before_the_narration_survives_the_retry(self):

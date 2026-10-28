@@ -401,7 +401,7 @@ class Campaign:
                 reason='Local sheet found; /resume allows the next step.' if status=='ready' else 'Identifier missing or reminder repeated without progress.'
                 con.execute('INSERT OR REPLACE INTO memory_recovery VALUES (?,?,?,?,?,?)',
                          (request_id,query,status,count,check_json(packet),reason))
-                return {'status':'required_memory','request_id':request_id,'reason':reason,
+                return {'status':'memory_required','request_id':request_id,'reason':reason,
                     'recovered_sources':int(value is not None),'search_status':status}
             if query.lstrip().startswith('canon:') and config.get('canon_selection',{}).get('enabled'):
                 from .canon_selection import select_for_turn,save_context
@@ -417,7 +417,7 @@ class Campaign:
                 save_context(con,request_id,state,'narrator',packet)
                 con.execute('INSERT OR REPLACE INTO memory_recovery VALUES (?,?,?,?,?,?)',
                             (request_id,query,status,count,check_json(packet),reason))
-                return {'status':'required_memory','request_id':request_id,'reason':reason,
+                return {'status':'memory_required','request_id':request_id,'reason':reason,
                         'recovered_sources':len(packet['facts']),'search_status':status}
             result=index.recover(request_id,query,session['scene'],state['positions'].get('player',''))
             row=con.execute('SELECT packet,status FROM memory_recovery WHERE request_id=?',(request_id,)).fetchone()

@@ -36,8 +36,8 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `--agenda`, `--summaries`, `--inventory`, `--skills`, `--memories Q`, `--files`, `--creations Q` | local consultations: no turn, no model |
 | `--json` | structured output; `--measures` prints durations and usage on stderr |
 
-Statuses in the JSON output: `recorded` and `question` (the narration is saved and shown), `resume`, `required_memory`,
-`stop_technique` (stopped, nothing lost), and a refusal with a reason.
+Statuses in the JSON output: `recorded` and `question` (the narration is saved and shown), `resume`, `memory_required`,
+`technical_stop` (stopped, nothing lost), and a refusal with a reason.
 
 ## Environment
 

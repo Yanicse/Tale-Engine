@@ -75,7 +75,7 @@ def main(argv=None):
     if args.text is not None and args.text_file:
         parser.error('Choose --text or --text-file.')
     if args.retry and not args.resume:
-        parser.error('--retry request --resume.')
+        parser.error('--retry requires --resume.')
     text=Path(args.text_file).read_text(encoding='utf-8') if args.text_file else args.text
     if args.campaign:
         path=Path(args.campaign)
@@ -160,14 +160,14 @@ def main(argv=None):
             print(json.dumps({**result,'measures':measures},ensure_ascii=False,separators=(',',':')))
         elif result['status'] in ('recorded','question','resume'):
             print('\n\n'+result['narration']+'\n\n',end='',flush=True)
-        elif result['status'] in ('required_memory','stop_technique'):
+        elif result['status'] in ('memory_required','technical_stop'):
             print(result['reason'],file=sys.stderr)
             if result.get('diagnostic_path'): print('Diagnostic: '+result['diagnostic_path'],file=sys.stderr)
         else:
             print('Turn refused: '+result['reason'],file=sys.stderr)
         if args.measures:
             print(json.dumps(measures,ensure_ascii=False,separators=(',',':')),file=sys.stderr)
-        return 0 if result['status'] in ('recorded','question','resume','required_memory') else 2
+        return 0 if result['status'] in ('recorded','question','resume','memory_required') else 2
 
     if args.result:
         result=campaign.result(args.result)

@@ -106,7 +106,7 @@ class CompleteLoopTests(unittest.TestCase):
         self.control.write_text('memory')
         before=self.c.state()
         result=self.cli('--text','I remember this step.')
-        self.assertEqual(result['status'],'required_memory')
+        self.assertEqual(result['status'],'memory_required')
         self.assertEqual(self.c.state(),before)
         result=self.cli('--resume')
         self.assertEqual(result['status'],'recorded')

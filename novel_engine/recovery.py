@@ -133,7 +133,7 @@ class RecoveryBudget:
 
     def blocked(self, reason):
         state = self.state()
-        return {'status': 'required_memory', 'request_id': self.action_request_id,
+        return {'status': 'memory_required', 'request_id': self.action_request_id,
                 'search_status': 'blocked', 'diagnostic_code': 'recovery_blocked',
                 'reason': reason+(' Action and scene kept. /resume, /reminder and /retry do not reset this budget: '
                                      '`novel unblock` previews granting one more generation.'),

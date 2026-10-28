@@ -636,7 +636,7 @@ class NarrativeLoop:
                 else:
                     calls += self.last_metrics.get('model_calls',0)
                     planning_calls += self.last_metrics.get('planner',{}).get('model_calls',0)
-                    if result['status']=='required_memory':
+                    if result['status']=='memory_required':
                         rid=result['request_id']
                         status=result.get('search_status')
                         from .recovery import RecoveryBudget
@@ -693,7 +693,7 @@ class NarrativeLoop:
             if prepared['status']!='ready':
                 if prepared['status']=='rejected_action':
                     reason = prepared['previous_result']['reason']
-                    raise ModelUnavailable('Action rejected: '+reason+'. Use --reevaluate for a new resolution.')
+                    raise ModelUnavailable('Action rejected: '+reason.rstrip('.')+'. Use --reevaluate for a new resolution.')
                 raise ModelUnavailable('No pending action. Enter a new action.')
             template = prepared['model_proposal']
             request_id = template['request_id']

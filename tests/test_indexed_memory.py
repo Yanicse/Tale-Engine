@@ -210,7 +210,7 @@ class MemoryTests(unittest.TestCase):
             'memory_request': {'query': 'evaluation signed report promotion', 'reason': 'Archives required.'}})
         loop = NarrativeLoop(self.c, narrator)
         first = loop.run_turn('I ask about my evaluation again.')
-        self.assertEqual(first['status'], 'required_memory')
+        self.assertEqual(first['status'], 'memory_required')
         self.assertEqual(self.c.state(), state)
         pending = self.c.resume()['session']['pending_action']
         self.assertEqual(self.c.resume()['session']['scene'], before['session']['scene'])

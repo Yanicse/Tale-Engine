@@ -109,7 +109,7 @@ def normalize_response(response):
         if not isinstance(response,str): break
         response=json.loads(response)
     if not isinstance(response,dict):
-        raise ValueError('Objet JSON narrative expected.')
+        raise ValueError('Narrative JSON object expected.')
     response = deepcopy(response)
     for event in response.get('events', []):
         event.setdefault('asset_operations', [])

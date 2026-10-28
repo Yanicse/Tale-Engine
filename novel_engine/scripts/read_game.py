@@ -83,7 +83,7 @@ def make_handler(reader, port, turns):
     allowed = {f'127.0.0.1:{port}', f'localhost:{port}'}
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = 'LecturePartie'
+        server_version = 'TaleEngineReader'
 
         def log_message(self, *args):
             pass
@@ -209,7 +209,7 @@ def main(argv=None):
             parser.error('Active save outside the campaigns/ folder.')
     server = make_server(path, args.port)
     url = f'http://127.0.0.1:{server.server_address[1]}/'
-    print('Game ' + str(Path(path).name) + ' : ' + url + ' (Ctrl+C to stop)', file=sys.stderr)
+    print('Campaign ' + Path(path).parent.name + ': ' + url + ' (Ctrl+C to stop)', file=sys.stderr)
     if not args.no_browser:
         webbrowser.open(url)
     try:

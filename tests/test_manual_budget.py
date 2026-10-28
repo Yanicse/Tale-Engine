@@ -75,7 +75,7 @@ class ManualBudgetTest(unittest.TestCase):
                 self.loop.run_turn(resume=True, retry=True)
         self.answer(ANSWER)
         blocked = self.loop.run_turn(resume=True, retry=True)
-        self.assertEqual(blocked['status'], 'required_memory')
+        self.assertEqual(blocked['status'], 'memory_required')
         self.assertEqual(blocked['diagnostic_code'], 'recovery_blocked')
         self.assertEqual(self.c.state()['state_version'], 0)
         self.assertTrue(self.c.resume()['session']['pending_action'])

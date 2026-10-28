@@ -83,7 +83,7 @@ def materialize(commands, packet):
             update['due_minute'] = command['due_minute']
         else:
             if command['due_minute'] is not None:
-                raise ValueError('The existing date belongs to the engine; use null outside a postponement. Entry: ' + command['entry_id'] + '; status : ' + command['status'] + '.')
+                raise ValueError('The existing date belongs to the engine; use null outside a postponement. Entry: ' + command['entry_id'] + '; status: ' + command['status'] + '.')
             update['due_minute'] = old['due_minute']
         output.append(update)
     return output

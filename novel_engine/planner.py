@@ -510,12 +510,12 @@ class WorldPlanner:
             revisions[item['id']]=self._put_clock(final[item['id']],review_id)
         for m in manifestations:
             revision=revisions.get(m['clock'],final[m['clock']].get('revision',0))
-            label='Big event: ' if m['type']=='event' else 'Signe : '
+            label='Big event: ' if m['type']=='event' else 'Sign: '
             entry={'entry_id':'chronicle:'+m['id'],'expected_revision':-1,'title':m['title'],
                    'actor':m['actor'],'location':m['place'],'kind':'risk','due_minute':m['due_minute'],
                    'conditions':[],'references':[f"chronicle:{m['clock']}:{revision}"],'audience':['narrator'],
                    'interrupt':m['type']=='event','status':'planned',
-                   'reason':label+m['description']+' Perception : '+m['perception'],
+                   'reason':label+m['description']+' Perception: '+m['perception'],
                    'outcome_event_index':None}
             agenda._put(entry,'planner:'+review_id,state['world_minute'])
         self.con.execute('UPDATE chronicle_meta SET last_review_minute=?',(state['world_minute'],))
@@ -625,7 +625,7 @@ def review_world(campaign,adapter,prepared,retry=False):
         if old and old['status'] in ('in_progress','failure') and not reusable and not retry:
             raise ModelUnavailable('Planning interrupted or invalid; use --resume --retry. No automatic call.')
         reasons=planner.reasons(prepared['context']['player_action'])
-        if not old and not reasons:return {'model_calls':0,'status':'non_required'}
+        if not old and not reasons:return {'model_calls':0,'status':'not_required'}
         packet=json.loads(old['packet']) if reusable else planner.packet(prepared,reasons)
         packet['request_root']=root
         packet.setdefault('narration_language',prepared['campaign_rules'].get('narration_language','English'))
