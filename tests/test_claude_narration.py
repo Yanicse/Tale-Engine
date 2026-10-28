@@ -16,7 +16,7 @@ from novel_engine.agenda import Agenda
 from novel_engine.campaign import Campaign
 from novel_engine.demo import initial_state, configuration
 from novel_engine.indexed_memory import MemoryIndex
-from novel_engine.narration_claude import ClaudeNarrator, ClaudePlanner, split_prompt
+from novel_engine.narration_claude import ClaudeNarrator, ClaudePlanner, check_command_line, split_prompt
 from novel_engine.planner import WorldPlanner
 from novel_engine.scripts.play_narrative import main
 
@@ -36,6 +36,17 @@ class LocalClaudePlanner(ClaudePlanner):
 
 
 class ClaudeUnitTests(unittest.TestCase):
+    def test_a_batch_shim_with_a_long_contract_is_refused_with_an_explicit_message(self):
+        long_schema = '{"x":"' + 'a' * 9000 + '"}'
+        command = ['D:/tools/npm/claude.cmd', '-p', '--json-schema', long_schema]
+        with self.assertRaisesRegex(ModelUnavailable, 'native claude.exe'):
+            check_command_line(command, windows=True)
+        self.assertEqual(check_command_line(command, windows=False), command)
+        native = ['D:/tools/bin/claude.exe', '-p', '--json-schema', long_schema]
+        self.assertEqual(check_command_line(native, windows=True), native)
+        short = ['D:/tools/npm/claude.cmd', '-p', '--json-schema', '{}']
+        self.assertEqual(check_command_line(short, windows=True), short)
+
     def test_prompt_split_keeps_exact_text_and_stable_system(self):
         prompt = ('INSTRUCTIONS\n'
                   'PREPARATION DOCUMENTS\n'

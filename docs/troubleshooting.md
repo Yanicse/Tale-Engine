@@ -10,6 +10,7 @@ Start with `novel doctor` and `novel validate`.
 | `Fix the errors above first` | `novel campaign new` found errors in the pack; `novel validate x` lists them |
 | `Campaign already exists` | delete the campaign folder yourself if you want a new one; the tool never overwrites a save |
 | `Claude CLI not found` / `Codex CLI not found` | install it, or give the path with `--claude` / `--codex`; or use `--engine manual` |
+| `The Claude CLI found is a .cmd/.bat shim` | on Windows an npm-installed `claude.cmd` cannot take the answer contract on its command line (8191 characters). Give the native `claude.exe` with `--claude`, or use another engine |
 | `ANTHROPIC_API_KEY is not set` | export it, or pick another engine |
 | `PDF extraction needs the optional dependency` | `pip install "tale-engine[pdf]"` |
 | `Generation interrupted or invalid; input kept` | the action is saved and pending. Fix the cause, then `novel play --resume --retry` |

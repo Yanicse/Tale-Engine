@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 
 from .adapters import ModelUnavailable
@@ -22,6 +23,20 @@ DEFAULT_SYSTEM = 'You are the narrator of the interactive novel. Answer only wit
 # must use its own connection, not the host's private channel.
 HOST_PREFIXES = ('CLAUDECODE', 'CLAUDE_CODE_', 'CLAUDE_AGENT_SDK', 'CLAUDE_PID', 'CLAUDE_EFFORT',
                  'CLAUDE_PREVIEW', 'AI_AGENT', 'BAGGAGE')
+
+
+BATCH_LINE_LIMIT = 8191
+
+
+def check_command_line(command, windows=None):
+    """A .cmd/.bat shim (npm install) runs through cmd.exe, which refuses more than 8191 characters; the answer
+    contract travels on the command line, so say so instead of failing with an unreadable system message."""
+    windows = os.name == 'nt' if windows is None else windows
+    if windows and str(command[0]).lower().endswith(('.cmd', '.bat')) and len(subprocess.list2cmdline(command)) > BATCH_LINE_LIMIT - 100:
+        raise ModelUnavailable('The Claude CLI found is a .cmd/.bat shim and Windows limits its command line to 8191 '
+                               'characters, which this answer contract exceeds. Give the native claude.exe with '
+                               '--claude, or use another engine (codex, api, manual).')
+    return command
 
 
 def find_claude():
@@ -69,10 +84,10 @@ class ClaudeNarrator(CodexNarrator):
         if not self.executable:
             raise ModelUnavailable('Claude CLI not found; install Claude Code or give claude.exe with --claude.')
         # No tool, MCP server, skill or kept session: a single structured answer.
-        return [self.executable, '-p', '--model', self.model, '--effort', self.effort,
+        return check_command_line([self.executable, '-p', '--model', self.model, '--effort', self.effort,
                 '--system-prompt-file', str(system_path), '--tools', '', '--strict-mcp-config',
                 '--disable-slash-commands', '--no-session-persistence', '--setting-sources', '',
-                '--output-format', 'json', '--json-schema', schema_text]
+                '--output-format', 'json', '--json-schema', schema_text])
 
     def invocation(self, prompt, wire_schema, folder, base):
         system, message = split_prompt(prompt)
