@@ -20,7 +20,7 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `novel unblock [--campaign P] [--apply]` | previews, then with `--apply` grants one more generation (backed up first) to a pending action whose budget of two generations is spent |
 | `novel configure [--creations on\|off] [--bounded-recovery on\|off] [--canon-selection on\|off] [--campaign P] [--apply]` | previews, then switches the creations register, the bounded automatic recovery or the canon selection of an existing campaign (backed up first); `--canon-selection on` gives a campaign created before it was the default the sourced claims that match each turn |
 | `novel diagnose <campaign.sqlite> [--request ID]` | read-only view of how the context of one attempt was selected (what memory was kept or left out, and why); never changes the save |
-| `novel routine ...` | handles periods of several days delegated to the narrator, see `novel routine --help` |
+| `novel routine ...` | handles periods of several days delegated to the narrator, see [Routines](routines.md) |
 
 ## `novel play`
 

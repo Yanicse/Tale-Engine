@@ -67,7 +67,7 @@ See [Reader page](reader.md) for how these are served.
 ## World files (optional)
 
 Every campaign keeps a register of **creations** (details the narrator invents: NPCs, places, quests, reputations) and a
-periodic **planner** that summarizes the story every 20 exchanges. A pack can add a world that moves on its own:
+periodic **planner** that summarizes the story every 20 narrator replies. A pack can add a world that moves on its own:
 
 | File | Content |
 | --- | --- |

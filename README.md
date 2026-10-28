@@ -20,7 +20,7 @@ in SQLite after every turn, so you can stop, resume and read it back.
 - **Secrets the narrator keeps.** Every fact and event names who may know it (narrator, player, an NPC). The reading page
   shows the player's view only.
 - **A world that keeps moving.** Tracked NPCs pursue their goals off screen, deadlines run on a fictional clock, a
-  planner summarizes the story every 20 exchanges, and a pack can add faction clocks and arcs that the planner reviews.
+  planner summarizes the story every 20 narrator replies, and a pack can add faction clocks and arcs that the planner reviews.
 - **Invented details are kept, as inventions.** NPCs, places and quests the narrator creates go to a register; an offer
   or a testimony is never a fact, and a quest is accepted only by an explicit decision of the player.
 - **The program keeps the truth.** A model's answer is validated against a schema and the rules, then applied in one
