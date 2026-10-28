@@ -77,6 +77,9 @@ Packs can configure optional charge resources and persistent cooldowns:
 
 This is an example `rules` block. A charge period is `combat` or `night`. Night charges require `solar_schedule` and
 return only when a fictional sunset is crossed. Combat charges return on a real `combat_start`, never a reload.
+A charge's optional `phase` restricts its consumption to `day` or `night` and requires `solar_schedule`.
+Omitting the phase, or choosing `always`, permits consumption at any time without a solar schedule.
+This applies to ability, resurrection and death-prevention charges; a refused use keeps the whole turn unchanged.
 A cooldown stores an absolute fictional deadline. Charge and cooldown resources must have distinct ids and cannot
 replace health, mana or money. `novel validate` checks the configuration before campaign creation.
 

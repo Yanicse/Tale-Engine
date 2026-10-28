@@ -28,6 +28,15 @@ def _consumer(rules,operation):
     return next((resource for resource,charge in charges(rules).items() if charge.get('consumed_by')==operation),None)
 
 
+def _require_charge_phase(charge, at, rules):
+    phase = charge.get('phase', 'always')
+    if phase == 'always':
+        return
+    schedule = rules.get('solar_schedule')
+    if not schedule or solar_form(at // 60, schedule) != phase:
+        raise ValueError('Charge unavailable in this form: ' + phase)
+
+
 def operation_schema():
     fields={
         'kind':{'type':'string','enum':['ability','damage','elapsed','heal','restore_mana','combat_start','combat_end','resurrection','prevent_death']},
@@ -133,6 +142,7 @@ def materialize(state,event,config):
                 raise ValueError('Insufficient mana.')
             for charge,declared in charges(rules).items():
                 if declared.get('ability')==key and declared.get('consumed_by','ability')=='ability':
+                    _require_charge_phase(declared, at, rules)
                     if not resources.get(charge):raise ValueError('Charge unavailable: '+key)
                     resources[charge]-=1
             resources['player_mana']-=cost
@@ -167,8 +177,7 @@ def materialize(state,event,config):
             if resources['player_hp']!=0:raise ValueError('Resurrection without a death.')
             charge=_consumer(rules,'resurrection')
             if charge is None or not resources.get(charge):raise ValueError('Resurrection unavailable or already consumed.')
-            phase=charges(rules)[charge].get('phase')
-            if phase and solar_form(at//60,rules['solar_schedule'])!=phase:raise ValueError('Resurrection outside its form: '+phase)
+            _require_charge_phase(charges(rules)[charge], at, rules)
             resources[charge]-=1
             percent = rules.get('resurrection_hp_percent')
             if type(percent) is not int or not 1 <= percent <= 100:
@@ -180,6 +189,7 @@ def materialize(state,event,config):
                 not resources.get('player_combat_active') or
                 at>=resources.get('player_prevention_until_second',0)):
                 raise ValueError('Lethal prevention unavailable or expired.')
+            _require_charge_phase(charges(rules)[charge], at, rules)
             if type(op['amount']) is not int or not 0<resources['player_hp']<=op['amount']<=resources.get('player_death_refusal_capacity_hp',0):
                 raise ValueError('Non-lethal blow or exceeding the confirmed neutralization capacity.')
             spec=next(spec for spec in rules['abilities'].values() if spec.get('effect')=='death_prevention')
