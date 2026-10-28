@@ -207,7 +207,7 @@ class RoutineTests(unittest.TestCase):
         arc = work['packet']['chronicle']['arcs_registry']['arcs'][0]
         response['chronicle']['arcs'] = [{'id': 'route', 'expected_revision': 0, 'status': 'in_progress',
             'step': 1, 'motif': 'progression', 'reason': 'The bandits gather their means on site.',
-            'fact_world': 'The bandits scout the road and prepare a roadblock.',
+            'world_fact': 'The bandits scout the road and prepare a roadblock.',
             'next_review': 3960, 'references': [arc['reference'], 'chronology:raid']}]
         self.r.apply(response)
         self.assertEqual(self.work()['bound'], 2520)
@@ -417,7 +417,7 @@ class RoutineTests(unittest.TestCase):
         arc = work['packet']['chronicle']['arcs_registry']['arcs'][0]
         response['chronicle']['arcs'] = [{'id': 'route', 'expected_revision': 0, 'status': 'in_progress',
             'step': 1, 'motif': 'progression', 'reason': 'The bandits gather their means on site.',
-            'fact_world': 'The bandits scout the road and prepare a roadblock.',
+            'world_fact': 'The bandits scout the road and prepare a roadblock.',
             'next_review': 1080 + 5 * 1440, 'references': [arc['reference'], 'chronology:raid']}]
         self.assertEqual(r.apply(response)['status'], 'recorded_world')
         self.assertEqual(r.prepare()['end_minute_step'], 1080 + 5 * 1440)

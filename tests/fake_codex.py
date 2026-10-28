@@ -61,7 +61,7 @@ def main():
                 now = packet['current_state']['world_minute']
                 response['chronicle']['arcs'] = [{'id':a['id'],'expected_revision':a['revision'],'status':'in_progress',
                     'step':min(a['step']+1,len(a['steps'])),'motif':'progression',
-                    'reason':'The arc moves forward off screen.','fact_world':'Off screen, the situation develops.',
+                    'reason':'The arc moves forward off screen.','world_fact':'Off screen, the situation develops.',
                     'next_review':now+1440,'references':[a['reference']]}
                     for a in registry['arcs'] if a['id'] in registry['to_process']]
     else:

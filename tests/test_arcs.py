@@ -37,7 +37,7 @@ class ArcTests(unittest.TestCase):
         item = {'id': arc['id'], 'expected_revision': arc['revision'], 'status': 'in_progress',
                 'step': arc['step'] + 1, 'motif': 'progression',
                 'reason': 'The bandits have their means and gather.',
-                'fact_world': "The bandits gather in the hills, away from the traveler's presence.",
+                'world_fact': "The bandits gather in the hills, away from the traveler's presence.",
                 'next_review': packet['current_state']['world_minute'] + REVIEW_DELAY,
                 'references': [arc['reference'], 'chronology:raid']}
         item.update(fields)
@@ -65,6 +65,17 @@ class ArcTests(unittest.TestCase):
             changed = deepcopy(PLAN); changed['arcs'][0]['end_days'] = 6
             with self.assertRaisesRegex(ValueError, 'different'):
                 ArcRegistry(con).install(changed, {'raid'}, report['world_minute'])
+
+    def test_an_arc_saved_with_the_old_status_name_reads_as_to_prepare(self):
+        self.chronicle()
+        install(self.c, PLAN)
+        with self.c.transaction() as con:
+            row = con.execute('SELECT id,payload FROM chronicle_arcs').fetchone()
+            payload = json.loads(row['payload'])
+            self.assertEqual(payload['status'], 'to_prepare')
+            payload['status'] = 'a_prepare'
+            con.execute('UPDATE chronicle_arcs SET payload=? WHERE id=?', (json.dumps(payload), row['id']))
+            self.assertEqual({a['status'] for a in ArcRegistry(con).entries()}, {'to_prepare'})
 
     def test_incomplete_coverage_cycle_and_unknown_nodes_refused(self):
         with self.assertRaisesRegex(ValueError, 'without follow-up'):
@@ -112,8 +123,8 @@ class ArcTests(unittest.TestCase):
 
     def test_unknown_date_is_not_a_valid_obstacle(self):
         self.register()
-        self.planner.transform = lambda p, r: self.response(p, r, step=0, status='a_prepare',
-            motif='obstacle', fact_world=None, reason='The precise date is unknown in the novel.')
+        self.planner.transform = lambda p, r: self.response(p, r, step=0, status='to_prepare',
+            motif='obstacle', world_fact=None, reason='The precise date is unknown in the novel.')
         with self.assertRaisesRegex(ModelUnavailable, 'unknown date'):
             self.loop.run_turn('Hello.')
 
@@ -171,7 +182,7 @@ class ArcTests(unittest.TestCase):
         state = self.c.state()
         self.c.apply(proposal(state, 'Attendre.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
         self.planner.transform = lambda p, r: self.response(p, r, status='achieved', next_review=None,
-            fact_world='The bandits close the road and ransom the convoys.')
+            world_fact='The bandits close the road and ransom the convoys.')
         self.assertEqual(self.loop.run_turn('Hello.')['status'], 'recorded')
         calls = self.planner.calls
         self.loop.run_turn('One more detail.')
@@ -212,8 +223,8 @@ class ArcTests(unittest.TestCase):
         self.register()
         proof = self.add_evidence()
         def obstacle(p, r):
-            return self.response(p, r, status='a_prepare', step=0, motif='obstacle',
-                fact_world=None, reason='The pass is physically blocked by the observed rockslide.',
+            return self.response(p, r, status='to_prepare', step=0, motif='obstacle',
+                world_fact=None, reason='The pass is physically blocked by the observed rockslide.',
                 references=[proof])
         self.planner.transform = obstacle
         for i in range(2):
@@ -232,7 +243,7 @@ class ArcTests(unittest.TestCase):
         proof = self.add_evidence()
         self.planner.transform = lambda p, r: self.response(p, r, status='diverted', step=0,
             motif='divergence', next_review=None, references=[proof],
-            fact_world='The bandits abandon the blocked pass and move their activity to another valley.')
+            world_fact='The bandits abandon the blocked pass and move their activity to another valley.')
         self.assertEqual(self.loop.run_turn('Hello.')['status'], 'recorded')
         with self.c.transaction() as con:
             self.assertEqual(ArcRegistry(con).entries()[0]['status'], 'diverted')
@@ -294,7 +305,7 @@ class ArcTests(unittest.TestCase):
             self.response(p, r)
             a = p['chronicle']['arcs_registry']['arcs'][1]
             r['chronicle']['arcs'].append({**r['chronicle']['arcs'][0], 'id': a['id'],
-                'status': 'a_prepare', 'step': 0, 'motif': 'dependency', 'fact_world': None,
+                'status': 'to_prepare', 'step': 0, 'motif': 'dependency', 'world_fact': None,
                 'references': [a['reference']]})
             r['chronicle']['clocks'] = [fixtures.advance(p, status='burst')]
             r['chronicle']['manifestations'] = [fixtures.sign(p, kind='event')]

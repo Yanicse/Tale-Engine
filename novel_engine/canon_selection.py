@@ -29,16 +29,16 @@ TOPICS={
     'promotion':('promotion','ranks','guild'),
     'character':('karma','alignment','loyalty','motivation'),
     'personality':('karma','alignment','loyalty','motivation'),
-    'abilities':('ability','level','sort','sheet'),
-    'ability':('ability','level','sort','sheet'),
-    'magic':('magic','sort','effect'),
+    'abilities':('ability','level','spell','sheet'),
+    'ability':('ability','level','spell','sheet'),
+    'magic':('magic','spell','effect'),
     'escort':('escort','cart','transport'),
     'cart':('cart','transport'),
     'grain':('grain','merchant'),
     'economy':('currency','trade','price'),
-    'currency':('currency','trade','pieces'),
+    'currency':('currency','trade','coins'),
     'geography':('geography','forest','village')}
-for _topic in ('reputation','fame','famous','famous','known','known'):
+for _topic in ('reputation','fame','famous','known'):
     TOPICS[_topic]=('reputation','fame','famous','achievements','adventurers')
 INSTRUCTION = load_prompt('canon_selection.instruction')
 

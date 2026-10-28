@@ -12,7 +12,9 @@ REVIEW_DELAY = 2 * DAY
 LONG_REVIEW_DELAY = 7 * DAY
 MAX_OBSTACLES = 2
 TERMINAL = {'achieved', 'prevented', 'diverted'}
-STATUSES = ['a_prepare', 'in_progress', 'achieved', 'prevented', 'diverted']
+STATUSES = ['to_prepare', 'in_progress', 'achieved', 'prevented', 'diverted']
+# Saves made before the rename keep their arcs readable.
+OLD_STATUSES = {'a_prepare': 'to_prepare'}
 
 
 def decision_schema(refs):
@@ -23,7 +25,7 @@ def decision_schema(refs):
         'step': {'type': 'integer', 'minimum': 0, 'maximum': 20},
         'motif': {'type': 'string', 'enum': ['progression', 'obstacle', 'dependency', 'divergence']},
         'reason': {'type': 'string', 'minLength': 10, 'maxLength': 600},
-        'fact_world': {'type': ['string', 'null'], 'minLength': 10, 'maxLength': 900},
+        'world_fact': {'type': ['string', 'null'], 'minLength': 10, 'maxLength': 900},
         'next_review': {'type': ['integer', 'null'], 'minimum': 0},
         'references': {'type': 'array', 'minItems': 1, 'maxItems': 8,
                        'items': {'type': 'string', 'enum': sorted(refs) or ['no_source_available']}},
@@ -95,7 +97,7 @@ class ArcRegistry:
         self.con.execute('CREATE TABLE chronicle_arc_facts (reference TEXT PRIMARY KEY,arc_id TEXT NOT NULL,world_minute INTEGER NOT NULL,payload TEXT NOT NULL)')
         self.con.execute('INSERT INTO chronicle_arc_meta VALUES (1,?,?)', (signature, minute))
         for a in definitions.values():
-            item = {**a, 'status': 'a_prepare', 'step': 0, 'obstacle_postponements': 0,
+            item = {**a, 'status': 'to_prepare', 'step': 0, 'obstacle_postponements': 0,
                     'opening_minute': minute + a['opening_days'] * DAY,
                     'end_minute': minute + a['end_days'] * DAY,
                     'next_review': minute + a['opening_days'] * DAY,
@@ -111,9 +113,12 @@ class ArcRegistry:
     def entries(self):
         if not self.exists():
             return []
-        return [{**json.loads(r['payload']), 'revision': r['revision'],
-                 'reference': 'arc:' + r['id'] + ':' + str(r['revision'])}
-                for r in self.con.execute('SELECT * FROM chronicle_arcs ORDER BY id')]
+        entries = [{**json.loads(r['payload']), 'revision': r['revision'],
+                    'reference': 'arc:' + r['id'] + ':' + str(r['revision'])}
+                   for r in self.con.execute('SELECT * FROM chronicle_arcs ORDER BY id')]
+        for entry in entries:
+            entry['status'] = OLD_STATUSES.get(entry['status'], entry['status'])
+        return entries
 
     def horizon(self, minute):
         dates = [a['next_review'] for a in self.entries() if a['status'] not in TERMINAL]
@@ -180,7 +185,7 @@ class ArcRegistry:
             if u['step'] > len(old['steps']):
                 raise ValueError('Non-existent arc milestone.')
             if u['motif'] == 'progression':
-                if deps or step != 1 or not u['fact_world'] or u['status'] not in ('in_progress', 'achieved'):
+                if deps or step != 1 or not u['world_fact'] or u['status'] not in ('in_progress', 'achieved'):
                     raise ValueError('Progress without a fact, without a milestone or before its dependencies.')
                 if (u['status'] == 'achieved') != (u['step'] == len(old['steps'])):
                     raise ValueError('The last milestone realizes the arc, the others keep it in progress.')
@@ -197,11 +202,11 @@ class ArcRegistry:
                     if not clock or clock['status'] not in ('burst', 'closed') or not manifested:
                         raise ValueError('Linked arc: wait for the effective resolution of the big event of its clock.')
             elif u['motif'] == 'dependency':
-                if not deps or step or terminal or u['fact_world'] or u['status'] != old['status']:
+                if not deps or step or terminal or u['world_fact'] or u['status'] != old['status']:
                     raise ValueError('Wait without a really open dependency.')
                 # The root must advance; the acyclic graph prevents a circular wait.
             elif u['motif'] == 'obstacle':
-                if step or terminal or u['fact_world'] or u['status'] != old['status']:
+                if step or terminal or u['world_fact'] or u['status'] != old['status']:
                     raise ValueError('Obstacle incompatible with a realization.')
                 reason = ''.join(c for c in unicodedata.normalize('NFKD', u['reason'].casefold()) if not unicodedata.combining(c))
                 if re.search(('date.{0,25}(unknown|uncertain|missing)|lack of '
@@ -213,9 +218,9 @@ class ArcRegistry:
                 elif old['obstacle_postponements'] >= MAX_OBSTACLES or not proofs.intersection(u['references']):
                     raise ValueError('Obstacle without campaign proof or postponements exhausted.')
             elif u['motif'] == 'divergence':
-                if u['status'] not in ('prevented', 'diverted') or step or not u['fact_world'] or not proofs.intersection(u['references']):
+                if u['status'] not in ('prevented', 'diverted') or step or not u['world_fact'] or not proofs.intersection(u['references']):
                     raise ValueError('Divergence without a campaign cause or a recorded consequence.')
-            if old['status'] == 'in_progress' and u['status'] == 'a_prepare':
+            if old['status'] == 'in_progress' and u['status'] == 'to_prepare':
                 raise ValueError('An engaged arc does not return to preparing.')
         for u in updates:
             old = known[u['id']]
@@ -227,9 +232,9 @@ class ArcRegistry:
             item['last_decision'] = u
             revision = old['revision'] + 1
             self._put(item, review_id, revision)
-            if u['fact_world']:
+            if u['world_fact']:
                 ref = 'arc_fact:' + old['id'] + ':' + str(revision)
                 fact = {'reference': ref, 'arc_id': old['id'], 'world_minute': minute,
-                        'description': u['fact_world'], 'references': u['references'],
+                        'description': u['world_fact'], 'references': u['references'],
                         'audience': ['narrator'], 'player_knowledge': False}
                 self.con.execute('INSERT INTO chronicle_arc_facts VALUES (?,?,?,?)', (ref, old['id'], minute, check_json(fact)))

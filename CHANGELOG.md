@@ -27,6 +27,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Leftover French and word-for-word wording is corrected in messages (validation errors, insufficient balance or stock,
   diagnostics, the reading server). The `--json` statuses `required_memory`, `stop_technique` and the planner status
   `non_required` are now `memory_required`, `technical_stop` and `not_required`. Passives show as `passive` in `--skills`.
+- The arc decision names `a_prepare` and `fact_world` are now `to_prepare` and `world_fact`; arcs saved with the old
+  status still read correctly. The canon selection looks for spells and coins instead of the French `sort` and `pieces`.
 - New feature wording is English. Existing saves are not converted to the new mana mode automatically.
 
 ## 0.1.0
