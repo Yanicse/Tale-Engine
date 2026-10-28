@@ -7,7 +7,7 @@ from .prompts import load as load_prompt
 
 INSTRUCTIONS = load_prompt('narrative_coherence.instructions')
 
-PUBLIC_RESOURCES = {'player_hp', 'player_hp_max'}
+PUBLIC_RESOURCES = {'player_hp', 'player_hp_max', 'player_mana', 'player_mana_max'}
 
 
 def public_resources(config):

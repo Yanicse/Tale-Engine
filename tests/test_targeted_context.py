@@ -60,7 +60,7 @@ class Fixture(unittest.TestCase):
         """New fictional campaign: five powers, ten objects, a full character configuration."""
         self.counter += 1
         state, config = initial_state('targeted'), configuration()
-        state['resources'].update(player_hp=100, player_hp_max=100, night_id=1, player_resurrections_left=1,
+        state['resources'].update(player_hp=100, player_hp_max=100, player_mana=100, player_mana_max=100, night_id=1, player_resurrections_left=1,
                                   player_domains_left=1, player_combat_id=0, player_combat_active=0,
                                   player_death_refusal_available=1, player_rampart_available=1)
         state['powers'] = {key: sheet(key) for key in POWERS}
@@ -542,17 +542,17 @@ class CalculatedConsequencesTests(reliability.MechanicFixture):
     def claim(self, kind, path, source='demo:initial_configuration'):
         return {'kind': kind, 'path': path, 'value_json': FINAL_STATE, 'source_reference': source}
 
-    def test_cost_and_regeneration_values_are_filled_after_calculation(self):
+    def test_mana_cost_is_filled_without_passive_recovery(self):
         result, original = self.apply_ops([self.operation()], instant(self.c.state()) + 3,
-                                          claims=[self.claim('damage', '/resources/player_hp')])
+                                          claims=[self.claim('mana', '/resources/player_mana')])
         self.assertEqual(result['status'], 'recorded', result)
-        self.assertEqual(json.loads(result['applied_events'][0]['public_consequences'][0]['value_json']), 4950)
+        self.assertEqual(json.loads(result['applied_events'][0]['public_consequences'][0]['value_json']), 4850)
         self.assertEqual(original['events'][0]['public_consequences'][0]['value_json'], FINAL_STATE)
         self.assertEqual(Campaign(self.path).apply(original), result)
-        self.assertEqual(self.c.state()['resources']['player_hp'], 4950)
+        self.assertEqual(self.c.state()['resources']['player_mana'], 4850)
 
-    def test_health_damage_is_computed_without_a_claimed_number(self):
-        result, _ = self.apply_ops([self.operation()], claims=[self.claim('damage', '/resources/player_hp')])
+    def test_mana_cost_is_computed_without_a_claimed_number(self):
+        result, _ = self.apply_ops([self.operation()], claims=[self.claim('mana', '/resources/player_mana')])
         self.assertEqual(result['status'], 'recorded', result)
         self.assertEqual(result['applied_events'][0]['public_consequences'][0]['value_json'], '4850')
 
@@ -597,14 +597,14 @@ class CalculatedConsequencesTests(reliability.MechanicFixture):
                 'description': 'Fictional cast.', 'causes': ['current_action'], 'conditions': [],
                 'changes': [], 'audience': ['narrator', 'player'], 'asset_operations': [],
                 'mechanical_operations': [{**self.operation(), 'source_reference': 'current_action'}],
-                'public_consequences': [self.claim('damage', '/resources/player_hp', 'current_event:0')]}]}
+                'public_consequences': [self.claim('mana', '/resources/player_mana', 'current_event:0')]}]}
         loop = self.loop()
         with patch.object(loop, '_proposal', side_effect=OSError('Local crash')):
             with self.assertRaises(OSError):
                 loop.run_turn('I cast a bolt.')
         result = self.loop().run_turn(resume=True)
         self.assertEqual(result['status'], 'recorded', result)
-        self.assertEqual(self.c.state()['resources']['player_hp'], 4850)
+        self.assertEqual(self.c.state()['resources']['player_mana'], 4850)
         self.assertEqual(self.n.calls, 1)
 
 

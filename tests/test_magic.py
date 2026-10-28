@@ -12,7 +12,7 @@ from novel_engine.demo import initial_state,configuration
 from novel_engine.magic import spell_cost,cost_table
 from novel_engine.narrative import NarrativeLoop
 
-# Fictional rule set: full-power cost per spell, as a percentage of the maximum HP.
+# Fictional rule set: full-power cost per spell, as a percentage of the maximum mana.
 RULES={'default_output_percent':10,
        'full_power_cost_percent':{'bolt':15,'ward':10,'drain':15,'brand':35,'swarm':40,
                                   'calm':0,'whisper':0,'vision':0},
@@ -53,18 +53,19 @@ class SpellCostTests(unittest.TestCase):
 
     def test_cost_table_lists_every_spell_for_each_standard_power(self):
         table=cost_table(100,RULES)
-        self.assertEqual((table['hp_max'],table['default_power_pct']),(100,10))
-        self.assertEqual(set(table['hp_cost_per_power_pct']),{'10','25','50','100'})
-        for costs in table['hp_cost_per_power_pct'].values():
+        self.assertEqual((table['mana_max'],table['default_power_pct']),(100,10))
+        self.assertEqual(set(table['mana_cost_per_power_pct']),{'10','25','50','100'})
+        for costs in table['mana_cost_per_power_pct'].values():
             self.assertEqual(set(costs),set(RULES['full_power_cost_percent']))
-        self.assertEqual(table['hp_cost_per_power_pct']['100']['brand'],35)
+        self.assertEqual(table['mana_cost_per_power_pct']['100']['brand'],35)
         # A default power outside the standard list is added to the table.
-        self.assertIn('5',cost_table(100,{**RULES,'default_output_percent':5})['hp_cost_per_power_pct'])
+        self.assertIn('5',cost_table(100,{**RULES,'default_output_percent':5})['mana_cost_per_power_pct'])
 
-    def test_wounded_character_prompt_uses_maximum_health(self):
+    def test_wounded_character_prompt_uses_maximum_mana(self):
         state=initial_state()
         state['resources']['player_hp']=20
         state['resources']['player_hp_max']=100
+        state['resources'].update(player_mana=70, player_mana_max=100)
         config=configuration()
         config['spell_cost_rules']=RULES
         base=ROOT/'.tmp-tests';base.mkdir(exist_ok=True)
@@ -75,9 +76,9 @@ class SpellCostTests(unittest.TestCase):
             packet=json.loads(NarrativeLoop(c,None).build_prompt(prepared).split('\nCURRENT TURN\n')[1])
             self.assertEqual(packet['campaign_rules']['spell_cost_rules']['default_output_percent'],10)
             table=packet['computed_spell_costs']
-            self.assertEqual(table['hp_max'],100)
-            self.assertEqual(table['hp_cost_per_power_pct']['100']['bolt'],15)
-            self.assertEqual(table['hp_cost_per_power_pct']['10']['bolt'],2)
+            self.assertEqual(table['mana_max'],100)
+            self.assertEqual(table['mana_cost_per_power_pct']['100']['bolt'],15)
+            self.assertEqual(table['mana_cost_per_power_pct']['10']['bolt'],2)
             self.assertEqual(c.state()['resources']['player_hp'],20)
 
 

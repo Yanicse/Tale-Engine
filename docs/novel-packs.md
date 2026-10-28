@@ -40,7 +40,8 @@ in the engine or the page knows a novel by name.
 | --- | --- |
 | `name` | the character's name (`{name}` in the page texts) |
 | `hp_max` | maximum hit points, a whole number from 1 (default 100) |
-| `description` | a short description |
+| `mana_max` | maximum mana, a non-negative integer (default 100); use 0 for a character without magic |
+| `description` | a short description, saved with the campaign and sent to the narrator |
 | `rules` | optional passives, abilities, costs and limits: see [Character sheets](character-sheets.md) |
 
 ## theme.json

@@ -4,6 +4,7 @@ pack.clean_* keep the campaign safe by dropping what is invalid; this module say
 author can fix it. Errors stop `novel campaign new`; warnings do not.
 """
 import json
+import math
 import re
 from pathlib import Path
 
@@ -12,11 +13,14 @@ from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 
 NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening'}
 THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock'}
-SHEET_KEYS = {'name', 'hp_max', 'description', 'rules'}
-RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'costs'}
-NEEDS_VITALITY = {'charges': 'charges that refill per night or per combat', 'regeneration': 'regeneration by form',
-                  'solar_schedule': 'a day and night schedule', 'version': 'the vitality mechanics version'}
-ABILITY_KEYS = {'label', 'phase', 'free', 'description', 'limits'}
+SHEET_KEYS = {'name', 'hp_max', 'mana_max', 'description', 'rules'}
+RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'costs', 'charges', 'solar_schedule',
+             'resurrection_hp_percent', 'always_complete_sheets'}
+ABILITY_KEYS = {'label', 'phase', 'free', 'description', 'limits', 'cooldown', 'catalogue',
+                'parameters', 'scaling', 'effect'}
+RESERVED_RESOURCES = {'player_hp', 'player_hp_max', 'player_mana', 'player_mana_max', 'night_id',
+                      'player_combat_id', 'player_combat_active', 'player_prevention_until_second',
+                      'player_death_refusal_capacity_hp'}
 COST_KEYS = {'default_output_percent', 'free_output_up_to_percent', 'full_power_cost_percent'}
 IDENT = re.compile(r'^[a-z0-9_]{1,40}$')
 WORLD_RULES_MAX = 30
@@ -60,7 +64,7 @@ def unknown_keys(data, allowed, name, report):
 
 
 def is_number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    return type(value) in (int, float) and math.isfinite(value)
 
 
 def check_novel(novel, report):
@@ -201,8 +205,7 @@ def check_ability(kind, key, spec, report):
         report.error(name, f'{where} must be an object')
         return
     for extra in sorted(set(spec) - ABILITY_KEYS):
-        why = 'cooldowns need the vitality mechanics, not available to packs yet' if extra == 'cooldown' else 'unknown key'
-        report.error(name, f"{where}.{extra}: {why}")
+        report.error(name, f"{where}.{extra}: unknown key")
     if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
         report.error(name, f'{where}.label must be a non-empty text')
     if 'phase' in spec and not isinstance(spec['phase'], str):
@@ -212,6 +215,36 @@ def check_ability(kind, key, spec, report):
             report.error(name, f'{where}.{key} must be a non-empty text')
     if 'free' in spec and not isinstance(spec['free'], bool):
         report.error(name, f'{where}.free must be true or false')
+    if spec.get('phase', 'always') not in ('always', 'day', 'night'):
+        report.error(name, f'{where}.phase must be always, day or night')
+    if 'cooldown' in spec:
+        cooldown = spec['cooldown']
+        if (not isinstance(cooldown, dict) or set(cooldown) != {'resource', 'seconds'}
+                or not isinstance(cooldown.get('resource'), str) or not IDENT.fullmatch(cooldown['resource'])
+                or cooldown['resource'] in RESERVED_RESOURCES
+                or type(cooldown.get('seconds')) is not int or cooldown['seconds'] < 1):
+            report.error(name, f'{where}.cooldown needs a non-reserved resource and positive integer seconds')
+    if 'catalogue' in spec:
+        cat = spec['catalogue']
+        if (not isinstance(cat, dict) or set(cat) - {'aliases', 'offensive', 'bound'}
+                or not isinstance(cat.get('aliases', []), list)
+                or not all(isinstance(alias, str) and alias.strip() for alias in cat.get('aliases', []))
+                or any(type(cat[k]) is not bool for k in ('offensive', 'bound') if k in cat)):
+            report.error(name, f'{where}.catalogue needs text aliases and boolean flags')
+    parameters = spec.get('parameters', {})
+    scaling = spec.get('scaling', {})
+    if not isinstance(parameters, dict) or not all(is_number(v) for v in parameters.values()):
+        report.error(name, f'{where}.parameters must map names to numbers')
+    if (not isinstance(scaling, dict) or not isinstance(parameters, dict)
+            or any(k not in parameters or v not in ('linear', 'multiplier', 'count') for k, v in scaling.items())):
+        report.error(name, f'{where}.scaling must name a parameter and linear, multiplier or count')
+    if 'effect' in spec:
+        required = {'duration_seconds', 'lethal_prevention_capacity_hp_max_percent', 'survival_hp_max_percent'}
+        if (spec['effect'] != 'death_prevention' or not isinstance(parameters, dict)
+                or not required <= set(parameters)
+                or not all(is_number(parameters[k]) and parameters[k] > 0 for k in required)
+                or any(parameters[k] > 100 for k in required - {'duration_seconds'})):
+            report.error(name, f'{where}.effect needs death_prevention and valid duration/capacity/survival parameters')
 
 
 def check_costs(costs, abilities, report):
@@ -221,7 +254,7 @@ def check_costs(costs, abilities, report):
         return
     for key in sorted(set(costs) - COST_KEYS):
         report.error(name, f'rules.costs.{key}: unknown key (use: {", ".join(sorted(COST_KEYS))})')
-    default = costs.get('default_output_percent', 10)
+    default = costs.get('default_output_percent', 100)
     if not is_number(default) or not 0 < default <= 100:
         report.error(name, 'rules.costs.default_output_percent must be a number above 0 and at most 100')
     full = costs.get('full_power_cost_percent')
@@ -250,6 +283,8 @@ def check_sheet(sheet, report):
     if not isinstance(sheet.get('name'), str) or not sheet['name'].strip():
         report.warn(name, "no 'name': the character is called Hero")
     hp = sheet.get('hp_max', 100)
+    if type(sheet.get('mana_max', 100)) is not int or sheet.get('mana_max', 100) < 0:
+        report.error(name, "'mana_max' must be a non-negative integer")
     if 'description' in sheet and not isinstance(sheet['description'], str):
         report.error(name, "'description' must be a text")
     elif len(sheet.get('description', '')) > 2000:
@@ -261,9 +296,7 @@ def check_sheet(sheet, report):
         report.error(name, "'rules' must be an object")
         return
     for key in sorted(rules):
-        if key in NEEDS_VITALITY:
-            report.error(name, f"rules.{key}: {NEEDS_VITALITY[key]} need the vitality mechanics, which packs cannot enable yet")
-        elif key not in RULE_KEYS:
+        if key not in RULE_KEYS:
             report.error(name, f"rules.{key}: unknown rule (use: {', '.join(sorted(RULE_KEYS))})")
     abilities = {}
     for kind in ('passives', 'abilities'):
@@ -280,8 +313,71 @@ def check_sheet(sheet, report):
         report.error(name, 'rules.forbidden_resources must be a list of resource names')
     if 'costs' in rules:
         check_costs(rules['costs'], abilities, report)
-    elif abilities and not any(isinstance(spec, dict) and spec.get('free') for spec in abilities.values()):
-        report.warn(name, 'abilities without rules.costs cost nothing: the narrator will not charge hit points for them')
+    costs = rules.get('costs') if isinstance(rules.get('costs'), dict) else {}
+    full = costs.get('full_power_cost_percent') if isinstance(costs.get('full_power_cost_percent'), dict) else {}
+    for key, spec in abilities.items():
+        if isinstance(spec, dict) and key not in full and spec.get('free') is not True:
+            report.error(name, f'rules.abilities.{key}: declare a mana cost or free: true')
+    if sheet.get('mana_max', 100) == 0 and any(is_number(v) and v > 0 for v in full.values()):
+        report.error(name, 'paid abilities require mana_max above zero')
+    check_charge_rules(rules, abilities, report)
+
+
+def check_charge_rules(rules, abilities, report):
+    name = 'character.json'
+    schedule = rules.get('solar_schedule')
+    if schedule is not None:
+        if (not isinstance(schedule, dict) or set(schedule) != {'first_sunrise_minute', 'first_sunset_minute'}
+                or any(type(v) is not int for v in schedule.values())
+                or not 0 <= schedule['first_sunrise_minute'] < schedule['first_sunset_minute'] < 1440):
+            report.error(name, 'rules.solar_schedule needs sunrise < sunset within one 1440-minute day')
+    group = rules.get('charges', {})
+    if not isinstance(group, dict):
+        report.error(name, 'rules.charges must be an object of resource -> charge')
+        group = {}
+    seen = set(RESERVED_RESOURCES)
+    consumers = set()
+    for key, spec in group.items():
+        where = f'rules.charges.{key}'
+        if not IDENT.fullmatch(key) or key in seen:
+            report.error(name, f'{where}: invalid or reserved resource')
+        seen.add(key)
+        if (not isinstance(spec, dict) or set(spec) - {'period', 'max', 'ability', 'consumed_by', 'phase'}
+                or spec.get('period') not in ('night', 'combat') or type(spec.get('max', 1)) is not int
+                or spec.get('max', 1) < 1 or spec.get('phase', 'always') not in ('always', 'day', 'night')):
+            report.error(name, f'{where}: needs period night/combat and a positive max')
+            continue
+        if 'ability' in spec and (not isinstance(spec['ability'], str) or spec['ability'] not in abilities):
+            report.error(name, f'{where}.ability does not exist')
+        consumer = spec.get('consumed_by', 'ability')
+        if consumer not in ('ability', 'resurrection', 'prevent_death'):
+            report.error(name, f'{where}.consumed_by is unknown')
+            continue
+        if consumer == 'ability' and 'ability' not in spec:
+            report.error(name, f'{where} needs an ability')
+        if consumer != 'ability':
+            if consumer in consumers:
+                report.error(name, f'{where}: duplicate consumer {consumer}')
+            consumers.add(consumer)
+        if (spec['period'] == 'night' or spec.get('phase') in ('day', 'night')) and schedule is None:
+            report.error(name, f'{where} requires solar_schedule')
+    for key, spec in abilities.items():
+        if not isinstance(spec, dict):
+            continue
+        if spec.get('phase') in ('day', 'night') and schedule is None:
+            report.error(name, f'rules.abilities.{key}.phase requires solar_schedule')
+        cooldown = spec.get('cooldown')
+        if isinstance(cooldown, dict) and isinstance(cooldown.get('resource'), str):
+            resource = cooldown['resource']
+            if resource in seen:
+                report.error(name, f'rules.abilities.{key}.cooldown: resource is already used')
+            seen.add(resource)
+    if 'resurrection' in consumers and (type(rules.get('resurrection_hp_percent')) is not int
+                                       or not 1 <= rules['resurrection_hp_percent'] <= 100):
+        report.error(name, 'rules.resurrection_hp_percent must explicitly set a percentage from 1 to 100')
+    sheets = rules.get('always_complete_sheets', [])
+    if not isinstance(sheets, list) or any(not isinstance(key, str) or key not in abilities for key in sheets):
+        report.error(name, 'rules.always_complete_sheets must list existing ability ids')
 
 
 def check_pack(pack_dir):
@@ -302,6 +398,18 @@ def check_pack(pack_dir):
         report.warn('character.json', 'missing: run `novel character new` (the character is called Hero with 100 HP)')
     if sheet is not None:
         check_sheet(sheet, report)
+    if report.ok and novel is not None and sheet is not None:
+        from .character import charge_resources
+        rules = sheet.get('rules', {})
+        units = set(novel.get('currencies', {})) | set(novel.get('currency_rates', {}))
+        for table in novel.get('currency_rates', {}).values():
+            units.update(table)
+        currency_resources = {'player_' + key for key in units}
+        protected = RESERVED_RESOURCES | charge_resources(rules)
+        for key in sorted(currency_resources & protected):
+            report.error('novel.json', f'currency resource collides with mechanics: {key}')
+        for key in sorted(set(rules.get('forbidden_resources', [])) & (protected | currency_resources)):
+            report.error('character.json', f'forbidden resource is required by the campaign: {key}')
     if not any((pack_dir / 'text').glob('v*.jsonl')):
         report.warn('text/', 'no ingested book yet: run `novel ingest`')
     if not (pack_dir / 'canon.sqlite').is_file():

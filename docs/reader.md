@@ -1,5 +1,7 @@
 # Reader page
 
+The abilities tab shows separate hit point and mana bars, mana costs, charges and cooldown availability.
+
 `novel read` serves one local page on `127.0.0.1` (port 8765 by default, `--port` to change). It binds only to your
 machine, loads no external resource (fonts and icons are bundled) and shows only what the player character may know.
 

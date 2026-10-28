@@ -6,7 +6,7 @@ from .campaign import pointer
 from .character import charge_resources
 
 FINAL_STATE = '@final_state'
-CALCULATED_KINDS = {'arrival', 'acquisition', 'payment', 'damage', 'healing', 'charge'}
+CALCULATED_KINDS = {'arrival', 'acquisition', 'payment', 'damage', 'healing', 'charge', 'mana'}
 
 
 def materialize_public(after, events):
@@ -75,7 +75,7 @@ def validate_public(before,after,events,config,source_audience):
                 if kind=='payment' and not any(op['money_resource']==key and op['money_delta']
                                                for op in event.get('asset_operations', [])):
                     raise ValueError('Payment without an operation on this currency.')
-            if kind in ('damage','healing','charge'):
+            if kind in ('damage','healing','charge','mana'):
                 if not config.get('mechanics'):
                     raise ValueError('Public mechanical consequence without an installed mode.')
                 old=before['resources'].get(key)
@@ -85,6 +85,10 @@ def validate_public(before,after,events,config,source_audience):
                 if kind=='healing' and (key!='player_hp' or expected<=old):raise ValueError('Healing without a final HP increase.')
                 if kind=='charge' and (key not in charge_resources(config.get('character_rules')) or old==expected):
                     raise ValueError('Charge without a computed change.')
+                if kind=='mana' and (key != 'player_mana' or old == expected
+                                    or not any(op['kind'] in ('ability', 'restore_mana')
+                                               for e in events for op in e.get('mechanical_operations', []))):
+                    raise ValueError('Mana consequence without a computed change.')
             if kind=='project' and not path.startswith('/projects/'):raise ValueError('Project outside the persistent file.')
             if kind=='commitment' and not path.startswith('/commitments/'):raise ValueError('Commitment outside the persistent file.')
             if kind in ('recall','intention'):

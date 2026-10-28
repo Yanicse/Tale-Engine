@@ -251,7 +251,9 @@ class NarrativeLoop:
         if prepared.get('documentary_canon') is not None:
             packet['documentary_canon']=prepared['documentary_canon']
         if prepared['campaign_rules'].get('spell_cost_rules'):
-            packet['computed_spell_costs']=cost_table(state['resources']['player_hp_max'],
+            if 'player_mana_max' not in state['resources']:
+                raise ModelUnavailable('This save has no mana reserve. Create a new campaign from an updated pack; existing saves are not converted automatically.')
+            packet['computed_spell_costs']=cost_table(state['resources']['player_mana_max'],
                 prepared['campaign_rules']['spell_cost_rules'])
         if prepared['campaign_rules'].get('character_rules'):
             from .character import ability_context

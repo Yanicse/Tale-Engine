@@ -27,10 +27,10 @@ RULES = {
         'player_death_refusal_available': {'period': 'combat', 'ability': 'dawn_shield', 'consumed_by': 'prevent_death'},
     },
 }
-CONFIG = {'player_name': 'Mira', 'mechanics': {'version': 'vitality-1.0'}, 'character_rules': RULES,
+CONFIG = {'player_name': 'Mira', 'mechanics': {'version': 'mana-1.0'}, 'character_rules': RULES,
           'spell_cost_rules': {'default_output_percent': 10,
                                'full_power_cost_percent': {'dawn_shield': 0, 'bolt': 20, 'storm': 0}}}
-RESOURCES = {'player_hp': 100, 'player_hp_max': 100, 'night_id': 0, 'player_combat_id': 0, 'player_combat_active': 0,
+RESOURCES = {'player_hp': 100, 'player_hp_max': 100, 'player_mana': 100, 'player_mana_max': 100, 'night_id': 0, 'player_combat_id': 0, 'player_combat_active': 0,
              'player_storms_left': 0, 'player_resurrections_left': 0, 'player_death_refusal_available': 0,
              'player_lightning_available_at_second': 0}
 
@@ -85,7 +85,8 @@ class GenericMechanicsTest(unittest.TestCase):
     def test_cooldown_from_configuration(self):
         after = run(state(), 1000, [op('ability', 60000, 'bolt')])
         self.assertEqual(after['player_lightning_available_at_second'], 63600)
-        self.assertEqual(after['player_hp'], 98)
+        self.assertEqual(after['player_mana'], 98)
+        self.assertEqual(after['player_hp'], 100)
         with self.assertRaisesRegex(ValueError, 'cooldown'):
             run(state(player_lightning_available_at_second=63600), 1000, [op('ability', 60000, 'bolt')])
 
@@ -131,7 +132,7 @@ class GenericMechanicsTest(unittest.TestCase):
                                    'limits': 'none'} for key in ('lantern', 'bolt', 'dawn_shield')}
         result = abilities.packet(current, CONFIG)
         sheets = {item['id']: item for item in result['abilities']}
-        self.assertEqual((sheets['lantern']['name'], sheets['lantern']['default_hp_cost']), ('Watch lantern', 0))
+        self.assertEqual((sheets['lantern']['name'], sheets['lantern']['default_mana_cost']), ('Watch lantern', 0))
         self.assertEqual(sheets['dawn_shield']['charge'], {'left': 0, 'period': 'combat'})
         self.assertEqual(sheets['bolt']['cooldown']['seconds_left'], 0)
         self.assertTrue(abilities.render(result).startswith('Mira: 100/100 HP.'))

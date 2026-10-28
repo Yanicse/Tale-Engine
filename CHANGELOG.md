@@ -4,6 +4,13 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Magic uses a separate mana reserve and a mana bar. The engine spends mana atomically and refuses insufficient funds.
+- Packs enable mechanical operations, configurable charges and cooldowns. Active abilities require a cost or explicit free use.
+- Time no longer restores health. Recovery requires a sourced healing or mana recovery operation.
+- Pack inventories and currencies support acquisitions, purchases and sales with explicit starting balances.
+- Character descriptions reach the narrator; the bundled game kit verifier resolves its installed assets.
+- New feature wording is English. Existing saves are not converted to the new mana mode automatically.
+
 ## 0.1.0
 
 First public version.

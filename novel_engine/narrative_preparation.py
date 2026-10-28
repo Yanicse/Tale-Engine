@@ -90,7 +90,7 @@ def build_instructions(packet, modules, word_target):
                 ('public_consequences declares the important observable consequences, with kind, path and '
                  'value_json matching the FINAL state of the turn.'),
                 ('public_consequences declares kind, path, source_reference and value_json=@final_state '
-                 'for arrival, acquisition, payment, damage, healing and charge. The program fills in the '
+                 'for arrival, acquisition, payment, damage, healing, mana and charge. The program fills in the '
                  'final value after all computations. Do not anticipate these values. For knowledge, '
                  'commitment, project, recall and intention, value_json stays a declared JSON value.'))
             blocks.append(mechanical)

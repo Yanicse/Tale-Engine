@@ -2,9 +2,9 @@
 from decimal import Decimal,InvalidOperation,ROUND_CEILING
 
 
-def spell_cost(spell_id,max_hp,rules,output_percent=None):
-    if type(max_hp) is not int or max_hp<=0:
-        raise ValueError('Maximum HP must be a positive integer.')
+def spell_cost(spell_id,max_mana,rules,output_percent=None):
+    if type(max_mana) is not int or max_mana<0:
+        raise ValueError('Maximum mana must be a non-negative integer.')
     costs=rules['full_power_cost_percent']
     if spell_id not in costs:
         raise ValueError('Spell cost not confirmed: '+spell_id)
@@ -24,12 +24,14 @@ def spell_cost(spell_id,max_hp,rules,output_percent=None):
         raise ValueError('Invalid free-use threshold.')
     if output <= free_up_to:
         return 0
-    return int((Decimal(max_hp)*base*output/Decimal(10000)).to_integral_value(rounding=ROUND_CEILING))
+    if max_mana == 0 and base > 0:
+        raise ValueError('This spell needs a character with a mana reserve.')
+    return int((Decimal(max_mana)*base*output/Decimal(10000)).to_integral_value(rounding=ROUND_CEILING))
 
 
-def cost_table(max_hp,rules):
+def cost_table(max_mana,rules):
     outputs=sorted({rules['default_output_percent'],10,25,50,100})
-    return {'hp_max':max_hp,'default_power_pct':rules['default_output_percent'],
-        'hp_cost_per_power_pct':{str(output):{
-            spell:spell_cost(spell,max_hp,rules,output)
+    return {'mana_max':max_mana,'default_power_pct':rules['default_output_percent'],
+        'mana_cost_per_power_pct':{str(output):{
+            spell:spell_cost(spell,max_mana,rules,output)
             for spell in rules['full_power_cost_percent']} for output in outputs}}

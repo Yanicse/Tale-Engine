@@ -209,7 +209,7 @@ class GroupTests(Fixture):
         self.assertIsNone(packet['technical_diagnostic'])
 
 
-# Fictional rule set: no story-specific ability. Costs are percentages of the maximum HP.
+# Fictional rule set: no story-specific ability. Costs are percentages of the maximum mana.
 MECHANICS_RULES={
     'version':'fictional-1','hp_max':10000,'forbidden_resources':['player_hunger'],
     'solar_schedule':{'first_sunrise_minute':360,'first_sunset_minute':1080},
@@ -243,13 +243,13 @@ class MechanicFixture(Fixture):
         with self.c.transaction() as con:
             state=self.c._state(con);config=json.loads(con.execute('SELECT config FROM campaign').fetchone()[0])
             state['world_minute']=360
-            state['resources'].update(player_hp=5000,player_hp_max=10000,night_id=1,
+            state['resources'].update(player_hp=5000,player_hp_max=10000,player_mana=5000,player_mana_max=10000,night_id=1,
                 player_resurrections_left=1,player_domains_left=1,
                 player_combat_id=0,player_combat_active=0,player_death_refusal_available=1,
                 player_rampart_available=1)
             config['character_rules']=deepcopy(MECHANICS_RULES)
             config['spell_cost_rules']=deepcopy(COST_RULES)
-            config['mechanics']={'version':'vitality-1.0'}
+            config['mechanics']={'version':'mana-1.0'}
             con.execute('UPDATE campaign SET state=?,config=?',(json.dumps(state),json.dumps(config)))
 
     def operation(self,kind='ability',at=None,ability='bolt',output=10,amount=None,start=None):
@@ -276,16 +276,16 @@ class MechanicsTests(MechanicFixture):
 
     def test_costs_free_spells_and_idempotence(self):
         for output,cost in ((10,150),(25,375),(100,1500)):
-            before=self.c.state()['resources']['player_hp']
+            before=self.c.state()['resources']['player_mana']
             result,p=self.apply_ops([self.operation(output=output)])
             self.assertEqual(result['status'],'recorded',result)
-            self.assertEqual(self.c.state()['resources']['player_hp'],before-cost)
+            self.assertEqual(self.c.state()['resources']['player_mana'],before-cost)
             self.assertEqual(Campaign(self.path).apply(p),result)
-            self.assertEqual(self.c.state()['resources']['player_hp'],before-cost)
+            self.assertEqual(self.c.state()['resources']['player_mana'],before-cost)
         for key in ('mind_link','charm','trance'):
-            before=self.c.state()['resources']['player_hp']
+            before=self.c.state()['resources']['player_mana']
             self.assertEqual(self.apply_ops([self.operation(ability=key)])[0]['status'],'recorded')
-            self.assertEqual(self.c.state()['resources']['player_hp'],before)
+            self.assertEqual(self.c.state()['resources']['player_mana'],before)
 
     def test_invalid_power_unknown_insufficient_and_manual_change_rollback(self):
         for bad in (self.operation(ability='unknown'),self.operation(output=0),
@@ -293,7 +293,7 @@ class MechanicsTests(MechanicFixture):
             before=self.c.state()
             # Insufficient health fixture for the costly operation only.
             if bad['ability_id']=='swarm':
-                self.set_state(resources={'player_hp':200})
+                self.set_state(resources={'player_mana':200})
                 before=self.c.state()
             try:result,_=self.apply_ops([bad])
             except ValueError:result={'status':'rejected'}
@@ -367,7 +367,7 @@ class MechanicsTests(MechanicFixture):
             'agenda_updates':[],'continuation':None,'roll_checks':[]}
         result=self.loop().run_turn('I cast a bolt.')
         self.assertEqual(result['status'],'recorded',result)
-        self.assertEqual(self.c.state()['resources']['player_hp'],4850)
+        self.assertEqual(self.c.state()['resources']['player_mana'],4850)
 
     def test_older_response_version_refused_on_a_mechanics_campaign(self):
         self.n.response={'narration':'The power is cast.','events':[],'blocking_questions':[]}
@@ -378,7 +378,7 @@ class MechanicsTests(MechanicFixture):
         self.set_state(world_minute=1080,world_second=0)
         result,_=self.apply_ops([self.operation('combat_start'),
             self.operation(ability='dawn_shield',output=100),
-            self.operation('prevent_death',amount=3000)])
+            self.operation('prevent_death',amount=5000)])
         self.assertEqual(result['status'],'recorded',result)
         resources=self.c.state()['resources']
         self.assertEqual(resources['player_hp'],100)
@@ -394,11 +394,11 @@ class MechanicsTests(MechanicFixture):
         self.assertEqual(self.c.state()['resources']['player_hp'],before)
         result,_=self.apply_ops([],changes=[{'operation':'set','path':'/resources/player_hp','value':1}])
         self.assertEqual(result['status'],'rejected')
-        self.set_state(world_minute=360,world_second=0,resources={'player_hp':150})
+        self.set_state(world_minute=360,world_second=0,resources={'player_mana':150})
         result,_=self.apply_ops([self.operation()])
-        self.assertEqual(result['status'],'rejected')
-        self.assertIn('exactly zero',result['reason'])
-        self.assertEqual(self.c.state()['resources']['player_hp'],150)
+        self.assertEqual(result['status'],'recorded',result)
+        self.assertEqual(self.c.state()['resources']['player_mana'],0)
+        self.assertEqual(self.c.state()['resources']['player_hp'],5000)
 
     def test_late_condition_rolls_back_cost_and_nothing_rejected_is_indexed(self):
         with self.c.transaction() as con:MemoryIndex(con).sync()
@@ -426,18 +426,18 @@ class PublicTests(MechanicFixture):
         self.assertEqual(self.apply_ops([],changes=[{'operation':'set','path':'/positions/player','value':'route'}],claims=[claim])[0]['status'],'recorded')
         self.assertEqual(self.apply_ops([],claims=[claim])[0]['status'],'recorded')
 
-    def test_health_public_value_is_locally_computed_not_freely_declared(self):
+    def test_mana_public_value_is_locally_computed_not_freely_declared(self):
         before=self.c.state()
-        result,_=self.apply_ops([self.operation()],claims=[self.claim('damage','/resources/player_hp',4900)])
+        result,_=self.apply_ops([self.operation()],claims=[self.claim('mana','/resources/player_mana',4900)])
         self.assertEqual(result['status'],'rejected')
         self.assertEqual(self.c.state(),before)
-        result,p=self.apply_ops([self.operation()],claims=[self.claim('damage','/resources/player_hp',4850)])
+        result,p=self.apply_ops([self.operation()],claims=[self.claim('mana','/resources/player_mana',4850)])
         self.assertEqual(result['status'],'recorded')
         from novel_engine.consequences import public_projection
         self.assertEqual(public_projection(result['applied_events'])[0]['value'],4850)
         self.assertNotIn('source_reference',public_projection(result['applied_events'])[0])
         self.c.apply(p)
-        self.assertEqual(self.c.state()['resources']['player_hp'],4850)
+        self.assertEqual(self.c.state()['resources']['player_mana'],4850)
 
     def test_healing_requires_an_explicit_operation(self):
         self.assertEqual(self.apply_ops([],claims=[self.claim('healing','/resources/player_hp',5100)])[0]['status'],'rejected')

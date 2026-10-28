@@ -15,8 +15,8 @@ def packet(state, config, recipient='player', query=''):
     by_ability = {charge['ability']: (resource, charge['period'])
                   for resource, charge in charges(character).items() if charge.get('ability')}
     resources = state['resources']
-    maximum = resources['player_hp_max']
-    default = rules.get('default_output_percent', 10)
+    maximum = resources.get('player_mana_max', 0)
+    default = rules.get('default_output_percent', 100)
     abilities = []
     for key, power in state['powers'].items():
         if power['actor_id'] != config.get('player_id', 'player') or recipient not in power['audience']:
@@ -30,7 +30,7 @@ def packet(state, config, recipient='player', query=''):
         full = spell_cost(key, maximum, rules, 100) if key in costs else cost
         item = {'id': key, 'name': name, 'form': phase,
                 'description': power['description'], 'limits': power['limits'],
-                'default_hp_cost': cost, 'full_power_hp_cost': full,
+                'default_mana_cost': cost, 'full_power_mana_cost': full,
                 'max_cost_pct': costs.get(key),
                 'free_up_to_power_pct': rules.get('free_output_up_to_percent', {}).get(key), 'charge': None}
         if key in by_ability:
@@ -43,22 +43,23 @@ def packet(state, config, recipient='player', query=''):
             item['cooldown'] = {'available_at_second': ready,
                 'seconds_left': max(0, ready - now) if ready is not None else None}
         abilities.append(item)
-    return {'status': 'skills', 'character': config.get('player_name') or 'Character', 'hp': resources['player_hp'], 'hp_max': maximum,
+    return {'status': 'skills', 'character': config.get('player_name') or 'Character', 'hp': resources['player_hp'], 'hp_max': resources['player_hp_max'],
+            'mana': resources.get('player_mana', 0), 'mana_max': maximum,
             'default_power_pct': default, 'abilities': abilities}
 
 
 def render(result):
-    lines = [f"{result.get('character', 'Character')}: {result['hp']}/{result['hp_max']} HP. Default power: {result['default_power_pct']}%.",
+    lines = [f"{result.get('character', 'Character')}: {result['hp']}/{result['hp_max']} HP. Mana: {result.get('mana', 0)}/{result.get('mana_max', 0)}. Default power: {result['default_power_pct']}%.",
              'Costs are paid once, at casting. Effects also shrink with the dosage.']
     for item in result['abilities']:
-        cost = item['default_hp_cost']
+        cost = item['default_mana_cost']
         label = ('Cost: see the detailed abilities or the limits below.' if cost is None else
-                 ('Cost: 0 HP.' if cost == 0 else
-                  f"Cost: {cost} HP at the default dosage; {item['full_power_hp_cost']} HP at 100% ({item['max_cost_pct']}% of maximum HP)."))
+                 ('Cost: 0 mana.' if cost == 0 else
+                  f"Cost: {cost} mana at the default dosage; {item['full_power_mana_cost']} mana at 100% ({item['max_cost_pct']}% of maximum mana)."))
         if item.get('free_up_to_power_pct') is not None:
             label = (f"Cost: free up to {item['free_up_to_power_pct']}% power inclusive; "
-                     f"beyond that, cost is proportional to the dosage. At 100%: {item['full_power_hp_cost']} HP "
-                     f"({item['max_cost_pct']}% of maximum HP). At the default dosage: {cost} HP.")
+                     f"beyond that, cost is proportional to the dosage. At 100%: {item['full_power_mana_cost']} mana "
+                     f"({item['max_cost_pct']}% of maximum mana). At the default dosage: {cost} mana.")
         lines.extend(['', item['name'] + ' (' + item['form'] + ')', label,
                       item['description'], 'Limits: ' + item['limits']])
         if item['charge']:

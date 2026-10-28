@@ -36,8 +36,9 @@ EN = {
     'status.label': 'Status: ', 'npc.passages': 'Story passages', 'npc.see': 'See in the story',
     'npc.no_description': 'No description recorded.', 'npc.no_match': 'No NPC matches the search.',
     'npc.none': 'No known NPC recorded.', 'summaries.none': 'No summary recorded.',
-    'hp.title': 'Hit points', 'power.default': 'Default power: {n} %.', 'cost.limits': 'Cost: see the limits.',
-    'cost.zero': 'Cost: 0 HP.', 'cost.default': 'Cost: {default} HP by default; {full} HP at 100%.',
+    'hp.title': 'Hit points', 'mana.title': 'Mana',
+    'cooldown.available': 'Available', 'cooldown.remaining': 'Available in {n} fictional seconds', 'power.default': 'Default power: {n} %.', 'cost.limits': 'Cost: see the limits.',
+    'cost.zero': 'Cost: 0 mana.', 'cost.default': 'Cost: {default} mana by default; {full} mana at 100%.',
     'limits.label': 'Limits: ', 'charges.left': 'Charges left: {n} ({period})', 'unknown': 'unknown',
     'abilities.always': 'Always active', 'abilities.day': 'Daytime abilities', 'abilities.night': 'Nighttime abilities',
     'abilities.other': 'Other abilities', 'filter.all': 'All', 'filter.day': 'Day', 'filter.night': 'Night',
@@ -86,7 +87,7 @@ FR = {
     'npc.no_description': 'Aucune description enregistrée.', 'npc.no_match': 'Aucun PNJ ne correspond à la recherche.',
     'npc.none': 'Aucun PNJ connu.', 'summaries.none': 'Aucun résumé enregistré.',
     'hp.title': 'Points de vie', 'power.default': 'Puissance par défaut : {n} %.', 'cost.limits': 'Coût : voir les limites.',
-    'cost.zero': 'Coût : 0 PV.', 'cost.default': 'Coût : {default} PV par défaut ; {full} PV à 100 %.',
+    'cost.zero': EN['cost.zero'], 'cost.default': EN['cost.default'],
     'limits.label': 'Limites : ', 'charges.left': 'Charges restantes : {n} ({period})', 'unknown': 'inconnu',
     'abilities.always': 'Toujours actives', 'abilities.day': 'Capacités de jour', 'abilities.night': 'Capacités de nuit',
     'abilities.other': 'Autres capacités', 'filter.all': 'Toutes', 'filter.day': 'Jour', 'filter.night': 'Nuit',
@@ -104,7 +105,7 @@ FR = {
     'turn.refused': 'Refusé : ',
 }
 
-PACKS = {'en': EN, 'fr': FR}
+PACKS = {'en': EN, 'fr': {**EN, **FR}}
 KEYS = tuple(EN)
 LANGUAGE_NAMES = {'english': 'en', 'anglais': 'en', 'french': 'fr', 'francais': 'fr', 'français': 'fr'}
 PLACEHOLDER = re.compile(r'\{([a-z_]+)\}')

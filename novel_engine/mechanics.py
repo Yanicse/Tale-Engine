@@ -1,16 +1,17 @@
-"""Vitality operations, explicitly enabled in the SQLite configuration.
+"""Deterministic health, mana and optional charge operations.
 
 Charges (character_rules.charges) and cooldowns (abilities.<id>.cooldown) come from the configuration.
 An ability with `effect: death_prevention` arms the neutralization of a lethal blow (prevent_death operation).
 """
 from copy import deepcopy
+import re
 
 from .magic import spell_cost
 from .character import charge_resources, charges, solar_form
 from .validation import validate
 
-VERSION='vitality-1.0'
-BASE_PROTECTED={'player_hp','player_hp_max','night_id','player_combat_id','player_combat_active',
+VERSION='mana-1.0'
+BASE_PROTECTED={'player_hp','player_hp_max','player_mana','player_mana_max','night_id','player_combat_id','player_combat_active',
     'player_prevention_until_second','player_death_refusal_capacity_hp'}
 
 
@@ -29,7 +30,7 @@ def _consumer(rules,operation):
 
 def operation_schema():
     fields={
-        'kind':{'type':'string','enum':['ability','damage','elapsed','heal','combat_start','combat_end','resurrection','prevent_death']},
+        'kind':{'type':'string','enum':['ability','damage','elapsed','heal','restore_mana','combat_start','combat_end','resurrection','prevent_death']},
         'at_second':{'type':'integer','minimum':0},
         'ability_id':{'type':['string','null']},
         'output_percent':{'type':['number','null'],'minimum':0,'maximum':100},
@@ -42,6 +43,27 @@ def operation_schema():
 
 def instant(state):
     return state['world_minute']*60+state.get('world_second',0)
+
+
+def validate_narration(proposal, config):
+    """Reject explicit English casts of a declared ability when its operation was omitted."""
+    if config.get('mechanics', {}).get('version') != VERSION:
+        return
+    from .narrative_coherence import assertions
+    from .possessions import _plain, _positive
+    actor = r'(?:you|' + re.escape(_plain(config.get('player_name') or 'player')) + ')'
+    verbs = r'(?:cast|casts|activate|activates|use|uses|invoke|invokes|unleash|unleashes|channel|channels)'
+    clauses = [_positive(clause) for clause in assertions(proposal['narration'])]
+    for key, spec in config.get('character_rules', {}).get('abilities', {}).items():
+        names = {key.replace('_', ' '), spec.get('label') or key}
+        names.update(spec.get('catalogue', {}).get('aliases', []))
+        name = '(?:' + '|'.join(re.escape(_plain(n)) for n in names) + ')'
+        pattern = rf'\b{actor}\s+{verbs}\s+(?:(?:the|your)\s+)?{name}\b'
+        declared = sum(len(re.findall(pattern, clause)) for clause in clauses)
+        operations = sum(op['kind'] == 'ability' and op['ability_id'] == key
+                         for event in proposal['events'] for op in event.get('mechanical_operations', []))
+        if declared > operations:
+            raise ValueError('Ability use without a mechanical operation: ' + key)
 
 
 def _advance(resources, start, end, rules):
@@ -65,7 +87,7 @@ def materialize(state,event,config):
     if not mode:
         if operations:raise ValueError('Deterministic mechanics not installed.')
         return deepcopy(event)
-    if mode.get('version')!=VERSION:raise ValueError('Unknown mechanics version.')
+    if mode.get('version')!=VERSION:raise ValueError('Unsupported mechanics version. Create a new campaign with mana rules; existing saves are not converted automatically.')
     blocked=protected(config['character_rules'])
     for change in event['changes']:
         if change['path'] in {'/resources/'+key for key in blocked}:
@@ -76,7 +98,7 @@ def materialize(state,event,config):
     for op in operations:
         at=op['at_second'];kind=op['kind']
         used={'ability':{'ability_id','output_percent'},'damage':{'amount'},
-              'prevent_death':{'amount'},'heal':{'amount'}}.get(kind,set())
+              'prevent_death':{'amount'},'heal':{'amount'},'restore_mana':{'amount'}}.get(kind,set())
         if any(op[key] is not None for key in ('ability_id','output_percent','amount','start_second') if key not in used):
             raise ValueError('Mechanical field without purpose; use null.')
         if not current<=at<=end:raise ValueError('Operations out of order or outside the interval.')
@@ -87,9 +109,11 @@ def materialize(state,event,config):
         _advance(resources,current,at,rules)
         current=at
         if kind=='ability':
-            key=op['ability_id'];spec=rules['abilities'].get(key)
+            key=op['ability_id'];spec=rules.get('abilities', {}).get(key)
             if spec is None:raise ValueError('Unknown ability: '+str(key))
-            if spec['phase'] not in ('always',solar_form(at//60,rules['solar_schedule'])):
+            if op['output_percent'] is not None and not 0 < op['output_percent'] <= 100:
+                raise ValueError('Power must be above zero and at most 100%.')
+            if spec.get('phase', 'always') != 'always' and spec['phase'] != solar_form(at//60,rules['solar_schedule']):
                 raise ValueError('Ability unavailable in this form.')
             if resources['player_hp']==0:raise ValueError('Ability after a death.')
             cooldown=spec.get('cooldown')
@@ -98,18 +122,23 @@ def materialize(state,event,config):
                 if resource not in resources or at<resources[resource]:
                     raise ValueError('Ability on cooldown: '+key)
                 resources[resource]=at+cooldown['seconds']
-            cost=spell_cost(key,resources['player_hp_max'],config['spell_cost_rules'],op['output_percent'])
-            if cost>resources['player_hp']:raise ValueError('Insufficient HP.')
-            if cost and cost==resources['player_hp']:
-                raise ValueError('Rule to be specified: paid cast reaching exactly zero HP.')
+            costs = config.get('spell_cost_rules') or {}
+            if key in costs.get('full_power_cost_percent', {}):
+                cost = spell_cost(key,resources['player_mana_max'],costs,op['output_percent'])
+            elif spec.get('free'):
+                cost = 0
+            else:
+                raise ValueError('Mana cost not configured: ' + key)
+            if cost > resources['player_mana']:
+                raise ValueError('Insufficient mana.')
             for charge,declared in charges(rules).items():
                 if declared.get('ability')==key and declared.get('consumed_by','ability')=='ability':
                     if not resources.get(charge):raise ValueError('Charge unavailable: '+key)
                     resources[charge]-=1
-            resources['player_hp']-=cost
+            resources['player_mana']-=cost
             if spec.get('effect')=='death_prevention':
                 from .character import scaled_parameters
-                parameters=scaled_parameters(spec,op['output_percent'] or config['spell_cost_rules']['default_output_percent'])
+                parameters=scaled_parameters(spec,op['output_percent'] if op['output_percent'] is not None else costs.get('default_output_percent', 100))
                 resources['player_prevention_until_second']=at+parameters['duration_seconds']
                 resources['player_death_refusal_capacity_hp']=int(resources['player_hp_max']*parameters['lethal_prevention_capacity_hp_max_percent']/100)
         elif kind=='damage':
@@ -121,6 +150,10 @@ def materialize(state,event,config):
             if type(op['amount']) is not int or op['amount'] <= 0:
                 raise ValueError('Positive healing required.')
             resources['player_hp'] = min(resources['player_hp_max'], resources['player_hp'] + op['amount'])
+        elif kind=='restore_mana':
+            if type(op['amount']) is not int or op['amount'] <= 0:
+                raise ValueError('Positive mana recovery required.')
+            resources['player_mana'] = min(resources['player_mana_max'], resources['player_mana'] + op['amount'])
         elif kind=='combat_start':
             if 'player_combat_active' not in resources:raise ValueError('Combat status to be established before the transition; no implicit refill.')
             if resources.get('player_combat_active'):raise ValueError('Combat already active; no refill.')

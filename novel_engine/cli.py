@@ -98,10 +98,10 @@ def canon(args):
 
 
 def parse_ability(spec):
-    """'tide_sense:Tide sense:0' -> (id, label, full power cost in percent of maximum HP or None)."""
+    """'tide_sense:Tide sense:0' -> (id, label, full power cost in percent of maximum mana or None)."""
     parts = [p.strip() for p in spec.split(':')]
     if len(parts) < 2 or not parts[0] or not parts[1]:
-        raise SystemExit(f'Ability "{spec}": use id:Label or id:Label:cost (cost = percent of maximum HP at 100% power).')
+        raise SystemExit(f'Ability "{spec}": use id:Label or id:Label:cost (cost = percent of maximum mana at 100% power).')
     if len(parts) > 3 or (len(parts) == 3 and not re.fullmatch(r'\d+(\.\d+)?', parts[2])):
         raise SystemExit(f'Ability "{spec}": the cost must be a number from 0 to 100.')
     cost = float(parts[2]) if len(parts) == 3 else None
@@ -116,7 +116,7 @@ def ability_rules(specs, ask_abilities=False):
     specs = list(specs or [])
     while ask_abilities:
         try:
-            line = input('Ability as id:Label[:cost %% of max HP at full power], empty to finish []: ').strip()
+            line = input('Ability as id:Label[:cost %% of max mana at full power], empty to finish []: ').strip()
         except EOFError:
             break
         if not line:
@@ -127,12 +127,12 @@ def ability_rules(specs, ask_abilities=False):
     abilities, costs = {}, {}
     for spec in specs:
         ident, label, cost = parse_ability(spec)
-        abilities[ident] = {'label': label, 'phase': 'always', **({'free': True} if cost == 0 else {})}
+        abilities[ident] = {'label': label, 'phase': 'always', **({'free': True} if cost in (None, 0) else {})}
         if cost is not None:
             costs[ident] = cost
     rules = {'abilities': abilities}
     if costs:
-        rules['costs'] = {'default_output_percent': 10, 'full_power_cost_percent': costs}
+        rules['costs'] = {'default_output_percent': 100, 'full_power_cost_percent': costs}
     return rules
 
 
@@ -155,7 +155,10 @@ def character_new(args):
     hp = ask(args.hp, 'Maximum HP', '100')
     if not hp.isdigit() or int(hp) < 1:
         raise SystemExit('Maximum HP must be a positive integer.')
-    sheet = {'name': name, 'hp_max': int(hp),
+    mana = getattr(args, 'mana', None) or '100'
+    if not mana.isdigit() or int(mana) < 0:
+        raise SystemExit('Maximum mana must be a non-negative integer.')
+    sheet = {'name': name, 'hp_max': int(hp), 'mana_max': int(mana),
              'description': ask(args.description, 'Short description', ''),
              'rules': ability_rules(args.ability, ask_abilities=sys.stdin.isatty() and not args.ability)}
     if not write_json(path / 'character.json', sheet, args.force):
@@ -293,9 +296,10 @@ def main(argv=None):
     p.add_argument('novel')
     p.add_argument('--name')
     p.add_argument('--hp')
+    p.add_argument('--mana', help='maximum mana (default: 100; 0 for a character without magic)')
     p.add_argument('--description')
     p.add_argument('--ability', action='append', metavar='ID:LABEL[:COST]',
-                   help='an ability; COST is the percent of maximum HP paid at 100%% power (0 = free); repeatable')
+                   help='an ability; COST is the percent of maximum mana paid at 100%% power (0 = free); repeatable')
     p.add_argument('--force', action='store_true')
     p.set_defaults(func=character_new)
     p = subs.add_parser('example', help='install the bundled example novel and start its campaign (no account needed)')

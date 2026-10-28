@@ -113,11 +113,13 @@ def campaign_config(pack_dir, base):
     if isinstance(rules, dict) and rules:
         # `costs` becomes the cost table of the abilities; the rest are the character rules.
         costs = rules.get('costs')
-        config['character_rules'] = {'hp_max': sheet.get('hp_max', 100), **{k: v for k, v in rules.items() if k != 'costs'}}
+        config['character_rules'] = {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100), **{k: v for k, v in rules.items() if k != 'costs'}}
         if isinstance(costs, dict) and isinstance(costs.get('full_power_cost_percent'), dict):
-            config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 10),
+            config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 100),
                                           'full_power_cost_percent': costs['full_power_cost_percent'],
                                           'free_output_up_to_percent': costs.get('free_output_up_to_percent', {})}
+    config.setdefault('character_rules', {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100)})
+    config['mechanics'] = {'version': 'mana-1.0'}
     rates = novel.get('currency_rates') or {}
     declared = novel.get('currencies') or {}
     units = set(declared) | set(rates)
@@ -138,7 +140,19 @@ def campaign_config(pack_dir, base):
 
 
 def seed_resources(sheet, config):
+    """Initial resources for a new campaign only; never applied to an existing save."""
     maximum = sheet.get('hp_max', 100)
-    return {'player_hp': maximum, 'player_hp_max': maximum,
-            **{key: spec.get('initial_balance', 0)
-               for key, spec in config.get('possession_rules', {}).get('currencies', {}).items()}}
+    mana = sheet.get('mana_max', 100)
+    rules = config.get('character_rules', {})
+    from .character import charges
+    resources = {'player_hp': maximum, 'player_hp_max': maximum, 'player_mana': mana, 'player_mana_max': mana,
+                 'player_combat_id': 0, 'player_combat_active': 0,
+                 **{key: spec.get('initial_balance', 0)
+                    for key, spec in config.get('possession_rules', {}).get('currencies', {}).items()}}
+    if rules.get('solar_schedule'):
+        resources['night_id'] = 0
+    resources.update({key: charge['max'] for key, charge in charges(rules).items()})
+    for spec in rules.get('abilities', {}).values():
+        if spec.get('cooldown'):
+            resources[spec['cooldown']['resource']] = 0
+    return resources

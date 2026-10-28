@@ -540,8 +540,10 @@ class Campaign:
                 updated['world_minute'] = last_minute
                 validate_character_transition(state, updated, config)
                 from .narrative_coherence import render_state_links, validate_facts
+                from .mechanics import validate_narration as validate_ability_narration
                 narration = render_state_links(proposal['narration'], updated, config)
                 visible_proposal = {**proposal, 'narration': narration}
+                validate_ability_narration(visible_proposal, config)
                 validate_narration(state, updated, visible_proposal, config)
                 validate_facts(state, updated, visible_proposal, config)
                 from .consequences import materialize_public, validate_public

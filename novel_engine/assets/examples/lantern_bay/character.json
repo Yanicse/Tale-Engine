@@ -23,18 +23,16 @@
         "label": "Second wind",
         "phase": "always",
         "description": "A burst of strength that lets Wren row or haul far beyond normal limits for a few minutes.",
-        "limits": "Costs hit points; Wren is exhausted afterwards."
+        "limits": "Costs mana; requires a conscious effort."
       }
     },
     "costs": {
-      "default_output_percent": 10,
+      "default_output_percent": 100,
       "full_power_cost_percent": {
         "tide_sense": 0,
         "second_wind": 30
       }
-    },
-    "forbidden_resources": [
-      "player_hunger"
-    ]
-  }
+    }
+  },
+  "mana_max": 30
 }

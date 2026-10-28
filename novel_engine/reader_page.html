@@ -195,6 +195,8 @@ details p{font-family:var(--serif);font-size:18px}
 .hpRow .barRow b{font:600 22px var(--serif);letter-spacing:.02em;color:var(--blood);text-transform:none}
 .gauge{height:12px;border-radius:999px;background:color-mix(in srgb,var(--blood) 18%,transparent);overflow:hidden;box-shadow:inset 0 1px 3px var(--shadow)}
 .gauge i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#6d1424,var(--blood) 60%,#e0586c);box-shadow:0 0 10px color-mix(in srgb,var(--blood) 60%,transparent);transition:width .8s}
+.manaRow .barRow b{color:#59a8e8}
+.manaRow .gauge i{background:linear-gradient(90deg,#286eb3,#77b8ed)}
 .hpRow .note{margin:8px 0 0;font:13px var(--sans);color:var(--muted)}
 .cost{margin:.5em 0 .2em}
 
@@ -693,19 +695,28 @@ function abilities(){
   get('/api/abilities').then(function(r){
     if(current!=='abilities')return;
     clearList(content);
-    var hpRow=el('div','hpRow'),l=el('div','barRow');l.appendChild(el('span',null,tr('hp.title')));l.appendChild(el('b',null,r.hp+' / '+r.hp_max));hpRow.appendChild(l);
-    var j=el('div','gauge'),i=el('i');i.style.width=Math.max(0,Math.min(100,r.hp_max?r.hp/r.hp_max*100:0))+'%';j.appendChild(i);hpRow.appendChild(j);
-    hpRow.appendChild(el('p','note',tr('power.default',{n:r.default_power_pct})));content.appendChild(hpRow);
+    function resourceBar(key,current,maximum,extraClass){
+      var row=el('div','hpRow'+(extraClass?' '+extraClass:'')),line=el('div','barRow');
+      line.appendChild(el('span',null,tr(key)));line.appendChild(el('b',null,current+' / '+maximum));row.appendChild(line);
+      var gauge=el('div','gauge'),fill=el('i');
+      gauge.setAttribute('role','progressbar');gauge.setAttribute('aria-label',tr(key));
+      gauge.setAttribute('aria-valuemin','0');gauge.setAttribute('aria-valuemax',String(maximum));gauge.setAttribute('aria-valuenow',String(current));
+      fill.style.width=Math.max(0,Math.min(100,maximum?current/maximum*100:0))+'%';gauge.appendChild(fill);row.appendChild(gauge);
+      content.appendChild(row);return row;
+    }
+    resourceBar('hp.title',r.hp,r.hp_max);
+    var manaRow=resourceBar('mana.title',r.mana||0,r.mana_max||0,'manaRow');
+    manaRow.appendChild(el('p','note',tr('power.default',{n:r.default_power_pct})));
     var filterNode='all';try{filterNode=localStorage.getItem('reader-cap-filter')||'all'}catch(e){}
     var topbar=el('div','filters'),zone=el('div');
     function phaseOf(c){var f=String(c.form||'').toLowerCase();return f.indexOf('always')>=0?'always':(f.indexOf('night')>=0&&f.indexOf('day')<0?'night':(f.indexOf('day')>=0&&f.indexOf('night')<0?'day':'other'))}
     function card(c){
-      var cost=c.default_hp_cost===null?tr('cost.limits'):(c.default_hp_cost===0?tr('cost.zero'):tr('cost.default',{'default':c.default_hp_cost,full:c.full_power_hp_cost}));
+      var cost=c.default_mana_cost===null?tr('cost.limits'):(c.default_mana_cost===0?tr('cost.zero'):tr('cost.default',{'default':c.default_mana_cost,full:c.full_power_mana_cost}));
       var k=el('div','card'),d=el('details'),s=el('summary');
       s.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none';
       var h=el('h3');h.style.margin='0';h.appendChild(gi(pickIcon(ICONS_ABILITIES,c.name,'magic-swirl')));h.appendChild(document.createTextNode(c.name));s.appendChild(h);
       d.appendChild(s);
-      var costEl=el('p','cost');costEl.appendChild(el('span','badge blood',cost));d.appendChild(costEl);
+      var costEl=el('p','cost');costEl.appendChild(el('span','badge',cost));d.appendChild(costEl);
       if(c.form)d.appendChild(el('span','badge or',c.form));
       [c.description,[tr('limits.label'),c.limits]].forEach(function(l){
         if(!l)return;
@@ -713,6 +724,7 @@ function abilities(){
         else d.appendChild(el('p',null,l));
       });
       if(c.charge)d.appendChild(el('p',null,tr('charges.left',{n:c.charge.left===null?tr('unknown'):c.charge.left,period:c.charge.period})));
+      if(c.cooldown)d.appendChild(el('p',null,c.cooldown.seconds_left===0?tr('cooldown.available'):tr('cooldown.remaining',{n:c.cooldown.seconds_left===null?tr('unknown'):c.cooldown.seconds_left})));
       k.appendChild(d);
       return k;
     }

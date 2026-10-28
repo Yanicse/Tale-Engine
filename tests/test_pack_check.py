@@ -88,8 +88,8 @@ class ValidateTest(PackFiles):
             'costs': {'full_power_cost_percent': {'bolt': 120, 'ghost': 5}, 'default_output_percent': 0,
                       'free_output_up_to_percent': {'nobody': 10}},
             'forbidden_resources': [1], 'hunger_from_health': 'maybe'}})
-        for text in ("'hp_max'", 'rules.charges: charges that refill', 'rules.regeneration', "rules.speed: unknown rule",
-                     'rules.abilities.Bad Id: the id may only use', 'rules.abilities.Bad Id.label', 'cooldowns need the vitality',
+        for text in ("'hp_max'", 'rules.regeneration', "rules.speed: unknown rule",
+                     'rules.abilities.Bad Id: the id may only use', 'rules.abilities.Bad Id.label', 'cooldown needs a non-reserved',
                      'rules.abilities.bolt.free', 'full_power_cost_percent.bolt must be between 0 and 100',
                      'full_power_cost_percent.ghost: no such ability', 'default_output_percent must be a number above 0',
                      'free_output_up_to_percent.nobody', 'rules.forbidden_resources', 'rules.hunger_from_health'):
@@ -97,8 +97,7 @@ class ValidateTest(PackFiles):
 
     def test_abilities_without_costs_get_a_warning_and_costs_need_a_table(self):
         report = self.report(character_json={'name': 'Ana', 'rules': {'abilities': {'bolt': {'label': 'Bolt'}}}})
-        self.assertEqual(report.errors, [])
-        self.assertWarning(report, 'cost nothing')
+        self.assertError(report, 'declare a mana cost or free: true')
         report = self.report(character_json={'name': 'Ana', 'rules': {'abilities': {'bolt': {'label': 'Bolt'}}, 'costs': {}}})
         self.assertError(report, 'full_power_cost_percent is required')
 
@@ -144,7 +143,7 @@ class CommandsTest(PackFiles):
                 cli.parse_ability(bad)
         rules = cli.ability_rules(['tide:Tide sense:0', 'gale:Gale:30', 'plain:Plain'])
         self.assertEqual(rules['abilities']['tide'], {'label': 'Tide sense', 'phase': 'always', 'free': True})
-        self.assertEqual(rules['costs'], {'default_output_percent': 10, 'full_power_cost_percent': {'tide': 0, 'gale': 30}})
+        self.assertEqual(rules['costs'], {'default_output_percent': 100, 'full_power_cost_percent': {'tide': 0, 'gale': 30}})
         self.assertEqual(cli.ability_rules([]), {})
         write(self.dir, 'character.json', {'name': 'Ana', 'hp_max': 40, 'rules': rules})
         self.assertEqual(check_pack(self.dir).errors, [])
@@ -183,7 +182,7 @@ class RulesInTheCampaign(PackFiles):
     def test_the_narrator_context_works_with_partial_rules(self):
         state = {'resources': {'player_hp': 30, 'player_hp_max': 40}, 'world_minute': 0}
         context = ability_context(state, {'abilities': {'gale': {'label': 'Gale'}}}, None)
-        self.assertEqual((context['active_abilities'], context['default_power_pct'], context['max_hp']), (['gale'], 10, 40))
+        self.assertEqual((context['active_abilities'], context['default_power_pct'], context['max_hp']), (['gale'], 100, 40))
         self.assertNotIn('form', context)
         self.assertNotIn('regeneration_rules', context)
         self.assertNotIn('subjective_hunger', context)

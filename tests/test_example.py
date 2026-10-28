@@ -74,15 +74,31 @@ class ExampleNovelTest(unittest.TestCase):
         self.assertTrue(reader.state()['scene'].startswith('The Storm Festival fills the Saltmere quay'))
         names = {item['id']: item for item in reader.abilities()['abilities']}
         self.assertEqual(sorted(names), ['knot_work', 'second_wind', 'tide_sense'])
-        self.assertEqual((names['tide_sense']['default_hp_cost'], names['second_wind']['full_power_hp_cost']), (0, 9))
+        self.assertEqual((names['tide_sense']['default_mana_cost'], names['second_wind']['full_power_mana_cost']), (0, 9))
         from novel_engine.adapters import ModelUnavailable
         # The manual engine waits for an answer: the request was prepared with the character's abilities.
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()),                 self.assertRaisesRegex(ModelUnavailable, 'Manual engine'):
-            main(['--campaign', str(self.target / 'campaign.sqlite'), '--text', 'I take the oars.',
+            main(['--campaign', str(self.target / 'campaign.sqlite'), '--text', 'I use Second wind.',
                   '--engine', 'manual', '--json'])
         request = (self.target / 'manual' / 'turn.prompt.md').read_text(encoding='utf-8')
         self.assertIn('tide_sense', request)
         self.assertIn('saltmere_quay', request)
+        self.answer_from_schema('You use Second wind and pull the boat clear of the quay.')
+        answer_path = self.target / 'manual' / 'turn.response.json'
+        answer = json.loads(answer_path.read_text(encoding='utf-8'))
+        answer['events'] = [{'world_minute': 0, 'world_second': 0, 'description': 'Second wind moves the boat.',
+                             'causes': ['current_action'], 'conditions': [], 'changes': [],
+                             'audience': ['narrator', 'player'], 'asset_operations': [],
+                             'mechanical_operations': [{'kind': 'ability', 'at_second': 0,
+                                 'ability_id': 'second_wind', 'output_percent': None, 'amount': None,
+                                 'start_second': None, 'source_reference': 'current_action'}],
+                             'public_consequences': []}]
+        answer_path.write_text(json.dumps(answer), encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            code = main(['--campaign', str(self.target / 'campaign.sqlite'), '--resume', '--retry',
+                         '--engine', 'manual', '--json'])
+        self.assertEqual(code, 0)
+        self.assertEqual((reader.abilities()['hp'], reader.abilities()['mana']), (30, 21))
 
     def answer_from_schema(self, narration):
         """A valid, empty-handed answer to the request the manual engine wrote, built from its JSON Schema."""

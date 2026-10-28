@@ -23,6 +23,8 @@ in SQLite after every turn, so you can stop, resume and read it back.
   planner summarizes the story and stirs the world.
 - **The program keeps the truth.** A model's answer is validated against a schema and the rules, then applied in one
   transaction. Money and possessions are computed, not narrated. An interrupted turn loses nothing.
+- **Separate health and mana.** Spell costs, optional charges and cooldowns are computed locally. Passing time never
+  restores health or mana; recovery needs an explicit played cause.
 - **Your save is a file.** SQLite for the canon and for the campaign. Standard library only, no dependency to install.
 - **Four engines.** Claude CLI, Codex CLI, the Anthropic API, or **manual** copy and paste with no account at all.
 - **A reading page.** Local, no external resource, five themes, icons by category, English and French, your own texts.
@@ -126,8 +128,6 @@ or publish them.** The bundled example novel is an original story written for th
 
 ## Roadmap
 
-- Let a novel pack enable the vitality mechanics that exist in the engine (charges that refill per night or per
-  combat, cooldowns, a day and night schedule).
 - Select the language of the narrator's instruction texts, and ship a French set.
 - A public-domain novel as a second complete example.
 - More engines behind the same transport.

@@ -58,10 +58,12 @@ def ability_context(state, rules, costs):
     current = state['resources']['player_hp']
     schedule = rules.get('solar_schedule')
     phase = solar_form(state['world_minute'], schedule) if schedule else None
-    default = (costs or {}).get('default_output_percent', 10)
+    default = (costs or {}).get('default_output_percent', 100)
     abilities = rules.get('abilities', {})
     context = {'current_hp': current, 'max_hp': maximum,
         'health_pct': current * 100 / maximum,
+        'current_mana': state['resources'].get('player_mana', 0),
+        'max_mana': state['resources'].get('player_mana_max', 0),
         'active_abilities': [key for key, value in abilities.items()
                              if phase is None or value.get('phase', 'always') in (phase, 'always')],
         'default_power_effects': {key: scaled_parameters(value, default)
@@ -94,6 +96,14 @@ def validate_character_transition(before, after, config):
     for key in rules.get('forbidden_resources', []):
         if key in new:
             raise ValueError('This resource is forbidden for the character: ' + key)
+    if 'player_mana_max' in old or config.get('mechanics', {}).get('version') == 'mana-1.0':
+        for key in ('player_mana', 'player_mana_max'):
+            if type(new.get(key)) is not int or new[key] < 0:
+                raise ValueError('Invalid mandatory mana resource: ' + key)
+        if new['player_mana_max'] != rules.get('mana_max', old.get('player_mana_max')):
+            raise ValueError('The maximum mana cannot change during a turn.')
+        if new['player_mana'] > new['player_mana_max']:
+            raise ValueError('Mana exceeds the character maximum.')
     if new['player_hp_max'] != rules.get('hp_max', old.get('player_hp_max', new['player_hp_max'])):
         raise ValueError('The confirmed maximum HP of the character cannot change during a turn.')
     if not 0 <= new['player_hp'] <= new['player_hp_max']:

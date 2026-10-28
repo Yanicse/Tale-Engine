@@ -37,7 +37,7 @@ class PackTest(unittest.TestCase):
             (Path(tmp) / 'character.json').write_text(
                 '{"name": "Mira", "hp_max": 80, "rules": {"forbidden_resources": ["x"]}}', encoding='utf-8')
             config = pack.campaign_config(tmp, {})
-        self.assertEqual(config['character_rules'], {'hp_max': 80, 'forbidden_resources': ['x']})
+        self.assertEqual(config['character_rules'], {'hp_max': 80, 'mana_max': 100, 'forbidden_resources': ['x']})
 
     def test_missing_novel_json_is_an_error(self):
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
