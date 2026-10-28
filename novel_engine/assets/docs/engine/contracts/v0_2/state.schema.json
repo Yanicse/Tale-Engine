@@ -99,7 +99,7 @@
             "enum": [
               "open",
               "kept",
-              "rompu"
+              "broken"
             ]
           },
           "references": {
@@ -158,8 +158,8 @@
             "status": {
               "type": "string",
               "enum": [
-                "crue",
-                "contredite"
+                "believed",
+                "contradicted"
               ]
             }
           },

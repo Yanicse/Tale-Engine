@@ -98,7 +98,7 @@
             "enum": [
               "open",
               "kept",
-              "rompu"
+              "broken"
             ]
           },
           "references": {
