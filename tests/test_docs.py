@@ -32,7 +32,8 @@ class DocsTest(unittest.TestCase):
                 self.assertTrue((page.parent / target).is_file(), f'{page.name} links to {target}')
 
     def test_every_novel_command_named_exists(self):
-        commands = set(cli.SCRIPTS) | {'doctor', 'init', 'ingest', 'canon', 'character', 'campaign', 'example', 'validate'}
+        commands = set(cli.SCRIPTS) | {'doctor', 'init', 'ingest', 'canon', 'character', 'campaign', 'example', 'validate',
+                                         'unblock', 'configure'}
         for page in PAGES:
             for name in COMMAND.findall(text(page)):
                 self.assertIn(name, commands, f'{page.name}: novel {name}')

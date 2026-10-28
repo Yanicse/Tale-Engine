@@ -1,0 +1,32 @@
+[
+  {
+    "id": "harbor_fund",
+    "faction": "Harbor council",
+    "goal": "Hide that the harbor fund is empty until the audit is over.",
+    "segments": 4,
+    "progression": 1,
+    "status": "in_progress",
+    "signs": "Repairs are postponed and the harbormaster avoids the inspector.",
+    "event": "The inspector opens the chest in public and finds it empty.",
+    "origin": "canon",
+    "reason": "Corwen Pike has everything to lose.",
+    "references": [
+      "chronology:fog_inspection"
+    ]
+  },
+  {
+    "id": "lens_sale",
+    "faction": "Maris Thorne",
+    "goal": "Sell the stolen lens as soon as the fog lifts.",
+    "segments": 5,
+    "progression": 1,
+    "status": "in_progress",
+    "signs": "A cooper's cart rides low on the road to the marsh.",
+    "event": "The lens leaves Saltmere on a night cart.",
+    "origin": "canon",
+    "reason": "The fog is her only cover.",
+    "references": [
+      "chronology:lens_theft"
+    ]
+  }
+]

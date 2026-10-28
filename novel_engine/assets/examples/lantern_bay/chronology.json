@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "festival",
+      "title": "The Storm Festival fills the quay",
+      "phase": "opening",
+      "relative_time": "dusk of the festival"
+    },
+    {
+      "id": "lens_theft",
+      "title": "The great lens is stolen from the Gull Tower",
+      "phase": "opening",
+      "relative_time": "the night of the festival"
+    },
+    {
+      "id": "fog_inspection",
+      "title": "Inspector Brandt audits the harbor fund",
+      "phase": "middle",
+      "relative_time": "the days after the fog"
+    }
+  ],
+  "edges": [
+    {
+      "before": "festival",
+      "after": "lens_theft"
+    },
+    {
+      "before": "lens_theft",
+      "after": "fog_inspection"
+    }
+  ]
+}

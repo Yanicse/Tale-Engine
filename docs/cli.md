@@ -11,8 +11,8 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `novel canon build <slug> [--engine E] [--model M] [--budget N] [--limit N] [--yes]` | builds or resumes the canon; `--engine` is `manual` (default), `claude`, `codex` or `api`; remote engines need `--yes` |
 | `novel character new <slug> [--name N] [--hp N] [--mana N] [--description T] [--ability ID:LABEL[:COST]] [--force]` | writes `character.json`; asks on a terminal for what you leave out |
 | `novel validate [<slug>]` | lists every error and warning of a pack (all packs without a name); exit code 1 on errors |
-| `novel campaign new <slug> [--start PLACE]` | creates `campaigns/<slug>/campaign.sqlite` from a validated pack and selects it |
-| `novel example [--slug S]` | installs the bundled example novel and starts its campaign |
+| `novel campaign new <slug> [--start PLACE] [--no-creations] [--bounded-recovery]` | creates `campaigns/<slug>/campaign.sqlite` from a validated pack and selects it. The campaign keeps the creations register, the periodic planner (summaries) and, when the pack ships them, the chronicler and the arcs; `--no-creations` and `--bounded-recovery` change the two optional formats (see `novel configure`) |
+| `novel example [--slug S] [--world]` | installs the bundled example novel and starts its campaign; `--world` adds the example chronicler (two clocks) and arcs, which make the planner review the world on the first turn |
 | `novel play ...` | plays turns; every option below is passed to it |
 | `novel resume` | shows the active campaign and its pending action, without changing anything |
 | `novel read [--port P] [--no-browser]` | serves the reading page on 127.0.0.1 (port 8765 by default) |

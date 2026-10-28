@@ -7,6 +7,9 @@ novels/<slug>/
   novel.json       title, language, tracked NPCs, currencies, world rules, opening scene
   character.json   the player's character
   theme.json       the look and the wording of the reading page
+  chronology.json  optional: the episodes the clocks and arcs cite
+  clocks.json      optional: the secret clocks of the factions (the chronicler)
+  arcs.json        optional: the arcs of the world, followed off screen
   sources/         your book files (ignored by git)
   text/            extracted pages, text/vNN.jsonl (ignored by git)
   work/            canon build work files (ignored by git)
@@ -60,6 +63,23 @@ to both sides of every conversion rate.
 | `icons` | `{"objects" \| "abilities" \| "places": [["word\|other word", "icon-name"]]}`, matched on the words of an item's name or description; icon names are the files of `novel_engine/resources/icons` |
 
 See [Reader page](reader.md) for how these are served.
+
+## World files (optional)
+
+Every campaign keeps a register of **creations** (details the narrator invents: NPCs, places, quests, reputations) and a
+periodic **planner** that summarizes the story every 20 exchanges. A pack can add a world that moves on its own:
+
+| File | Content |
+| --- | --- |
+| `chronology.json` | `{"nodes": [{"id", "title", "phase", "relative_time"}], "edges": [{"before", "after"}]}`: the episodes that clocks and arcs may cite as `chronology:<id>` |
+| `clocks.json` | a list of at most 8 clocks `{id, faction, goal, segments (3 to 10), progression, status: "in_progress", signs, event, origin: "canon" or "invention", reason, references}`. A clock drawn from the canon cites a `chronology:<id>` reference |
+| `arcs.json` | `{"version": 1, "arcs": [{id, title, nodes, dependencies, opening_days, end_days, steps, clock}], "outside_arcs": {}}`. Every chronology node belongs to an arc or is listed in `outside_arcs` with a reason |
+
+Having `clocks.json` or `chronology.json` installs the chronicler; `arcs.json` (which needs `chronology.json`) also installs the
+arcs registry. The chronicler reviews the world on the first turn, after seven fictional days, and after a long ellipsis;
+each review is one extra model call and the player's message always comes first. `novel validate` installs these files in an
+empty database and reports each mistake with its file. The campaign keeps its own copy of the chronology: later edits
+of the pack apply to new campaigns only. `novel example --world` installs a complete example.
 
 ## An example to copy
 

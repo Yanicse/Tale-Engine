@@ -212,14 +212,30 @@ def campaign_new(args):
     target = ROOT / 'campaigns' / args.novel / 'campaign.sqlite'
     if target.exists():
         raise SystemExit(f'Campaign already exists: {target}')
-    Campaign(target).create(state, config)
-    if opening:
-        Campaign(target).open_scene(opening['scene'].strip())
+    # Persistent creations (invented NPCs, places, quests) are on unless the author turns them off.
+    config['creation_format'] = None if getattr(args, 'no_creations', False) else '1'
+    if getattr(args, 'bounded_recovery', False):
+        from .bounded_resume import POLICY
+        config['recovery_policy'] = POLICY
+    campaign = Campaign(target).create(state, config)
+    try:
+        if opening:
+            campaign.open_scene(opening['scene'].strip())
+        from .world_setup import install_into_campaign
+        world = install_into_campaign(campaign, path)
+    except Exception:
+        for suffix in ('', '-wal', '-shm'):
+            Path(str(target) + suffix).unlink(missing_ok=True)
+        (target.parent / 'chronology.json').unlink(missing_ok=True)
+        raise
     select_campaign(target)
-    print(f'Campaign created and selected: {target}\nPlay with: novel play')
+    extras = ', '.join(name for name, on in (('summaries', world['planner']), ('chronicler', world['chronicler']),
+                                            ('arcs', world['arcs'])) if on)
+    print(f'Campaign created and selected: {target}\nWorld: {extras}. Play with: novel play')
 
 
 EXAMPLE = PACKAGE / 'assets' / 'examples' / 'lantern_bay'
+WORLD_FILES = ('chronology.json', 'clocks.json', 'arcs.json')
 
 
 def example(args):
@@ -231,7 +247,7 @@ def example(args):
         raise SystemExit(f'{path} already exists: choose another name with --slug.')
     for folder in ('sources', 'text', 'work'):
         (path / folder).mkdir(parents=True)
-    for name in ('novel.json', 'theme.json', 'character.json'):
+    for name in ('novel.json', 'theme.json', 'character.json', *(WORLD_FILES if getattr(args, 'world', False) else ())):
         shutil.copyfile(EXAMPLE / name, path / name)
     story = path / 'sources' / 'story.txt'
     shutil.copyfile(EXAMPLE / 'story.txt', story)
@@ -333,11 +349,17 @@ def main(argv=None):
     p.set_defaults(func=character_new)
     p = subs.add_parser('example', help='install the bundled example novel and start its campaign (no account needed)')
     p.add_argument('--slug', default='lantern-bay')
+    p.add_argument('--world', action='store_true',
+                   help='also install the example chronicler (two clocks) and arcs, which add a world review at the first turn')
     p.set_defaults(func=example)
     p = subs.add_parser('campaign', help='create a campaign from a novel pack')
     p.add_argument('action', choices=('new',))
     p.add_argument('novel')
     p.add_argument('--start', default='start', help='starting place identifier')
+    p.add_argument('--no-creations', action='store_true',
+                   help='do not keep a register of invented NPCs, places and quests')
+    p.add_argument('--bounded-recovery', action='store_true',
+                   help='allow one automatic correction after a technical failure (off by default)')
     p.set_defaults(func=campaign_new)
     p = subs.add_parser('unblock', help='grant one more generation to a pending action whose budget is spent')
     p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')

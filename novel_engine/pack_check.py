@@ -410,6 +410,10 @@ def check_pack(pack_dir):
             report.error('novel.json', f'currency resource collides with mechanics: {key}')
         for key in sorted(set(rules.get('forbidden_resources', [])) & (protected | currency_resources)):
             report.error('character.json', f'forbidden resource is required by the campaign: {key}')
+    from .world_setup import check as check_world
+    for problem in check_world(pack_dir):
+        name, _, message = problem.partition(': ')
+        report.error(name, message)
     if not any((pack_dir / 'text').glob('v*.jsonl')):
         report.warn('text/', 'no ingested book yet: run `novel ingest`')
     if not (pack_dir / 'canon.sqlite').is_file():

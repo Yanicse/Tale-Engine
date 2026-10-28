@@ -41,8 +41,9 @@ A testimony or an offer is not a verified fact, and a creation (an invented deta
 
 ## The world keeps moving
 
-The agenda holds deadlines on the fictional clock; the planner periodically summarizes the story and reviews the world's
-arcs, so events happen elsewhere while the player acts. The player's message always interrupts background work.
+The agenda holds deadlines on the fictional clock; the planner periodically summarizes the story and, when the pack ships
+clocks and arcs ([World files](novel-packs.md#world-files-optional)), reviews the world, so events happen elsewhere while
+the player acts. The player's message always interrupts background work.
 
 ## Where the code is
 
@@ -53,6 +54,7 @@ arcs, so events happen elsewhere while the player acts. The player's message alw
 | memory and canon | `memory`, `indexed_memory`, `canon_selection`, `targeted_context`, `canon_build`, `ingest` |
 | world | `agenda`, `agenda_protocol`, `planner`, `arcs`, `routine`, `background`, `scene_pacing` |
 | rules | `possessions`, `character`, `abilities`, `magic`, `cooldowns`, `consequences`, `creations` |
+| maintenance | `campaign_tools` (`novel unblock`, `novel configure`), `world_setup`, `maintenance` |
 | packs and page | `pack`, `pack_check`, `ui_text`, `reader`, `reader_page.html`, `scripts/read_game.py` |
 | texts | `prompts`, `prompts/en/*.md`, `assets/docs/engine/` (agent rules, contracts, examples) |
 

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "arcs": [
+    {
+      "id": "missing_lens",
+      "title": "The missing lens",
+      "nodes": [
+        "festival",
+        "lens_theft"
+      ],
+      "dependencies": [],
+      "opening_days": 0,
+      "end_days": 20,
+      "steps": [
+        "The theft is noticed.",
+        "The thief looks for a buyer.",
+        "The lens leaves the town."
+      ],
+      "clock": "lens_sale"
+    },
+    {
+      "id": "empty_chest",
+      "title": "The empty chest",
+      "nodes": [
+        "fog_inspection"
+      ],
+      "dependencies": [
+        "missing_lens"
+      ],
+      "opening_days": 3,
+      "end_days": 30,
+      "steps": [
+        "The inspector asks for the books.",
+        "The chest is opened."
+      ],
+      "clock": "harbor_fund"
+    }
+  ],
+  "outside_arcs": {}
+}

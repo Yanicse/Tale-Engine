@@ -31,6 +31,8 @@ def main():
     with control.with_suffix('.jsonl').open('a', encoding='utf-8') as log:
         log.write(json.dumps({'role':role, 'state':packet['current_state']['state_version'],
                               'mode':mode, 'schema_bytes':len(json.dumps(schema))})+'\n')
+    if mode == 'hang':
+        import time; time.sleep(30)
     if mode == 'outage':
         control.write_text('')
         print(json.dumps({'type':'turn.failed','error':{'message':'HTTP 503 unavailable'}}))
@@ -54,6 +56,14 @@ def main():
                 'clock':clock['id'], 'type':'event' if burst else 'sign', 'title':'Visite',
                 'actor':'messenger', 'place':'gate', 'description':'A messenger brings news.',
                 'perception':'The messenger arrives at the door.', 'due_minute':packet['current_state']['world_minute']+3}]}
+            registry = packet['chronicle'].get('arcs_registry')
+            if registry is not None:
+                now = packet['current_state']['world_minute']
+                response['chronicle']['arcs'] = [{'id':a['id'],'expected_revision':a['revision'],'status':'in_progress',
+                    'step':min(a['step']+1,len(a['steps'])),'motif':'progression',
+                    'reason':'The arc moves forward off screen.','fact_world':'Off screen, the situation develops.',
+                    'next_review':now+1440,'references':[a['reference']]}
+                    for a in registry['arcs'] if a['id'] in registry['to_process']]
     else:
         now = packet['current_state']['world_minute']
         response = {'narrative_schema_version':'1.2', 'narration':'You complete this step.',
@@ -111,6 +121,27 @@ def main():
                     e['mechanical_operations']=[{'kind':'ability','at_second':now*60+second,
                         'ability_id':'burning_blood','output_percent':10,'amount':None,'start_second':None,'source_reference':'current_action'}]
                     e['public_consequences']=[claim('damage','/resources/player_hp',state['resources']['player_hp']-150)]
+                elif mode in ('site_spell','site_overspend','site_damage','site_heal','site_restore'):
+                    res=state['resources']
+                    def op(kind,**kw):
+                        d={'kind':kind,'at_second':now*60+second,'ability_id':None,'output_percent':None,'amount':None,
+                           'start_second':None,'source_reference':'current_action'}
+                        d.update(kw);return d
+                    if mode=='site_spell':
+                        e['mechanical_operations']=[op('ability',ability_id='second_wind')]
+                        e['public_consequences']=[claim('mana','/resources/player_mana',res['player_mana']-9)]
+                    elif mode=='site_overspend':
+                        e['mechanical_operations']=[op('ability',ability_id='second_wind') for _ in range(4)]
+                        e['public_consequences']=[claim('mana','/resources/player_mana',res['player_mana']-36)]
+                    elif mode=='site_damage':
+                        e['mechanical_operations']=[op('damage',amount=5)]
+                        e['public_consequences']=[claim('damage','/resources/player_hp',res['player_hp']-5)]
+                    elif mode=='site_heal':
+                        e['mechanical_operations']=[op('heal',amount=3)]
+                        e['public_consequences']=[claim('healing','/resources/player_hp',min(res['player_hp_max'],res['player_hp']+3))]
+                    elif mode=='site_restore':
+                        e['mechanical_operations']=[op('restore_mana',amount=4)]
+                        e['public_consequences']=[claim('mana','/resources/player_mana',min(res['player_mana_max'],res['player_mana']+4))]
                 elif mode=='site_recovery':e.update(world_minute=now+1,world_second=0)
                 elif mode=='site_due':
                     due=[entry for entry in packet['world_agenda']['events'] if entry['due_minute']<=now+2]
@@ -129,7 +160,7 @@ def main():
                                 'status':'suspended','event_index':index}
     if role=='narrator' and packet['campaign_rules'].get('creation_format')=='1':
         response.update(creation_schema_version='1',creation_updates=[])
-        if mode.startswith('creation_'):
+        if 'creation' in mode:
             response.update(events=[],agenda_updates=[],continuation=None,memory_updates=[])
             if mode in ('npc_creation','offer_creation','creation_accept'):
                 quest=mode!='npc_creation'
