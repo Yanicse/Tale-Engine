@@ -20,7 +20,9 @@ in SQLite after every turn, so you can stop, resume and read it back.
 - **Secrets the narrator keeps.** Every fact and event names who may know it (narrator, player, an NPC). The reading page
   shows the player's view only.
 - **A world that keeps moving.** Tracked NPCs pursue their goals off screen, deadlines run on a fictional clock, a
-  planner summarizes the story and stirs the world.
+  planner summarizes the story every 20 exchanges, and a pack can add faction clocks and arcs that the planner reviews.
+- **Invented details are kept, as inventions.** NPCs, places and quests the narrator creates go to a register; an offer
+  or a testimony is never a fact, and a quest is accepted only by an explicit decision of the player.
 - **The program keeps the truth.** A model's answer is validated against a schema and the rules, then applied in one
   transaction. Money and possessions are computed, not narrated. An interrupted turn loses nothing.
 - **Separate health and mana.** Spell costs, optional charges and cooldowns are computed locally. Passing time never
@@ -28,8 +30,10 @@ in SQLite after every turn, so you can stop, resume and read it back.
 - **Your save is a file.** SQLite for the canon and for the campaign. Standard library only, no dependency to install.
 - **Four engines.** Claude CLI, Codex CLI, the Anthropic API, or **manual** copy and paste with no account at all.
 - **A reading page.** Local, no external resource, five themes, icons by category, English and French, your own texts.
-- **One folder per novel.** A *novel pack* (`novel.json`, `character.json`, `theme.json`) holds everything that is
-  specific to a book; nothing else in the engine knows a novel by name.
+- **One folder per novel.** A *novel pack* (`novel.json`, `character.json`, `theme.json`, and optionally `chronology.json`,
+  `clocks.json`, `arcs.json`) holds everything that is specific to a book; nothing else in the engine knows a novel by name.
+- **Nothing stuck for good.** Every action is saved before any call; each may use two generations, and
+  `novel unblock` grants one more after a backup when a service was down.
 
 ## How it works
 

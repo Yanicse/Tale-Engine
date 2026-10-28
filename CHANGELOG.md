@@ -4,6 +4,16 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- New campaigns keep the creations register and install the periodic planner. A pack may ship `chronology.json`,
+  `clocks.json` and `arcs.json` to install the chronicler and the arcs registry; `novel validate` checks them and
+  `novel example --world` installs a complete example. `novel campaign new` gains `--no-creations` and `--bounded-recovery`.
+- `novel unblock` grants one more generation to an action whose two generations are spent, after a backup.
+  `novel configure` switches the creations register and the bounded recovery of an existing campaign. `novel diagnose`
+  shows how one attempt's context was selected.
+- The manual engine no longer charges the action budget for writing its request: one wrong pasted answer no longer blocks
+  the action for good.
+- A Windows `claude.cmd` shim, which cannot carry the answer contract, is reported with its remedy.
+- Tests ported: creations, bounded recovery, a twenty-action public session and a two-process lock.
 - Magic uses a separate mana reserve and a mana bar. The engine spends mana atomically and refuses insufficient funds.
 - Packs enable mechanical operations, configurable charges and cooldowns. Active abilities require a cost or explicit free use.
 - Time no longer restores health. Recovery requires a sourced healing or mana recovery operation.
