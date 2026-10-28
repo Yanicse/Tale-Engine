@@ -39,6 +39,9 @@ The periodic planner uses `review.prompt.md` and `review.response.json` the same
 the state moves on, a new request replaces the files and the old answer is discarded. An invalid answer is reported;
 fix the file and run the command again.
 
+The fingerprint includes the answer schema and gameplay durations, including cooldown seconds and scaled effect
+durations. Changing either requires a fresh answer. Only known performance measurements are ignored.
+
 ## API engine
 
 The key is read from `ANTHROPIC_API_KEY` for each call. It is never written to a file, a receipt or the saved metrics.

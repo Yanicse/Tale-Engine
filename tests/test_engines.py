@@ -127,12 +127,40 @@ class ManualNarratorTest(unittest.TestCase):
         self.assertFalse(answer.exists())
 
     def test_measured_durations_do_not_change_the_request(self):
-        first = PROMPT + '{"seconds":0.0013,"model_seconds":1.5}'
+        first = 'Rules of the game.\nCURRENT TURN\n' + json.dumps({
+            'preparation_seconds': 0.0013, 'model_seconds': 1.5, 'search_memory': {'seconds': 0.001}})
         with self.assertRaises(ModelUnavailable):
             self.narrator.call(first, SCHEMA, None, None)
         (self.tmp / 'manual' / 'turn.response.json').write_text('{"narration": "Done."}', encoding='utf-8')
-        again = PROMPT + '{"seconds":0.0020,"model_seconds":9.25}'
+        again = 'Rules of the game.\nCURRENT TURN\n' + json.dumps({
+            'preparation_seconds': 0.0020, 'model_seconds': 9.25, 'search_memory': {'seconds': 0.002}})
         self.assertEqual(self.narrator.call(again, SCHEMA, None, None), '{"narration": "Done."}')
+
+    def test_gameplay_durations_invalidate_the_previous_answer(self):
+        for field in ('seconds', 'duration_seconds', 'travel_seconds', 'model_seconds'):
+            with self.subTest(field=field):
+                prefix = 'Rules of the game.\nCURRENT TURN\n'
+                first = prefix + json.dumps({'campaign_rules': {'character_rules': {
+                    'abilities': {'ward': {'parameters': {field: 60}}}}}})
+                with self.assertRaises(ModelUnavailable):
+                    self.narrator.call(first, SCHEMA, None, None)
+                answer = self.tmp / 'manual' / 'turn.response.json'
+                answer.write_text('{"narration":"Done."}', encoding='utf-8')
+                changed = first.replace(': 60', ': 120')
+                with self.assertRaises(ModelUnavailable):
+                    self.narrator.call(changed, SCHEMA, None, None)
+                self.assertFalse(answer.exists())
+
+    def test_answer_schema_changes_invalidate_the_previous_answer(self):
+        with self.assertRaises(ModelUnavailable):
+            self.narrator.call(PROMPT, SCHEMA, None, None)
+        answer = self.tmp / 'manual' / 'turn.response.json'
+        answer.write_text('{"narration":"Done."}', encoding='utf-8')
+        schema = {**SCHEMA, 'required': ['narration', 'events'], 'properties': {
+            **SCHEMA['properties'], 'events': {'type': 'array', 'items': {'type': 'string'}}}}
+        with self.assertRaises(ModelUnavailable):
+            self.narrator.call(PROMPT, schema, None, None)
+        self.assertFalse(answer.exists())
 
     def test_planner_has_its_own_files(self):
         with self.assertRaises(ModelUnavailable):

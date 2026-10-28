@@ -9,17 +9,31 @@ The stage is `turn` for the narrator and `review` for the periodic planner.
 """
 import hashlib
 import json
-import re
 from pathlib import Path
 
 from .adapters import ModelUnavailable
-from .narration_claude import split_prompt
+from .narration_claude import MARKERS, split_prompt
 from .narration_codex import CodexNarrator
 from .planner import CodexPlanner
 
 
-# Measured durations inside the packet change at every preparation; they do not change the request.
-VOLATILE = re.compile(r'"[a-z_]*seconds":[0-9.eE+-]+')
+def stable_prompt(prompt):
+    """Ignore only known timing fields at their technical packet locations."""
+    marker = max(MARKERS, key=prompt.rfind)
+    if marker not in prompt:
+        return prompt
+    prefix, raw = prompt.rsplit(marker, 1)
+    try:
+        packet = json.loads(raw)
+    except ValueError:
+        return prompt
+    if not isinstance(packet, dict):
+        return prompt
+    for name in ('model', 'preparation', 'generation', 'application', 'total'):
+        packet.pop(name + '_seconds', None)
+    if isinstance(packet.get('search_memory'), dict):
+        packet['search_memory'].pop('seconds', None)
+    return prefix + marker + json.dumps(packet, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
 
 class ManualNarrator(CodexNarrator):
@@ -41,7 +55,9 @@ class ManualNarrator(CodexNarrator):
                 + '```json\n' + schema + '\n```\n')
 
     def call(self, prompt, wire_schema, folder, base):
-        digest = hashlib.sha256(VOLATILE.sub('', prompt).encode('utf-8')).hexdigest()
+        fingerprint = json.dumps({'prompt': stable_prompt(prompt), 'schema': wire_schema},
+                                 ensure_ascii=False, sort_keys=True, allow_nan=False)
+        digest = hashlib.sha256(fingerprint.encode('utf-8')).hexdigest()
         paths = self.paths()
         self.folder.mkdir(parents=True, exist_ok=True)
         try:
