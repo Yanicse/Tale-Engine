@@ -245,7 +245,7 @@ class Campaign:
                     'state':state, 'context':context, 'model_proposal':template,
                     'previous_result':previous,
                     'campaign_rules':{key:config[key] for key in (
-                        'rule_ids','resource_owners','seed_references','solar_schedule','rules_pending_details','spell_cost_rules','character_rules','character_sheet','possession_rules','mechanics','creation_format','recovery_policy','narration_language','world_rules')
+                        'rule_ids','resource_owners','seed_references','solar_schedule','rules_pending_details','spell_cost_rules','character_rules','character_sheet','player_description','possession_rules','mechanics','creation_format','recovery_policy','narration_language','world_rules')
                         if key in config},
                     'narrator_preparation':config.get('private_preparation')}
             if memory is not None:

@@ -53,6 +53,9 @@ class ExampleNovelTest(unittest.TestCase):
         _, campaign = resume.active_campaign()
         config = campaign.config()
         self.assertEqual(config['player_name'], 'Wren Ashby')
+        from novel_engine.narrative import NarrativeLoop
+        prompt = NarrativeLoop(campaign, None).build_prompt(campaign.prepare_turn('I look around.'))
+        self.assertIn('Seventeen, apprentice ferry pilot of Saltmere', prompt)
         self.assertEqual([n['id'] for n in config['tracked_npcs']], ['maris_thorne', 'corwen_pike'])
         self.assertEqual(len(config['world_rules']), 2)
         self.assertEqual(config['possession_rules']['currency_rates'], {'gold': {'silver': 20}})

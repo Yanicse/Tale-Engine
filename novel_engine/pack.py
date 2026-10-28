@@ -105,6 +105,7 @@ def campaign_config(pack_dir, base):
     theme = clean_theme(read(pack_dir / 'theme.json'))
     config = {**base, 'fictional': False, 'resource_owners': {}, 'seed_references': [], 'rule_ids': [],
               'player_name': text(sheet.get('name'), 80) or 'Hero',
+              'player_description': text(sheet.get('description'), 2000),
               'narration_language': text(novel.get('language'), 20) or 'en',
               'reader': {**theme, 'title': theme['title'] or text(novel.get('title'))},
               'tracked_npcs': clean_npcs(novel.get('tracked_npcs'))}

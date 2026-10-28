@@ -232,6 +232,10 @@ def check_sheet(sheet, report):
     if not isinstance(sheet.get('name'), str) or not sheet['name'].strip():
         report.warn(name, "no 'name': the character is called Hero")
     hp = sheet.get('hp_max', 100)
+    if 'description' in sheet and not isinstance(sheet['description'], str):
+        report.error(name, "'description' must be a text")
+    elif len(sheet.get('description', '')) > 2000:
+        report.warn(name, "'description' is longer than 2000 characters and is cut")
     if type(hp) is not int or hp < 1:
         report.error(name, "'hp_max' must be a whole number of at least 1")
     rules = sheet.get('rules', {})
