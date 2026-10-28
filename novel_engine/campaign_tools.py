@@ -1,8 +1,8 @@
 """Explicit, backed-up operations on an existing campaign, with no turn played and no model call.
 
 `unblock` grants one more generation to the pending action once its budget is spent (two outages,
-two refused answers). `configure` switches the optional creations format and the bounded automatic
-recovery. Both preview by default; `apply=True` takes a backup of the save first.
+two refused answers). `configure` switches the optional creations format, the bounded automatic
+recovery and the canon selection. Both preview by default; `apply=True` takes a backup of the save first.
 """
 from contextlib import closing
 import json
@@ -77,17 +77,20 @@ def unblock(campaign, apply=False):
             'next': 'Run `novel play --resume --retry`.'}
 
 
-def configure(campaign, apply=False, creations=None, bounded_recovery=None):
-    """Switch the creations format and/or the bounded recovery of an existing campaign."""
+def configure(campaign, apply=False, creations=None, bounded_recovery=None, canon_selection=None):
+    """Switch the creations format, the bounded recovery and/or the canon selection of an existing campaign."""
     state, config, _ = _read(campaign)
     target = dict(config)
     if creations is not None:
         target['creation_format'] = '1' if creations else None
     if bounded_recovery is not None:
         target['recovery_policy'] = POLICY if bounded_recovery else None
+    if canon_selection is not None:
+        target['canon_selection'] = {'version': 1, 'enabled': canon_selection}
     report = {'status': 'preview', 'mutation': False, 'campaign_id': state['campaign_id'],
               'state_version': state['state_version'], 'creation_format': target.get('creation_format'),
-              'recovery_policy': target.get('recovery_policy')}
+              'recovery_policy': target.get('recovery_policy'),
+              'canon_selection': bool(target.get('canon_selection', {}).get('enabled'))}
     if target == config:
         return {**report, 'status': 'already_configured'}
     if not apply:

@@ -234,6 +234,8 @@ def campaign_new(args):
         raise SystemExit(f'Campaign already exists: {target}')
     # Persistent creations (invented NPCs, places, quests) are on unless the author turns them off.
     config['creation_format'] = None if getattr(args, 'no_creations', False) else '1'
+    # The narrator receives a few sourced claims of the canon at each turn, chosen locally.
+    config['canon_selection'] = {'version': 1, 'enabled': True}
     if getattr(args, 'bounded_recovery', False):
         from .bounded_resume import POLICY
         config['recovery_policy'] = POLICY
@@ -306,8 +308,8 @@ def unblock(args):
 def configure(args):
     from .campaign_tools import configure as run
     flag = {'on': True, 'off': False, None: None}
-    print(json.dumps(run(target_campaign(args), args.apply, flag[args.creations], flag[args.bounded_recovery]),
-                     indent=2, ensure_ascii=False))
+    print(json.dumps(run(target_campaign(args), args.apply, flag[args.creations], flag[args.bounded_recovery],
+                         flag[args.canon_selection]), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -386,11 +388,13 @@ def main(argv=None):
     p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
     p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
     p.set_defaults(func=unblock)
-    p = subs.add_parser('configure', help='switch the creations format or the bounded automatic recovery')
+    p = subs.add_parser('configure', help='switch the creations format, the bounded automatic recovery or the canon selection')
     p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
     p.add_argument('--creations', choices=('on', 'off'), help='persistent register of invented NPCs, places and quests')
     p.add_argument('--bounded-recovery', choices=('on', 'off'),
                    help='one automatic correction after a technical failure, within the action budget')
+    p.add_argument('--canon-selection', choices=('on', 'off'),
+                   help='give the narrator the sourced canon claims that match each turn (on for new campaigns)')
     p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
     p.set_defaults(func=configure)
     for name in SCRIPTS:

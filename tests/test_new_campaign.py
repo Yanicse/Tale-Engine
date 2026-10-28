@@ -97,6 +97,55 @@ class DefaultCampaignTests(Fixture):
         self.assertFalse(world_setup.present(self.tmp / self.slug))
 
 
+class CanonSelectionTests(Fixture):
+    """The canon a pack builds must reach the narrator of a campaign created by the command line."""
+
+    def answer(self, folder, causes):
+        events = [{'world_minute': 5, 'world_second': 0, 'description': 'Tamsin answers about the lantern.',
+                   'causes': causes, 'conditions': [], 'changes': [], 'audience': ['narrator', 'player'],
+                   'mechanical_operations': [], 'public_consequences': [], 'asset_operations': []}]
+        answer = {'narrative_schema_version': '1.3', 'narration': 'Tamsin points at the green light.',
+                  'events': events, 'blocking_questions': [], 'memory_request': None, 'memory_updates': [],
+                  'agenda_updates': [], 'continuation': None, 'roll_checks': [], 'creation_schema_version': '1',
+                  'creation_updates': []}
+        (folder / 'turn.response.json').write_text(json.dumps(answer), encoding='utf-8')
+
+    def test_a_new_campaign_selects_sourced_claims_and_accepts_them_as_causes(self):
+        from novel_engine.adapters import ModelUnavailable
+        from novel_engine.campaign import Campaign
+        from novel_engine.narration_manual import ManualNarrator
+        from novel_engine.narrative import NarrativeLoop
+        self.quiet('example', '--slug', self.slug)
+        self.assertEqual(self.config()['canon_selection'], {'version': 1, 'enabled': True})
+        campaign = Campaign(self.target / 'campaign.sqlite')
+        folder = self.tmp / 'manual'
+        loop = NarrativeLoop(campaign, ManualNarrator(folder))
+        with self.assertRaises(ModelUnavailable):
+            loop.run_turn('I ask Tamsin Reed who keeps the Salt Lantern in the Gull Tower.')
+        prompt = (folder / 'turn.prompt.md').read_text(encoding='utf-8')
+        packet = json.loads(prompt.split('CURRENT TURN\n', 1)[1].split('\n\n# Answer format', 1)[0])
+        facts = packet['documentary_canon']['facts']
+        self.assertTrue(facts)
+        self.assertTrue({'Salt Lantern', 'Tamsin Reed', 'Gull Tower'} & {fact['subject'] for fact in facts})
+        reference = facts[0]['reference']
+        self.assertIn(reference, packet['allowed_references'])
+        self.answer(folder, ['current_action', reference])
+        self.assertEqual(loop.run_turn(resume=True, retry=True)['status'], 'recorded')
+
+    def test_configure_turns_the_canon_selection_of_an_older_campaign_on(self):
+        from novel_engine import campaign_tools
+        from novel_engine.campaign import Campaign
+        self.quiet('example', '--slug', self.slug)
+        campaign = Campaign(self.target / 'campaign.sqlite')
+        self.assertEqual(campaign_tools.configure(campaign, apply=True, canon_selection=False)['canon_selection'], False)
+        self.assertFalse(self.config()['canon_selection']['enabled'])
+        out = io.StringIO()
+        with redirect_stdout(out):
+            cli.main(['configure', '--campaign', str(campaign.path), '--canon-selection', 'on', '--apply'])
+        self.assertTrue(json.loads(out.getvalue())['canon_selection'])
+        self.assertTrue(self.config()['canon_selection']['enabled'])
+
+
 class WorldFileValidationTests(Fixture):
     def pack(self):
         self.quiet('example', '--slug', self.slug, '--world')

@@ -4,6 +4,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- New campaigns turn the canon selection on: the narrator receives the sourced claims that match each turn and may
+  cite them as causes. It was off, so the canon never reached the narrator. `novel configure --canon-selection on`
+  turns it on for an existing campaign.
 - New campaigns keep the creations register and install the periodic planner. A pack may ship `chronology.json`,
   `clocks.json` and `arcs.json` to install the chronicler and the arcs registry; `novel validate` checks them and
   `novel example --world` installs a complete example. `novel campaign new` gains `--no-creations` and `--bounded-recovery`.
