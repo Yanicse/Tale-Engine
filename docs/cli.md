@@ -9,6 +9,7 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `novel ingest <file> --novel <slug> [--volume N]` | extracts the text of a `.txt`, `.md`, `.epub` or `.pdf` book into `text/vNN.jsonl` |
 | `novel canon plan <slug> [--budget N]` | prints the batches and the estimated tokens still to send; sends nothing |
 | `novel canon build <slug> [--engine E] [--model M] [--budget N] [--limit N] [--yes]` | builds or resumes the canon; `--engine` is `manual` (default), `claude`, `codex` or `api`; remote engines need `--yes` |
+| `novel canon search <slug> <words>` | looks up the built canon, locally: each claim with the volume, page and quote that source it; no model, no account |
 | `novel character new <slug> [--name N] [--hp N] [--mana N] [--description T] [--ability ID:LABEL[:COST]] [--force]` | writes `character.json`; asks on a terminal for what you leave out |
 | `novel validate [<slug>]` | lists every error and warning of a pack (all packs without a name); exit code 1 on errors |
 | `novel campaign new <slug> [--start PLACE] [--no-creations] [--bounded-recovery]` | creates `campaigns/<slug>/campaign.sqlite` from a validated pack and selects it. The campaign keeps the creations register, the periodic planner (summaries) and, when the pack ships them, the chronicler and the arcs; `--no-creations` and `--bounded-recovery` change the two optional formats (see `novel configure`) |

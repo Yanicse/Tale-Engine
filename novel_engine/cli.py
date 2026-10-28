@@ -78,9 +78,29 @@ def ingest_cmd(args):
     print(f'Volume {volume}: {pages} pages extracted into novels/{args.novel}/text/')
 
 
+def canon_search(path, words):
+    from .canon_build import REVISION
+    from .memory import CanonRepository
+    if not (path / 'canon.sqlite').is_file():
+        raise SystemExit('No canon yet: run `novel canon build` first.')
+    query = ' '.join(words)
+    if not query.strip():
+        raise SystemExit('Give the words to look for: novel canon search <novel> <words>.')
+    rows = CanonRepository(path / 'canon.sqlite', int(REVISION)).search(query, limit=10)
+    for row in rows:
+        print(f"[{row['claim_id']}] {row['statement']}")
+        for source in row['sources']:
+            print(f"    volume {source['volume']} page {source['pdf_page']}: \"{source['quote']}\"")
+    if not rows:
+        print('No sourced claim found for this search.')
+    return 0
+
+
 def canon(args):
     from . import canon_build
     path = pack(args.novel)
+    if args.action == 'search':
+        return canon_search(path, args.words)
     batches = canon_build.pending_batches(path, args.budget)
     figures = canon_build.estimate(batches)
     print(f"{figures['batches']} batches, about {figures['input_tokens']:,} input tokens and "
@@ -327,9 +347,10 @@ def main(argv=None):
     p = subs.add_parser('validate', help='check a novel pack and list every problem (all packs when no name is given)')
     p.add_argument('novel', nargs='?')
     p.set_defaults(func=validate)
-    p = subs.add_parser('canon', help='plan or build the sourced canon')
-    p.add_argument('action', choices=('plan', 'build'))
+    p = subs.add_parser('canon', help='plan or build the sourced canon, or search its claims')
+    p.add_argument('action', choices=('plan', 'build', 'search'))
     p.add_argument('novel')
+    p.add_argument('words', nargs='*', help='words to look for (search only)')
     p.add_argument('--engine', choices=('claude', 'codex', 'api', 'manual'), default='manual')
     p.add_argument('--model')
     p.add_argument('--budget', type=int, default=12000, help='input tokens per batch')
