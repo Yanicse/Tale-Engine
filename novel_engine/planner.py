@@ -5,7 +5,7 @@ import re
 import time
 import unicodedata
 
-from .adapters import ModelUnavailable
+from .adapters import AwaitingAnswer, ModelUnavailable
 from .agenda import Agenda, ACTIVE, RESPONSE_LIMIT, date
 from .contracts import ASSETS, ROOT, check_json
 from .indexed_memory import MemoryIndex
@@ -689,4 +689,6 @@ def review_world(campaign,adapter,prepared,retry=False):
             con.execute("UPDATE planner_reviews SET status=?,reason=?,response=COALESCE(response,?),metrics=? WHERE id=?",
                         (status,reason,json.dumps(raw,ensure_ascii=True) if raw else None,check_json(metrics),key))
         if isinstance(exc,KeyboardInterrupt):raise
+        if isinstance(exc,AwaitingAnswer):
+            raise AwaitingAnswer('Waiting for a manual answer to the world review; input kept. '+reason) from exc
         raise ModelUnavailable('Planning interrupted or invalid; input kept. '+reason) from exc

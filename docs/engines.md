@@ -37,7 +37,8 @@ novel play --text "I take the oars." --engine manual
 
 The periodic planner uses `review.prompt.md` and `review.response.json` the same way. If you change the action or
 the state moves on, a new request replaces the files and the old answer is discarded. An invalid answer is reported;
-fix the file and run the command again.
+fix the file and run the command again: an answer that was already read and refused is not read, nor charged, again
+until it changes.
 
 The fingerprint includes the answer schema and gameplay durations, including cooldown seconds and scaled effect
 durations. Changing either requires a fresh answer. Only known performance measurements are ignored.

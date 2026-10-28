@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from novel_engine.adapters import ModelUnavailable
+from novel_engine.adapters import AwaitingAnswer, ModelUnavailable
 from novel_engine.campaign import Campaign
 from novel_engine.demo import configuration, initial_state
 from novel_engine.narration_manual import ManualNarrator
@@ -69,8 +69,8 @@ class ManualBudgetTest(unittest.TestCase):
     def test_two_invalid_answers_exhaust_the_budget_like_any_engine(self):
         with self.assertRaises(ModelUnavailable):
             self.loop.run_turn('I open the door.')
-        for _ in range(2):
-            self.answer('not json')
+        for wrong in ('not json', 'still not json'):
+            self.answer(wrong)
             with self.assertRaises(ModelUnavailable):
                 self.loop.run_turn(resume=True, retry=True)
         self.answer(ANSWER)
@@ -79,6 +79,27 @@ class ManualBudgetTest(unittest.TestCase):
         self.assertEqual(blocked['diagnostic_code'], 'recovery_blocked')
         self.assertEqual(self.c.state()['state_version'], 0)
         self.assertTrue(self.c.resume()['session']['pending_action'])
+
+    def test_an_unchanged_refused_answer_is_not_read_or_charged_again(self):
+        with self.assertRaises(ModelUnavailable):
+            self.loop.run_turn('I open the door.')
+        self.answer({'narration': 'Missing fields.'})
+        with self.assertRaisesRegex(ModelUnavailable, 'refused|invalid'):
+            self.loop.run_turn(resume=True, retry=True)
+        self.assertEqual(self.generations(), 1)
+        # Running the command again before fixing the file spends nothing and says what to do.
+        for _ in range(3):
+            with self.assertRaisesRegex(AwaitingAnswer, 'already read for this request'):
+                self.loop.run_turn(resume=True, retry=True)
+        self.assertEqual(self.generations(), 1)
+        self.answer(ANSWER)
+        self.assertEqual(self.loop.run_turn(resume=True, retry=True)['status'], 'recorded')
+
+    def test_waiting_for_the_answer_is_not_reported_as_an_interruption(self):
+        with self.assertRaises(AwaitingAnswer) as caught:
+            self.loop.run_turn('I open the door.')
+        self.assertIn('Waiting for a manual answer', str(caught.exception))
+        self.assertNotIn('interrupted', str(caught.exception))
 
 
 if __name__ == '__main__':

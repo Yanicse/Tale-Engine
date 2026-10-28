@@ -3,7 +3,8 @@ chat tool) answers it, and the next resume reads the answer through the same val
 
 manual/<stage>.prompt.md   what to send: instructions, the turn, and the JSON Schema of the answer
 manual/<stage>.response.json   the JSON answer, saved by the user
-manual/<stage>.state.json   digest of the request, so an answer is only used for the request it answers
+manual/<stage>.state.json   digest of the request, so an answer is only used for the request it answers,
+                            and of the last answer read, so an unchanged answer is never read (and charged) twice
 
 The stage is `turn` for the narrator and `review` for the periodic planner.
 """
@@ -61,12 +62,21 @@ class ManualNarrator(CodexNarrator):
         paths = self.paths()
         self.folder.mkdir(parents=True, exist_ok=True)
         try:
-            known = json.loads(paths['state.json'].read_text(encoding='utf-8')).get('sha256')
+            known = json.loads(paths['state.json'].read_text(encoding='utf-8'))
         except (OSError, ValueError, AttributeError):
-            known = None
-        if known == digest and paths['response.json'].is_file():
+            known = {}
+        known = known if isinstance(known, dict) else {}
+        if known.get('sha256') == digest and paths['response.json'].is_file():
             self.last_metrics['model_calls'] = 0
-            return paths['response.json'].read_text(encoding='utf-8')
+            answer = paths['response.json'].read_text(encoding='utf-8')
+            answered = hashlib.sha256(answer.encode('utf-8')).hexdigest()
+            if known.get('answer_sha256') == answered:
+                raise AwaitingAnswer(
+                    f"Manual engine: {paths['response.json']} was already read for this request and was not "
+                    "recorded (the reason was shown then). Correct or replace it, then run: "
+                    "novel play --resume --retry --engine manual")
+            paths['state.json'].write_text(json.dumps({'sha256': digest, 'answer_sha256': answered}), encoding='utf-8')
+            return answer
         paths['prompt.md'].write_text(self.request_text(prompt, wire_schema), encoding='utf-8')
         paths['state.json'].write_text(json.dumps({'sha256': digest}), encoding='utf-8')
         paths['response.json'].unlink(missing_ok=True)

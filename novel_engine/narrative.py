@@ -839,6 +839,8 @@ class NarrativeLoop:
                     self._save_attempt(request_id,'failure' if generation_attempted or received is not None else 'preparation_refused',reason=reason)
                     if isinstance(exc,KeyboardInterrupt):
                         raise
+                    if isinstance(exc,AwaitingAnswer):
+                        raise AwaitingAnswer('Waiting for a manual answer; input kept. '+str(exc)) from exc
                     message=('Answer received but refused by the local validation; input kept. '
                              if response_received else 'Generation interrupted or invalid; input kept. ')
                     raise ModelUnavailable(message+str(exc)) from exc

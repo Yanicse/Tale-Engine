@@ -15,6 +15,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
   shows how one attempt's context was selected.
 - The manual engine no longer charges the action budget for writing its request: one wrong pasted answer no longer blocks
   the action for good.
+  Running the command again on an unchanged refused answer no longer spends a second generation, and the wait for an
+  answer is reported as `Waiting for a manual answer` instead of an interruption.
 - A Windows `claude.cmd` shim, which cannot carry the answer contract, is reported with its remedy.
 - Tests ported: creations, bounded recovery, a twenty-action public session and a two-process lock.
 - Magic uses a separate mana reserve and a mana bar. The engine spends mana atomically and refuses insufficient funds.

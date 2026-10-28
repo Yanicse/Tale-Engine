@@ -14,6 +14,7 @@ Start with `novel doctor` and `novel validate`.
 | `ANTHROPIC_API_KEY is not set` | export it, or pick another engine |
 | `PDF extraction needs the optional dependency` | `pip install "tale-engine[pdf]"` |
 | `Generation interrupted or invalid; input kept` | the action is saved and pending. Fix the cause, then `novel play --resume --retry` |
+| `Waiting for a manual answer; input kept` | the manual engine wrote its request: save the JSON answer it names, then `novel play --resume --retry --engine manual`. An answer that was already read and refused is not read again until you change it |
 | `A generation was already attempted. Use --resume --retry` | add `--retry` to allow a new call |
 | `Generation budget reached for this action` | every action may use two generations (an outage or a refused answer counts); `--resume`, `--retry` and a new chat do not add one. `novel unblock` shows what it would do, `novel unblock --apply` grants exactly one more, with a backup |
 | `Manual engine: send ... turn.prompt.md` | not an error: answer the request, save `turn.response.json`, run `novel play --resume --retry --engine manual` |
