@@ -259,7 +259,7 @@ def check_costs(costs, abilities, report):
         report.error(name, 'rules.costs.default_output_percent must be a number above 0 and at most 100')
     full = costs.get('full_power_cost_percent')
     if not isinstance(full, dict) or not full:
-        report.error(name, 'rules.costs.full_power_cost_percent is required: ability id -> percent of maximum HP at 100% power')
+        report.error(name, 'rules.costs.full_power_cost_percent is required: ability id -> percent of maximum mana at 100% power')
         full = {}
     for key, value in full.items():
         if key not in abilities:
@@ -398,9 +398,9 @@ def check_pack(pack_dir):
         report.warn('character.json', 'missing: run `novel character new` (the character is called Hero with 100 HP)')
     if sheet is not None:
         check_sheet(sheet, report)
-    if report.ok and novel is not None and sheet is not None:
+    if report.ok and novel is not None:
         from .character import charge_resources
-        rules = sheet.get('rules', {})
+        rules = (sheet or {}).get('rules', {})
         units = set(novel.get('currencies', {})) | set(novel.get('currency_rates', {}))
         for table in novel.get('currency_rates', {}).values():
             units.update(table)

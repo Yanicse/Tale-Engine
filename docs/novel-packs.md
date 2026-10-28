@@ -34,6 +34,10 @@ drops invalid values; with it you see them. `novel campaign new` refuses a pack 
 `tracked_npcs` and `world_rules` are the universal way to keep a universe's own rules out of the engine: nothing else
 in the engine or the page knows a novel by name.
 
+Currency ids become `player_<id>` resource counters. They cannot reuse reserved health, mana, combat or
+death-prevention counters, including when the optional `character.json` is absent. The same restriction applies
+to both sides of every conversion rate.
+
 ## character.json
 
 | Key | Content |

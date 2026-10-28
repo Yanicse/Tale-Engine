@@ -60,3 +60,11 @@ class PackTransactionsTest(unittest.TestCase):
                       {'currency_rates': {'gold': {'mana': 20}}}):
             (self.root / 'novel.json').write_text(json.dumps(novel), encoding='utf-8')
             self.assertTrue(check_pack(self.root).errors)
+
+    def test_optional_character_sheet_does_not_disable_reserved_currency_checks(self):
+        for unit in ('prevention_until_second', 'death_refusal_capacity_hp', 'prevention_survival_hp'):
+            for novel in ({'currencies': {unit: {}}}, {'currency_rates': {unit: {'silver': 20}}},
+                          {'currency_rates': {'silver': {unit: 20}}}):
+                with self.subTest(unit=unit, novel=novel):
+                    (self.root / 'novel.json').write_text(json.dumps(novel), encoding='utf-8')
+                    self.assertTrue(check_pack(self.root).errors)
