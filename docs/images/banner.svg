@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" role="img" aria-label="novel-engine: turn a novel into an interactive campaign">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14101f"/>
+      <stop offset="1" stop-color="#2b1d3a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8be9a8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8be9a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="220" fill="url(#sky)"/>
+  <circle cx="770" cy="70" r="90" fill="url(#glow)"/>
+  <path d="M0 190 Q150 165 300 188 T600 184 T900 192 V220 H0Z" fill="#0c0a14"/>
+  <rect x="757" y="88" width="26" height="102" fill="#e9e3f3"/>
+  <rect x="750" y="80" width="40" height="10" fill="#cfc6dd"/>
+  <rect x="760" y="56" width="20" height="26" fill="#8be9a8" opacity="0.9"/>
+  <path d="M754 56 L770 40 L786 56Z" fill="#cfc6dd"/>
+  <g fill="#f3ecd8" font-family="Georgia, 'Times New Roman', serif">
+    <text x="48" y="104" font-size="54" letter-spacing="1">novel-engine</text>
+    <text x="50" y="142" font-size="20" fill="#c9bfdc">Turn a novel you own into a sourced, resumable interactive campaign.</text>
+  </g>
+  <g fill="#8be9a8" font-family="Consolas, 'Courier New', monospace" font-size="15">
+    <text x="50" y="176">book  &#8594;  canon  &#8594;  campaign  &#8594;  turn  &#8594;  validation  &#8594;  SQLite  &#8594;  page</text>
+  </g>
+</svg>

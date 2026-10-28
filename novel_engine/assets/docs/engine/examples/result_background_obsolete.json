@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1",
+  "request_id": "demo:watch_task_0",
+  "campaign_id": "fictional_demonstration",
+  "status": "rejected",
+  "state_version_before": 1,
+  "state_version_after": 1,
+  "world_minute_after": 2,
+  "applied_events": [],
+  "narration": "",
+  "reason": "Expected version 0, current version 1; the condition of presence at the gates no longer holds."
+}

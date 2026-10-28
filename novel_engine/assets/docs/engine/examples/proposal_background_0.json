@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1",
+  "request_id": "demo:watch_task_0",
+  "campaign_id": "fictional_demonstration",
+  "expected_state_version": 0,
+  "narration": "",
+  "events": [
+    {
+      "event_id": "demo:event_surveillance_0",
+      "world_minute": 1,
+      "description": "The faction reinforces its surveillance of the gates.",
+      "causes": [
+        "demo:arrival_event"
+      ],
+      "conditions": [
+        {
+          "path": "/positions/player",
+          "equals": "town_gate"
+        }
+      ],
+      "changes": [
+        {
+          "operation": "set",
+          "path": "/intentions/faction",
+          "value": "watch_gates"
+        }
+      ],
+      "audience": [
+        "narrator",
+        "npc:faction"
+      ]
+    }
+  ],
+  "blocking_questions": []
+}

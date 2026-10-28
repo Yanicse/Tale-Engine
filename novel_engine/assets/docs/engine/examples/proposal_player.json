@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1",
+  "request_id": "demo:start_turn",
+  "campaign_id": "fictional_demonstration",
+  "expected_state_version": 0,
+  "narration": "You pass through the gates and take the road.",
+  "events": [
+    {
+      "event_id": "demo:event_departure",
+      "world_minute": 2,
+      "description": "The player passes through the gates and takes the road.",
+      "causes": [
+        "demo:action_departure",
+        "demo:movement_2_minutes"
+      ],
+      "conditions": [
+        {
+          "path": "/positions/player",
+          "equals": "town_gate"
+        }
+      ],
+      "changes": [
+        {
+          "operation": "set",
+          "path": "/positions/player",
+          "value": "route"
+        }
+      ],
+      "audience": [
+        "narrator",
+        "player"
+      ]
+    },
+    {
+      "event_id": "demo:event_observation_departure",
+      "world_minute": 2,
+      "description": "The lookout sees the player take the road and informs their faction.",
+      "causes": [
+        "demo:event_departure",
+        "demo:initial_configuration"
+      ],
+      "conditions": [
+        {
+          "path": "/positions/lookout",
+          "equals": "town_gate"
+        },
+        {
+          "path": "/positions/player",
+          "equals": "route"
+        }
+      ],
+      "changes": [
+        {
+          "operation": "set",
+          "path": "/knowledge/faction",
+          "value": [
+            "demo:arrival_event",
+            "demo:event_departure"
+          ]
+        }
+      ],
+      "audience": [
+        "narrator",
+        "npc:faction"
+      ]
+    }
+  ],
+  "blocking_questions": []
+}

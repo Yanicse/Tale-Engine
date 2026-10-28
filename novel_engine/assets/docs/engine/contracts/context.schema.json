@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context contract 0.1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "context_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "world_minute": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "versions": {
+      "type": "object",
+      "properties": {
+        "canon_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canon_snapshot": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adaptation_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "canon_revision",
+        "canon_snapshot",
+        "adaptation_version"
+      ],
+      "additionalProperties": false
+    },
+    "recipient": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scene": {
+      "type": "string",
+      "minLength": 1
+    },
+    "player_action": {
+      "type": "string"
+    },
+    "information": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "canon",
+              "adaptation",
+              "campaign"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "testimony",
+              "belief",
+              "rule"
+            ]
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "origin",
+          "category",
+          "references",
+          "audience"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "commitment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "context_id",
+    "campaign_id",
+    "state_version",
+    "world_minute",
+    "versions",
+    "recipient",
+    "scene",
+    "player_action",
+    "information",
+    "unknowns",
+    "commitment_ids",
+    "rules"
+  ],
+  "additionalProperties": false
+}

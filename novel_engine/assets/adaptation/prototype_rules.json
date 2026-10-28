@@ -1,0 +1,13 @@
+{
+  "version": "prototype-0.1",
+  "status": "provisional_demonstration_rules",
+  "origin": "adaptation",
+  "clock": "fictional minutes, no progress from reading time",
+  "rules": [
+    {"id": "adaptation:movement_demo", "description": "Passing the gate and reaching the road takes two minutes in the demo. This duration describes no canonical distance."},
+    {"id": "adaptation:wait_demo", "description": "Waiting advances the clock by the chosen whole number of minutes."},
+    {"id": "adaptation:incertitude", "description": "Actions without a deterministic rule produce a proposal to arbitrate; no success or roll is invented."},
+    {"id": "adaptation:resources", "description": "An expense cannot make a resource negative. Costs come from an explicit rule."},
+    {"id": "adaptation:effects", "description": "An expired effect is removed by a distinct event and logged at its fictional deadline."}
+  ]
+}

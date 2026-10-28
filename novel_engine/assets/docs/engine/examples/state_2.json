@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "fictional_demonstration",
+  "state_version": 2,
+  "world_minute": 2,
+  "versions": {
+    "canon_revision": 77,
+    "canon_snapshot": "canon/snapshots/canon_revision_77.sqlite",
+    "adaptation_version": "demo-0.1"
+  },
+  "positions": {
+    "player": "route",
+    "lookout": "town_gate"
+  },
+  "knowledge": {
+    "faction": [
+      "demo:arrival_event",
+      "demo:event_departure"
+    ]
+  },
+  "intentions": {
+    "faction": "have_follow_route"
+  },
+  "resources": {
+    "player_gold": 10
+  },
+  "commitments": [],
+  "applied_event_ids": [
+    "demo:arrival_event",
+    "demo:event_departure",
+    "demo:event_observation_departure",
+    "demo:event_plan_route"
+  ]
+}

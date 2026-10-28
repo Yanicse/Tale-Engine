@@ -1,0 +1,27 @@
+# Local private-term list used by tests/test_no_private_traces.py (never commit it)
+.private_terms.txt
+.export_public.json
+
+# Runtime state: campaigns, canon and source books stay local
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+*.db
+*.lock
+*.pdf
+*.epub
+*.zip
+
+# Python and test leftovers
+__pycache__/
+*.pyc
+.tmp-*/
+
+# Generated novel packs and campaigns
+novels/*/text/
+novels/*/work/
+novels/*/sources/
+campaigns/
+.routines/
+*.egg-info/

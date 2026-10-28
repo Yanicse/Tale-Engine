@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "fictional_demonstration",
+  "state_version": 0,
+  "world_minute": 0,
+  "versions": {
+    "canon_revision": 77,
+    "canon_snapshot": "canon/snapshots/canon_revision_77.sqlite",
+    "adaptation_version": "demo-0.1"
+  },
+  "positions": {
+    "player": "town_gate",
+    "lookout": "town_gate"
+  },
+  "knowledge": {
+    "faction": [
+      "demo:arrival_event"
+    ]
+  },
+  "intentions": {
+    "faction": "observe_arrivals"
+  },
+  "resources": {
+    "player_gold": 10
+  },
+  "commitments": [],
+  "applied_event_ids": [
+    "demo:arrival_event"
+  ]
+}

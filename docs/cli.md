@@ -1,0 +1,43 @@
+# Command reference
+
+Run `novel --help`, or `novel <command> --help`, for the live text.
+
+| Command | What it does |
+| --- | --- |
+| `novel doctor` | checks Python, SQLite FTS5, Claude CLI, Codex CLI, API key and pypdf; exit code 1 if a requirement fails |
+| `novel init <slug> [--title T] [--language L] [--preset P]` | creates `novels/<slug>/` with `novel.json` and `theme.json` |
+| `novel ingest <file> --novel <slug> [--volume N]` | extracts the text of a `.txt`, `.md`, `.epub` or `.pdf` book into `text/vNN.jsonl` |
+| `novel canon plan <slug> [--budget N]` | prints the batches and the estimated tokens still to send; sends nothing |
+| `novel canon build <slug> [--engine E] [--model M] [--budget N] [--limit N] [--yes]` | builds or resumes the canon; `--engine` is `manual` (default), `claude`, `codex` or `api`; remote engines need `--yes` |
+| `novel character new <slug> [--name N] [--hp N] [--description T] [--ability ID:LABEL[:COST]] [--force]` | writes `character.json`; asks on a terminal for what you leave out |
+| `novel validate [<slug>]` | lists every error and warning of a pack (all packs without a name); exit code 1 on errors |
+| `novel campaign new <slug> [--start PLACE]` | creates `campaigns/<slug>/campaign.sqlite` from a validated pack and selects it |
+| `novel example [--slug S]` | installs the bundled example novel and starts its campaign |
+| `novel play ...` | plays turns; every option below is passed to it |
+| `novel resume` | shows the active campaign and its pending action, without changing anything |
+| `novel read [--port P] [--no-browser]` | serves the reading page on 127.0.0.1 (port 8765 by default) |
+| `novel routine ...` | handles periods of several days delegated to the narrator, see `novel routine --help` |
+
+## `novel play`
+
+| Option | Meaning |
+| --- | --- |
+| `--text T` / `--text-file F` | plays one action and exits (without it, an interactive loop starts) |
+| `--engine codex\|claude\|api\|manual` | the engine; by default the saved choice, else the first engine available |
+| `--model M`, `--effort`, `--delay`, `--words` | model name, reasoning effort, seconds allowed per generation, target length |
+| `--resume` | processes the pending action again |
+| `--retry` | allows a new model call after a failure or an interruption (needed with `--resume`) |
+| `--reevaluate` | re-evaluates an action that was rejected |
+| `--result ID` | shows a recorded result again, with no model call |
+| `--agenda`, `--summaries`, `--inventory`, `--skills`, `--memories Q`, `--files`, `--creations Q` | local consultations: no turn, no model |
+| `--json` | structured output; `--measures` prints durations and usage on stderr |
+
+Statuses in the JSON output: `recorded` and `question` (the narration is saved and shown), `resume`, `required_memory`,
+`stop_technique` (stopped, nothing lost), and a refusal with a reason.
+
+## Environment
+
+| Variable | Use |
+| --- | --- |
+| `NOVEL_HOME` | folder that holds `novels/`, `campaigns/` and `corpus/` |
+| `ANTHROPIC_API_KEY` | enables the `api` engine; read from the environment only, never stored |

@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1",
+  "fictional": true,
+  "status": "specification_to_run_on_the_future_engine",
+  "scenarios": [
+    {
+      "id": "player_priority",
+      "trigger": "An action arrives during a background computation.",
+      "expected": "Record the departure, reject the obsolete background result, then re-evaluate only the useful reaction.",
+      "example_files": [
+        "examples/state_0.json",
+        "examples/proposal_background_0.json",
+        "examples/proposal_player.json",
+        "examples/result_player.json",
+        "examples/state_1.json",
+        "examples/result_background_obsolete.json"
+      ]
+    },
+    {
+      "id": "off_screen_adaptation",
+      "trigger": "The faction actually observed the departure.",
+      "expected": "It adapts its intention without revealing the plan to the player nor declaring a pursuit that already succeeded.",
+      "example_files": [
+        "examples/context_faction_1.json",
+        "examples/task_1.json",
+        "examples/proposal_background_1.json",
+        "examples/result_background_1.json",
+        "examples/state_2.json"
+      ]
+    },
+    {
+      "id": "npc_secret",
+      "trigger": "An NPC is not in the audience of a secret.",
+      "expected": "The context sent excludes the secret. An empty known_by field is not a proof of ignorance.",
+      "example_files": []
+    },
+    {
+      "id": "deadline",
+      "trigger": "A prepared event is planned in ten fictional minutes.",
+      "expected": "Reading for a long time does not trigger the event. Recheck its conditions when its time comes.",
+      "example_files": []
+    },
+    {
+      "id": "conditional",
+      "trigger": "A reaction assumes that the player enters an inn.",
+      "expected": "The preparation stays without effect if the player chooses the road.",
+      "example_files": []
+    },
+    {
+      "id": "double_execution",
+      "trigger": "A request or an event that was already recorded comes back.",
+      "expected": "No second expense and no duplicate in the log.",
+      "example_files": []
+    },
+    {
+      "id": "resume",
+      "trigger": "The process stops after the transaction but before the display.",
+      "expected": "Find the recorded result and display it without applying the changes again.",
+      "example_files": []
+    },
+    {
+      "id": "promise",
+      "trigger": "The player recalls an old commitment that is absent from the latest exchanges.",
+      "expected": "The search finds the persistent commitment and its status.",
+      "example_files": []
+    },
+    {
+      "id": "unknown",
+      "trigger": "A power has a range that is not quantified in the sources.",
+      "expected": "Keep the unknown; an arbitration that is added is identified as an adaptation.",
+      "example_files": []
+    },
+    {
+      "id": "budget",
+      "trigger": "The player leaves the scene open for a long period.",
+      "expected": "The bounded queue ends and no model call loops.",
+      "example_files": []
+    },
+    {
+      "id": "resource",
+      "trigger": "An action would spend more than the available resource.",
+      "expected": "Refuse the changes or ask for another choice; keep the previous state.",
+      "example_files": []
+    },
+    {
+      "id": "narration",
+      "trigger": "A transaction fails after a narrative proposal.",
+      "expected": "Do not display as acquired a success that was not recorded.",
+      "example_files": []
+    }
+  ]
+}

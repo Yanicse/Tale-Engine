@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "context_id": "demo:context_faction",
+  "campaign_id": "fictional_demonstration",
+  "state_version": 0,
+  "world_minute": 0,
+  "versions": {
+    "canon_revision": 77,
+    "canon_snapshot": "canon/snapshots/canon_revision_77.sqlite",
+    "adaptation_version": "demo-0.1"
+  },
+  "recipient": "npc:faction",
+  "scene": "Fictional demo town, with no attribution to the canon.",
+  "player_action": "",
+  "information": [
+    {
+      "id": "demo:scene",
+      "text": "The player arrived at the town gate.",
+      "origin": "campaign",
+      "category": "fact",
+      "references": [
+        "demo:arrival_event"
+      ],
+      "audience": [
+        "narrator",
+        "player",
+        "npc:faction"
+      ]
+    },
+    {
+      "id": "demo:secret",
+      "text": "A lookout of the faction watches the arrivals.",
+      "origin": "campaign",
+      "category": "fact",
+      "references": [
+        "demo:initial_configuration"
+      ],
+      "audience": [
+        "narrator",
+        "npc:faction"
+      ]
+    }
+  ],
+  "unknowns": [
+    "Identity and powers of the player not defined."
+  ],
+  "commitment_ids": [],
+  "rules": [
+    "demo:movement_2_minutes"
+  ]
+}

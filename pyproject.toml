@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "novel-engine"
+version = "0.1.0"
+description = "Turn a novel you own into a sourced, resumable interactive campaign."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+keywords = ["interactive fiction", "novel", "roleplay", "narrative", "sqlite", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Role-Playing",
+]
+dependencies = []
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4"]
+
+[project.scripts]
+novel = "novel_engine.cli:main"
+
+[tool.setuptools]
+packages = ["novel_engine", "novel_engine.scripts"]
+
+[tool.setuptools.package-data]
+novel_engine = ["*.html", "*.json", "resources/**/*", "assets/**/*", "prompts/**/*"]

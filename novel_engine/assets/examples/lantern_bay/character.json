@@ -1,0 +1,40 @@
+{
+  "name": "Wren Ashby",
+  "hp_max": 30,
+  "description": "Seventeen, apprentice ferry pilot of Saltmere: quick with knots, curious about everything on the water.",
+  "rules": {
+    "passives": {
+      "knot_work": {
+        "label": "Knot work",
+        "free": true,
+        "description": "Wren ties any knot fast and can tell a bad splice by touch.",
+        "limits": "Only ropes and nets within reach."
+      }
+    },
+    "abilities": {
+      "tide_sense": {
+        "label": "Tide sense",
+        "phase": "always",
+        "free": true,
+        "description": "Reads the water and tells where a current will push a boat in the next hour.",
+        "limits": "Only on water Wren has rowed before; useless in thick fog."
+      },
+      "second_wind": {
+        "label": "Second wind",
+        "phase": "always",
+        "description": "A burst of strength that lets Wren row or haul far beyond normal limits for a few minutes.",
+        "limits": "Costs hit points; Wren is exhausted afterwards."
+      }
+    },
+    "costs": {
+      "default_output_percent": 10,
+      "full_power_cost_percent": {
+        "tide_sense": 0,
+        "second_wind": 30
+      }
+    },
+    "forbidden_resources": [
+      "player_hunger"
+    ]
+  }
+}

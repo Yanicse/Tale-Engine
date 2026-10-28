@@ -1,0 +1,1 @@
+Catalogs give only one line per acquired element. Before using, spending, modifying or precisely describing a cataloged element, ask for its sheet through memory_request.query=power:<id>, object:<id> or project:<id>, with no other event in that answer. A simple mention of its existence does not require a sheet.

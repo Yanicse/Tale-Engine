@@ -1,0 +1,43 @@
+name: tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests
+
+  installed:
+    # The package as a user gets it: a normal install, run from an empty folder, no checkout on the path.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install .
+      - name: Smoke test from an empty folder
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir smoke && cd smoke
+          novel doctor
+          novel example
+          novel validate
+          novel resume
+          test -f novels/lantern-bay/canon.sqlite
+          test -f campaigns/lantern-bay/campaign.sqlite

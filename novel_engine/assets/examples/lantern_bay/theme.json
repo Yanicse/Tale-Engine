@@ -1,0 +1,10 @@
+{
+  "preset": "classic",
+  "title": "The Salt Lantern",
+  "subtitle": "A story of Saltmere",
+  "input_hint": "What does {name} do? (Ctrl+Enter to send)",
+  "clock": true,
+  "colors": {},
+  "labels": {"tab.npc": "People", "tab.summaries": "Story so far"},
+  "icons": {"places": [["harbor|quay|pier|tower|lighthouse", "stone-tower"]], "objects": [["lens|lantern", "lantern"]]}
+}

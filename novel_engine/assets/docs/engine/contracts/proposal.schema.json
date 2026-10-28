@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposition contract 0.1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_state_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "narration": {
+      "type": "string"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "world_minute": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "causes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "pattern": "^/(positions|knowledge|intentions|resources)/[^/]+$"
+                },
+                "equals": {}
+              },
+              "required": [
+                "path",
+                "equals"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "operation": {
+                  "type": "string",
+                  "enum": [
+                    "set",
+                    "increment",
+                    "remove"
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "pattern": "^/(positions|knowledge|intentions|resources)/[^/]+$"
+                },
+                "value": {}
+              },
+              "required": [
+                "operation",
+                "path",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "event_id",
+          "world_minute",
+          "description",
+          "causes",
+          "conditions",
+          "changes",
+          "audience"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "blocking_questions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "campaign_id",
+    "expected_state_version",
+    "narration",
+    "events",
+    "blocking_questions"
+  ],
+  "additionalProperties": false
+}

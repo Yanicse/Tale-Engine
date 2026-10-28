@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1",
+  "request_id": "demo:watch_task_1",
+  "campaign_id": "fictional_demonstration",
+  "status": "recorded",
+  "state_version_before": 1,
+  "state_version_after": 2,
+  "world_minute_after": 2,
+  "applied_events": [
+    {
+      "event_id": "demo:event_plan_route",
+      "world_minute": 2,
+      "description": "The faction decides to have the traveler followed on the road.",
+      "causes": [
+        "demo:event_observation_departure"
+      ],
+      "conditions": [
+        {
+          "path": "/knowledge/faction",
+          "equals": [
+            "demo:arrival_event",
+            "demo:event_departure"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "operation": "set",
+          "path": "/intentions/faction",
+          "value": "have_follow_route"
+        }
+      ],
+      "audience": [
+        "narrator",
+        "npc:faction"
+      ]
+    }
+  ],
+  "narration": "",
+  "reason": "Secret decision based on an observed departure; no pursuit is asserted as done yet."
+}

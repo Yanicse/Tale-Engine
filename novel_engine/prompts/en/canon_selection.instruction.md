@@ -1,0 +1,1 @@
+Private references from the novel, neither played events nor knowledge of the player character. State and log take precedence. Unknown dates stay unknown; check every application. A compatible public piece of information can be learned through a played dialogue; audience=narrator protects the preparation, without forbidding a justified transmission.

@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1",
+  "task_id": "demo:watch_task_1",
+  "campaign_id": "fictional_demonstration",
+  "expected_state_version": 1,
+  "kind": "autonomous",
+  "actor_ids": [
+    "faction"
+  ],
+  "context_file": "examples/context_faction_1.json",
+  "goal": "React to the departure that was actually observed.",
+  "not_before_world_minute": 2,
+  "conditions": [
+    {
+      "path": "/knowledge/faction",
+      "equals": [
+        "demo:arrival_event",
+        "demo:event_departure"
+      ]
+    }
+  ],
+  "status": "prepared",
+  "budget": {
+    "max_model_calls": 1,
+    "max_seconds": 15
+  },
+  "cancel_on_player_input": true
+}

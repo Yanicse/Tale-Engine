@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1",
+  "request_id": "demo:watch_task_1",
+  "campaign_id": "fictional_demonstration",
+  "expected_state_version": 1,
+  "narration": "",
+  "events": [
+    {
+      "event_id": "demo:event_plan_route",
+      "world_minute": 2,
+      "description": "The faction decides to have the traveler followed on the road.",
+      "causes": [
+        "demo:event_observation_departure"
+      ],
+      "conditions": [
+        {
+          "path": "/knowledge/faction",
+          "equals": [
+            "demo:arrival_event",
+            "demo:event_departure"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "operation": "set",
+          "path": "/intentions/faction",
+          "value": "have_follow_route"
+        }
+      ],
+      "audience": [
+        "narrator",
+        "npc:faction"
+      ]
+    }
+  ],
+  "blocking_questions": []
+}

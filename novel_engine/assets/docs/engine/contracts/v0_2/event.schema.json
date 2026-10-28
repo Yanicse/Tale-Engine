@@ -1,0 +1,299 @@
+{
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "world_minute": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "causes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^/(positions|knowledge|intentions|resources|beliefs|inventory|effects|relations|powers|commitments|projects)/[^/]+$"
+          },
+          "equals": {}
+        },
+        "required": [
+          "path",
+          "equals"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "set",
+              "increment",
+              "remove"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/(positions|knowledge|intentions|resources|beliefs|inventory|effects|relations|powers|commitments|projects)/[^/]+$"
+          },
+          "value": {}
+        },
+        "required": [
+          "operation",
+          "path",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "audience": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "asset_operations": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "payment",
+              "purchase",
+              "sale",
+              "craft",
+              "consume",
+              "transfer",
+              "gift",
+              "acquire"
+            ]
+          },
+          "money_resource": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "money_delta": {
+            "type": "integer"
+          },
+          "inputs": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "properties": {
+                "item_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "quantity": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "item_id",
+                "quantity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "properties": {
+                "item_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "item_json": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "required": [
+                "item_id",
+                "item_json"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "destination": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "money_resource",
+          "money_delta",
+          "inputs",
+          "outputs",
+          "destination"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "world_second": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 59
+    },
+    "mechanical_operations": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ability",
+              "damage",
+              "elapsed",
+              "blood_interval",
+              "combat_start",
+              "combat_end",
+              "resurrection",
+              "prevent_death"
+            ]
+          },
+          "at_second": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ability_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "output_percent": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "amount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "start_second": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "source_reference": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "kind",
+          "at_second",
+          "ability_id",
+          "output_percent",
+          "amount",
+          "start_second",
+          "source_reference"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "public_consequences": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "arrival",
+              "acquisition",
+              "payment",
+              "damage",
+              "healing",
+              "charge",
+              "knowledge",
+              "commitment",
+              "project",
+              "recall",
+              "intention"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value_json": {
+            "type": "string"
+          },
+          "source_reference": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "value_json",
+          "source_reference"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "event_id",
+    "world_minute",
+    "description",
+    "causes",
+    "conditions",
+    "changes",
+    "audience"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Result contract 0.2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "recorded",
+        "rejected",
+        "deferred",
+        "question"
+      ]
+    },
+    "state_version_before": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "state_version_after": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "world_minute_after": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "applied_events": {
+      "type": "array",
+      "items": {
+        "$ref": "event.schema.json"
+      },
+      "minItems": 0
+    },
+    "narration": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "campaign_id",
+    "status",
+    "state_version_before",
+    "state_version_after",
+    "world_minute_after",
+    "applied_events",
+    "narration",
+    "reason"
+  ],
+  "additionalProperties": false
+}

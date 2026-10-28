@@ -1,0 +1,1 @@
+Maintenance, inspections, mail and open reception according to the agreements in place. No new war, alliance, major expense, constraint or political promise. Stop on an important personal decision or an interruption from the engine.

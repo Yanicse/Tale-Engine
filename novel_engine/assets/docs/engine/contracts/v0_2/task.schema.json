@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Task contract 0.2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_state_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "autonomous",
+        "conditional"
+      ]
+    },
+    "actor_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "context_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "not_before_world_minute": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^/(positions|knowledge|intentions|resources|beliefs|inventory|effects|relations|powers|commitments)/[^/]+$"
+          },
+          "equals": {}
+        },
+        "required": [
+          "path",
+          "equals"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "prepared",
+        "cancelled"
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_model_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_seconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "max_model_calls",
+        "max_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "cancel_on_player_input": {
+      "const": true
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^/(positions|knowledge|intentions|resources|beliefs|inventory|effects|relations|powers|commitments)/[^/]+$"
+      },
+      "minItems": 1
+    },
+    "allowed_audience": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "handler": {
+      "type": "string",
+      "enum": [
+        "script",
+        "model"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "task_id",
+    "campaign_id",
+    "expected_state_version",
+    "kind",
+    "actor_ids",
+    "context_file",
+    "goal",
+    "not_before_world_minute",
+    "conditions",
+    "status",
+    "budget",
+    "cancel_on_player_input",
+    "allowed_paths",
+    "allowed_audience",
+    "handler"
+  ],
+  "additionalProperties": false
+}
