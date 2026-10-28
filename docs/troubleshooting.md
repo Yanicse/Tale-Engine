@@ -19,7 +19,7 @@ Start with `novel doctor` and `novel validate`.
 | `Generation budget reached for this action` | every action may use two generations (an outage or a refused answer counts); `--resume`, `--retry` and a new chat do not add one. `novel unblock` shows what it would do, `novel unblock --apply` grants exactly one more, with a backup |
 | `Manual engine: send ... turn.prompt.md` | not an error: answer the request, save `turn.response.json`, run `novel play --resume --retry --engine manual` |
 | the manual answer is ignored | it answers an older request: the files are rewritten when the request changes, so use the newest `turn.prompt.md` |
-| `Response ... invalid; action kept` | the answer does not match the schema or a rule; the message says which field |
+| `Invalid ... response; action kept` | the answer does not match the schema or a rule; the message says which field |
 | canon batch `failed (no claim with a quote found in the excerpt)` | the model changed the quotes or answered another excerpt; run the build again |
 | canon batch `awaiting_manual_answer` | save `work/<batch>.response.json`, run the build again |
 | port already in use | `novel read --port 8800` |

@@ -233,7 +233,7 @@ class CodexNarrator:
                     self.last_error=collect_failure(b'',safe_detail(detail),None)
                     self.last_error['category']='invalid_response'
                     self.last_metrics['cli_error']=self.last_error
-                raise ModelUnavailable('Response '+self.provider+' invalid; action kept. '+detail) from exc
+                raise ModelUnavailable('Invalid '+self.provider+' response; action kept. '+detail) from exc
             finally:
                 self.last_metrics['model_seconds'] = round(time.monotonic()-started,3)
 

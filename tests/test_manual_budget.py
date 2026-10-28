@@ -58,7 +58,7 @@ class ManualBudgetTest(unittest.TestCase):
         with self.assertRaises(ModelUnavailable):
             self.loop.run_turn('I open the door.')
         self.answer({'narration': 'Missing fields.'})
-        with self.assertRaisesRegex(ModelUnavailable, 'invalid'):
+        with self.assertRaisesRegex(ModelUnavailable, 'Invalid Manual response; action kept.*missing fields'):
             self.loop.run_turn(resume=True, retry=True)
         self.assertEqual(self.generations(), 1)
         self.answer(ANSWER)
