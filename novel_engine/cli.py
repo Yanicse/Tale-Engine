@@ -54,7 +54,7 @@ def doctor(_):
     checks += [('Claude CLI (optional)', bool(find_claude()), find_claude() or 'not found'),
                ('Codex CLI (optional)', bool(find_codex()), find_codex() or 'not found'),
                ('ANTHROPIC_API_KEY (optional)', bool(os.environ.get('ANTHROPIC_API_KEY')), 'set' if os.environ.get('ANTHROPIC_API_KEY') else 'not set'),
-               ('pypdf for PDF (optional)', pdf, 'installed' if pdf else 'pip install "novel-engine[pdf]"')]
+               ('pypdf for PDF (optional)', pdf, 'installed' if pdf else 'pip install "tale-engine[pdf]"')]
     required = {'Python >= 3.10', 'SQLite FTS5'}
     for name, ok, detail in checks:
         print(f"[{'ok' if ok else ('FAIL' if name in required else '--')}] {name}: {detail}")

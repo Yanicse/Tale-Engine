@@ -73,7 +73,7 @@ def read_pdf_pages(path):
     try:
         from pypdf import PdfReader
     except ImportError:
-        raise SystemExit('PDF extraction needs the optional dependency: pip install "novel-engine[pdf]"')
+        raise SystemExit('PDF extraction needs the optional dependency: pip install "tale-engine[pdf]"')
     return [(page.extract_text() or '').strip() for page in PdfReader(str(path)).pages]
 
 

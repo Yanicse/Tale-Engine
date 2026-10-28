@@ -1,6 +1,6 @@
-# novel-engine documentation
+# Tale Engine documentation
 
-novel-engine turns a novel you own into a sourced, resumable interactive campaign. It reads the book, builds a
+Tale Engine turns a novel you own into a sourced, resumable interactive campaign. It reads the book, builds a
 canon of sourced facts, and lets a model narrate your character's story while the engine keeps the state, the
 secrets and the world's clock.
 

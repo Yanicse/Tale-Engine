@@ -11,7 +11,7 @@ Start with `novel doctor` and `novel validate`.
 | `Campaign already exists` | delete the campaign folder yourself if you want a new one; the tool never overwrites a save |
 | `Claude CLI not found` / `Codex CLI not found` | install it, or give the path with `--claude` / `--codex`; or use `--engine manual` |
 | `ANTHROPIC_API_KEY is not set` | export it, or pick another engine |
-| `PDF extraction needs the optional dependency` | `pip install "novel-engine[pdf]"` |
+| `PDF extraction needs the optional dependency` | `pip install "tale-engine[pdf]"` |
 | `Generation interrupted or invalid; input kept` | the action is saved and pending. Fix the cause, then `novel play --resume --retry` |
 | `A generation was already attempted. Use --resume --retry` | add `--retry` to allow a new call |
 | `Manual engine: send ... turn.prompt.md` | not an error: answer the request, save `turn.response.json`, run `novel play --resume --retry --engine manual` |

@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "novel-engine"
+name = "tale-engine"
 version = "0.1.0"
 description = "Turn a novel you own into a sourced, resumable interactive campaign."
 readme = "README.md"
@@ -22,6 +22,10 @@ classifiers = [
     "Topic :: Games/Entertainment :: Role-Playing",
 ]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/Yanicse/Tale-Engine"
+Issues = "https://github.com/Yanicse/Tale-Engine/issues"
 
 [project.optional-dependencies]
 pdf = ["pypdf>=4"]

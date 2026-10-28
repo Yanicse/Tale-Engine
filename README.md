@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/images/banner.svg" alt="novel-engine: turn a novel into an interactive campaign" width="100%"></p>
+<p align="center"><img src="docs/images/banner.svg" alt="Tale Engine: turn a novel into an interactive campaign" width="100%"></p>
 
 <p align="center">
   <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-3776ab">
@@ -7,7 +7,7 @@
   <img alt="Works with Claude, Codex, the Anthropic API, or by hand" src="https://img.shields.io/badge/engines-claude%20%7C%20codex%20%7C%20api%20%7C%20manual-8a2be1">
 </p>
 
-**novel-engine reads a novel you own, builds a canon of sourced facts from it, and lets a model narrate your
+**Tale Engine reads a novel you own, builds a canon of sourced facts from it, and lets a model narrate your
 character's story in that world, while a program keeps the state, the secrets and the world's clock.** The story is saved
 in SQLite after every turn, so you can stop, resume and read it back.
 
@@ -51,6 +51,8 @@ More in [Architecture](docs/architecture.md).
 Python 3.10 or newer. Nothing else is required.
 
 ```bash
+git clone https://github.com/Yanicse/Tale-Engine.git
+cd Tale-Engine
 pip install .
 novel example     # installs "The Salt Lantern", an invented story, and starts its campaign
 novel read        # opens the reading page

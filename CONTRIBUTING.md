@@ -6,7 +6,7 @@ Thanks for helping. A few rules keep the project easy to trust and to install.
 
 ```bash
 git clone <your fork>
-cd novel-engine
+cd Tale-Engine
 pip install -e .
 python -m unittest discover -s tests
 ```
