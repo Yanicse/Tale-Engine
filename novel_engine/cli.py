@@ -193,7 +193,7 @@ def campaign_new(args):
     canon_file = path / 'canon.sqlite'
     if not canon_file.is_file():
         raise SystemExit('No canon yet: run `novel canon build` first.')
-    from .pack import campaign_config, read, seed_powers
+    from .pack import campaign_config, read, seed_powers, seed_resources
     sheet = read(path / 'character.json')
     state = initial_state(args.novel)
     opening = read(path / 'novel.json').get('opening')
@@ -205,6 +205,7 @@ def campaign_new(args):
                  resources={'player_hp': sheet.get('hp_max', 100), 'player_hp_max': sheet.get('hp_max', 100)})
     state['powers'] = seed_powers(sheet)
     config = campaign_config(path, configuration())
+    state['resources'] = seed_resources(sheet, config)
     target = ROOT / 'campaigns' / args.novel / 'campaign.sqlite'
     if target.exists():
         raise SystemExit(f'Campaign already exists: {target}')

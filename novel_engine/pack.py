@@ -118,11 +118,27 @@ def campaign_config(pack_dir, base):
             config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 10),
                                           'full_power_cost_percent': costs['full_power_cost_percent'],
                                           'free_output_up_to_percent': costs.get('free_output_up_to_percent', {})}
-    rates = novel.get('currency_rates')
-    if isinstance(rates, dict) and rates:
-        # `currencies` is the tracked purse (none for a pack); the rates are for the narrator.
-        config['possession_rules'] = {'currencies': {}, 'currency_rates': rates}
+    rates = novel.get('currency_rates') or {}
+    declared = novel.get('currencies') or {}
+    units = set(declared) | set(rates)
+    for table in rates.values():
+        units.update(table)
+    currencies = {}
+    for unit in sorted(units):
+        spec = declared.get(unit, {})
+        resource = 'player_' + unit
+        currencies[resource] = {'owner_id': 'player', 'label': spec.get('label') or unit.replace('_', ' ') + ' coins',
+                                'initial_balance': spec.get('initial_balance', 0)}
+        config['resource_owners'][resource] = 'player'
+    config['possession_rules'] = {'currencies': currencies, 'currency_rates': rates}
     world = [text(r, 400) for r in novel.get('world_rules') or [] if text(r, 400)]
     if world:
         config['world_rules'] = world[:30]
     return config
+
+
+def seed_resources(sheet, config):
+    maximum = sheet.get('hp_max', 100)
+    return {'player_hp': maximum, 'player_hp_max': maximum,
+            **{key: spec.get('initial_balance', 0)
+               for key, spec in config.get('possession_rules', {}).get('currencies', {}).items()}}

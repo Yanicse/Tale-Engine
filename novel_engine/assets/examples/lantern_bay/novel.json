@@ -27,5 +27,15 @@
   "opening": {
     "place": "Saltmere quay",
     "scene": "The Storm Festival fills the Saltmere quay with lantern smoke and fiddle music. Paper boats drift on the black water, each carrying a wish for the sea. Tamsin Reed presses the oars of the Dunlin into your hands: the last ferry back from the festival leaves in a few minutes, and the harbor bell is already tolling for the fog. Above the town, the Gull Tower stands white against the dusk, and the Salt Lantern burns steady and green."
+  },
+  "currencies": {
+    "gold": {
+      "label": "gold coins",
+      "initial_balance": 0
+    },
+    "silver": {
+      "label": "silver coins",
+      "initial_balance": 12
+    }
   }
 }

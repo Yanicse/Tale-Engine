@@ -27,6 +27,7 @@ drops invalid values; with it you see them. `novel campaign new` refuses a pack 
 | `language` | `en`, `fr`, `fr-FR`, `French`... It is the language of the narration, and of the page when a language pack exists (`en`, `fr`) |
 | `tracked_npcs` | list of `{id, name, place, goal}`: each gets one private off-screen step in the world agenda, so they pursue their goal while the player acts elsewhere |
 | `currency_rates` | `{"gold": {"silver": 20}}`: official conversion rates the narrator must apply |
+| `currencies` | `{"gold": {"label": "gold coins", "initial_balance": 10}}`: tracked player money. Currencies named only in conversion rates start at zero. Balances change through validated payments, purchases and sales; conversion rates do not automatically convert a purse. Inventory operations work even with no currencies. |
 | `world_rules` | list of sentences given to the narrator as written (30 at most, 400 characters each) |
 | `opening` | `{place, scene}`: the place where the story starts and the first scene, recorded as the first narration |
 

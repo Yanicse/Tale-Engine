@@ -10,7 +10,7 @@ from pathlib import Path
 from .pack import COLOR_KEYS, COLOR_VALUE, ICON_CATEGORIES, ICON_DIR, ICON_NAME, ICON_PATTERN, PRESETS, TEXT_LIMIT
 from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 
-NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currency_rates', 'world_rules', 'opening'}
+NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening'}
 THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock'}
 SHEET_KEYS = {'name', 'hp_max', 'description', 'rules'}
 RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'hunger_from_health', 'costs'}
@@ -93,13 +93,31 @@ def check_novel(novel, report):
                     report.warn(name, f'tracked_npcs[{number}].{key} is longer than {limit} characters and is cut')
             if not isinstance(item.get('goal'), str) or not item.get('goal', '').strip():
                 report.warn(name, f"tracked_npcs[{number}] ('{item['name']}') has no goal: it will not act off screen")
+    currencies = novel.get('currencies', {})
+    if not isinstance(currencies, dict):
+        report.error(name, "'currencies' must be an object of currency id -> {label, initial_balance}")
+    else:
+        for key, spec in currencies.items():
+            if not IDENT.fullmatch(key) or key in {'hp', 'hp_max', 'mana', 'mana_max', 'combat_id', 'combat_active'}:
+                report.error(name, f'currencies.{key}: invalid or reserved currency id')
+            if not isinstance(spec, dict):
+                report.error(name, f'currencies.{key} must be an object')
+                continue
+            if type(spec.get('initial_balance', 0)) is not int or spec.get('initial_balance', 0) < 0:
+                report.error(name, f'currencies.{key}.initial_balance must be a non-negative integer')
+            if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
+                report.error(name, f'currencies.{key}.label must be a non-empty text')
     rates = novel.get('currency_rates', {})
     if not isinstance(rates, dict):
         report.error(name, "'currency_rates' must be an object such as {\"gold\": {\"silver\": 20}}")
     else:
         for big, table in rates.items():
+            if not IDENT.fullmatch(big) or big in {'hp', 'hp_max', 'mana', 'mana_max', 'combat_id', 'combat_active'}:
+                report.error(name, f'currency_rates.{big}: invalid or reserved currency id')
             if not isinstance(table, dict) or not table or not all(is_number(v) and v > 0 for v in table.values()):
                 report.error(name, f"currency_rates.{big} must map smaller currencies to positive numbers")
+            elif any(not IDENT.fullmatch(key) or key in {'hp', 'hp_max', 'mana', 'mana_max', 'combat_id', 'combat_active'} for key in table):
+                report.error(name, f'currency_rates.{big}: invalid or reserved currency id')
     rules = novel.get('world_rules', [])
     if not isinstance(rules, list) or not all(isinstance(r, str) for r in rules):
         report.error(name, "'world_rules' must be a list of sentences")
