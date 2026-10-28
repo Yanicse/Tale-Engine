@@ -20,7 +20,7 @@ ABILITY_KEYS = {'label', 'phase', 'free', 'description', 'limits', 'cooldown', '
                 'parameters', 'scaling', 'effect'}
 RESERVED_RESOURCES = {'player_hp', 'player_hp_max', 'player_mana', 'player_mana_max', 'night_id',
                       'player_combat_id', 'player_combat_active', 'player_prevention_until_second',
-                      'player_death_refusal_capacity_hp'}
+                      'player_death_refusal_capacity_hp', 'player_prevention_survival_hp'}
 COST_KEYS = {'default_output_percent', 'free_output_up_to_percent', 'full_power_cost_percent'}
 IDENT = re.compile(r'^[a-z0-9_]{1,40}$')
 WORLD_RULES_MAX = 30

@@ -4,6 +4,8 @@ Charges (character_rules.charges) and cooldowns (abilities.<id>.cooldown) come f
 An ability with `effect: death_prevention` arms the neutralization of a lethal blow (prevent_death operation).
 """
 from copy import deepcopy
+from decimal import Decimal, ROUND_CEILING
+import math
 import re
 
 from .magic import spell_cost
@@ -12,7 +14,7 @@ from .validation import validate
 
 VERSION='mana-1.0'
 BASE_PROTECTED={'player_hp','player_hp_max','player_mana','player_mana_max','night_id','player_combat_id','player_combat_active',
-    'player_prevention_until_second','player_death_refusal_capacity_hp'}
+    'player_prevention_until_second','player_death_refusal_capacity_hp','player_prevention_survival_hp'}
 
 
 def protected(rules):
@@ -149,8 +151,10 @@ def materialize(state,event,config):
             if spec.get('effect')=='death_prevention':
                 from .character import scaled_parameters
                 parameters=scaled_parameters(spec,op['output_percent'] if op['output_percent'] is not None else costs.get('default_output_percent', 100))
-                resources['player_prevention_until_second']=at+parameters['duration_seconds']
-                resources['player_death_refusal_capacity_hp']=int(resources['player_hp_max']*parameters['lethal_prevention_capacity_hp_max_percent']/100)
+                resources['player_prevention_until_second']=at+math.ceil(parameters['duration_seconds'])
+                maximum = Decimal(resources['player_hp_max'])
+                resources['player_death_refusal_capacity_hp']=int(maximum*Decimal(str(parameters['lethal_prevention_capacity_hp_max_percent']))/100)
+                resources['player_prevention_survival_hp']=int((maximum*Decimal(str(parameters['survival_hp_max_percent']))/100).to_integral_value(rounding=ROUND_CEILING))
         elif kind=='damage':
             if type(op['amount']) is not int or op['amount']<=0:raise ValueError('Positive damage required.')
             resources['player_hp']=max(0,resources['player_hp']-op['amount'])
@@ -192,9 +196,10 @@ def materialize(state,event,config):
             _require_charge_phase(charges(rules)[charge], at, rules)
             if type(op['amount']) is not int or not 0<resources['player_hp']<=op['amount']<=resources.get('player_death_refusal_capacity_hp',0):
                 raise ValueError('Non-lethal blow or exceeding the confirmed neutralization capacity.')
-            spec=next(spec for spec in rules['abilities'].values() if spec.get('effect')=='death_prevention')
-            survival=spec['parameters']['survival_hp_max_percent']
-            resources['player_hp']=(resources['player_hp_max']*survival+99)//100
+            survival=resources.get('player_prevention_survival_hp')
+            if type(survival) is not int or not 0 < survival <= resources['player_hp_max']:
+                raise ValueError('Active death-prevention recovery is missing; activate the ability again.')
+            resources['player_hp']=survival
             resources[charge]-=1
     _advance(resources,current,end,rules)
     output=deepcopy(event)

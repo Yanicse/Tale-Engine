@@ -87,6 +87,11 @@ replace health, mana or money. `novel validate` checks the configuration before 
 `scaling` describe effects at reduced power. `forbidden_resources` lists resource names the story must never create.
 Automatic regeneration and health-derived hunger rules are not supported.
 
+For `effect: "death_prevention"`, the active cast saves its scaled damage capacity and survival HP, so another
+ability's parameters cannot replace them after reopening. Survival HP and duration round up to whole hit points
+and fictional seconds; damage capacity rounds down. A later activation replaces those active values.
+If an older save has an active ward without a saved survival value, activate the ability again before using it.
+
 ## From the terminal
 
 ```bash
