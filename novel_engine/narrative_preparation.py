@@ -102,7 +102,7 @@ def build_instructions(packet, modules, word_target):
     blocks.extend((INSTRUCTIONS, COHERENCE))
     result = ''.join(blocks)
     if rules.get('mechanics'):
-        result = result.replace('en version 1.2', 'en version 1.3')
+        result = result.replace('envelope is version 1.2', 'envelope is version 1.3')
     return result
 
 

@@ -68,5 +68,15 @@ class Translation(unittest.TestCase):
             self.assertEqual(prompts.load('a.one', 'xx'), 'English one')
 
 
+class EnvelopeVersion(unittest.TestCase):
+    def test_instructions_announce_the_version_the_schema_requires(self):
+        from novel_engine.narrative_preparation import ALL_MODULES, build_instructions
+        plain = build_instructions({'campaign_rules': {}}, list(ALL_MODULES), 180)
+        self.assertIn('envelope is version 1.2', plain)
+        mechanics = build_instructions({'campaign_rules': {'mechanics': {'version': 'mana-1.0'}}}, list(ALL_MODULES), 180)
+        self.assertIn('envelope is version 1.3', mechanics)
+        self.assertNotIn('version 1.2', mechanics)
+
+
 if __name__ == '__main__':
     unittest.main()

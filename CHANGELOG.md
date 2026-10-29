@@ -30,6 +30,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - The arc decision names `a_prepare` and `fact_world` are now `to_prepare` and `world_fact`; arcs saved with the old
   status still read correctly. The canon selection looks for spells and coins instead of the French `sort` and `pieces`.
 - New feature wording is English. Existing saves are not converted to the new mana mode automatically.
+- With installed mechanics, the narrator's instructions announce the envelope version 1.3 that the answer schema
+  requires; they still said 1.2 because the switch looked for the French sentence.
 
 ## 0.1.0
 
