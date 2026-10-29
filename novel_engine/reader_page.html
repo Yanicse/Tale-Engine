@@ -805,9 +805,9 @@ function renderHeader(){
   document.documentElement.style.setProperty('--name-player',JSON.stringify(name));
   document.getElementById('text').placeholder=(cfg.input_hint||tr('input.hint')).split('{name}').join(name);
   z.appendChild(el('span','chip',state.clock.date));
-  z.appendChild(el('span','chip',state.exchange_count+' exchanges'));
-  z.appendChild(el('span','chip','version '+state.state_version));
-  if(state.has_pending_action)z.appendChild(el('span','chip waiting','action en waiting'));
+  z.appendChild(el('span','chip',tr('header.exchanges',{n:state.exchange_count})));
+  z.appendChild(el('span','chip',tr('header.version',{n:state.state_version})));
+  if(state.has_pending_action)z.appendChild(el('span','chip waiting',tr('header.pending')));
 }
 
 function cycle(firstTime){

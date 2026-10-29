@@ -54,6 +54,14 @@ class PageUsesKnownKeys(unittest.TestCase):
         for phrase in ('No scene', 'Reading failed', 'Turn recorded', 'Search the story', 'Hit points', 'Sending...'):
             self.assertNotIn("'" + phrase, script)
 
+    def test_header_chips_are_translated(self):
+        script = PAGE[PAGE.index('<script>'):PAGE.index('</script>')]
+        for phrase in ("' exchanges'", "'version '", 'en waiting'):
+            self.assertNotIn(phrase, script)
+        for key in ('header.exchanges', 'header.version', 'header.pending'):
+            self.assertIn("tr('" + key + "'", script)
+        self.assertEqual(ui_text.labels_for('fr')['header.pending'], 'action en attente')
+
 
 if __name__ == '__main__':
     unittest.main()
