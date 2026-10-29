@@ -98,6 +98,12 @@ class PossessionTests(unittest.TestCase):
         self.rejected([op('purchase', -3, outputs={'fittings': broken})])
         self.rejected([op('purchase', -3, outputs={'fittings': item(0)})])
 
+    def test_uncounted_quantity_is_reported_as_null_not_zero(self):
+        result = self.rejected([op('acquire', outputs={'floats': item(None)})])
+        self.assertIn('Null quantity (not counted) without quantity_precision=unknown: floats', result['reason'])
+        self.assertNotIn('Zero', result['reason'])
+        self.assertEqual(self.apply([op('acquire', outputs={'floats': item(None, 'unknown')})])[0]['status'], 'recorded')
+
     def test_sale_payment_and_service_expense(self):
         result, _ = self.apply([op('sale', 3, inputs=[{'item_id': 'wood', 'quantity': 2}]),
                                 op('payment', -1), op('payment', 4)])

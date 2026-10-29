@@ -36,6 +36,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
   `novel canon search` and the other direct commands failed on characters it cannot encode.
 - The reading page header translates its exchange count, version and pending action chips (`header.*` keys); it showed
   `action en waiting` in every language.
+- An object without a figure is refused as a `Null quantity (not counted)` when its precision is not `unknown`; the
+  message said `Zero quantity`, which told the model that an uncounted quantity was zero.
 
 ## 0.1.0
 

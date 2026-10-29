@@ -33,7 +33,7 @@ def validate_assets(state, config):
         if item.get('quantity_precision', 'exact') == 'unknown' and item['quantity'] is not None:
             raise ValueError('Unknown quantity with an invented figure: ' + key)
         if item['quantity'] is None and item.get('quantity_precision') != 'unknown':
-            raise ValueError('Zero quantity without an unknown precision: ' + key)
+            raise ValueError('Null quantity (not counted) without quantity_precision=unknown: ' + key)
         for field in ('location', 'condition', 'possession_status', 'quantity_precision', 'unit'):
             if field not in item:
                 raise ValueError('Possession metadata missing: ' + key + ':' + field)
