@@ -32,6 +32,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - New feature wording is English. Existing saves are not converted to the new mana mode automatically.
 - With installed mechanics, the narrator's instructions announce the envelope version 1.3 that the answer schema
   requires; they still said 1.2 because the switch looked for the French sentence.
+- The `novel` commands write UTF-8. On Windows, a redirected output used the ANSI code page, so `novel unblock`,
+  `novel canon search` and the other direct commands failed on characters it cannot encode.
 
 ## 0.1.0
 

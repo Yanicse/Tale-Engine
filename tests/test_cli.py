@@ -1,4 +1,5 @@
 from contextlib import closing
+import io
 import json
 import sqlite3
 import shutil
@@ -60,6 +61,27 @@ class CliTest(unittest.TestCase):
         self.assertEqual((result['remaining'], result['failed'], result['claims']), (0, [], 1))
         repo = CanonRepository(pack / 'canon.sqlite', 1)
         self.assertTrue(repo.search('harbor dawn'))
+
+    def test_output_is_utf8_when_the_console_code_page_cannot_encode_it(self):
+        # A redirected output on Windows uses the ANSI code page: printing Cyrillic must not fail.
+        self.run_cli('init', 'demo')
+        pack = self.tmp / 'demo'
+        (pack / 'text').mkdir(exist_ok=True)
+        page = 'Мира плывёт из гавани.'
+        (pack / 'text' / 'v01.jsonl').write_text(json.dumps({'volume': 1, 'page': 1, 'text': page}) + '\n',
+                                                encoding='utf-8')
+        batch = canon_build.plan(pack)[0]
+        (pack / 'work').mkdir(exist_ok=True)
+        answer = {'entities': [{'id': 'mira', 'kind': 'character', 'name': 'Мира'}],
+                  'claims': [{'subject': 'mira', 'statement': page, 'predicate': 'travel', 'quote': page[:-1], 'page': 1}]}
+        (pack / 'work' / (batch['id'] + '.response.json')).write_text(json.dumps(answer), encoding='utf-8')
+        canon_build.build(pack, 'manual', log=lambda *_: None)
+        raw = io.BytesIO()
+        stream = io.TextIOWrapper(raw, encoding='cp1252')
+        with mock.patch.object(sys, 'stdout', stream):
+            self.assertEqual(self.run_cli('canon', 'search', 'demo', 'гавани'), 0)
+            stream.flush()
+        self.assertIn(page, raw.getvalue().decode('utf-8'))
 
     def test_game_commands_forward_leading_options(self):
         seen = {}

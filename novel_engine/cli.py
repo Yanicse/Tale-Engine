@@ -329,6 +329,10 @@ def passthrough(name):
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else list(argv)
+    # A redirected output on Windows uses the ANSI code page, which cannot print every book's characters.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8')
     # argparse cannot forward a leading option such as `novel play --text ...`: hand over the arguments untouched.
     if argv and argv[0] in SCRIPTS:
         return run_script(argv[0], argv[1:])
