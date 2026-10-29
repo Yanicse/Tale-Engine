@@ -154,7 +154,7 @@ class RoutineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'bound'): self.r.apply(self.response(w, w['bound'] + 1))
         self.assertEqual(self.c.state(), before)
         with self.assertRaisesRegex(ValueError, 'already received'): self.r.apply(self.response(w))
-        self.r.correct()
+        self.assertEqual(sorted(self.r.correct()), ['next', 'remote_calls', 'status'])
         self.assertEqual(self.r.apply(self.response())['status'], 'recorded')
 
     def test_limit_includes_arcs_truncation_interruptions_and_daily_report(self):

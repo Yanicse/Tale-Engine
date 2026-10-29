@@ -157,6 +157,19 @@ class ArcTests(unittest.TestCase):
         self.assertEqual(seen[0]['max_review_delay'], REVIEW_DELAY)
         self.assertNotIn('delay_instruction', seen[0])
 
+    def test_chronicle_packet_keys_are_english(self):
+        self.register()
+        seen = []
+        def transform(packet, response):
+            seen.append(packet['chronicle'])
+            return self.response(packet, response)
+        self.planner.transform = transform
+        self.loop.run_turn('Hello.')
+        self.assertIn('recent_manifestations', seen[0])
+        self.assertIn('manifestations_per_review', seen[0]['limits'])
+        self.assertNotIn('manifestations_recentes', seen[0])
+        self.assertNotIn('manifestations_par_revision', seen[0]['limits'])
+
     def test_long_ellipsis_cannot_skip_arc_review(self):
         self.register()
         self.planner.transform = self.response

@@ -507,7 +507,7 @@ class Routine:
             self.data['expected_state_version'] = read_state(self.campaign)['state_version']
             self._save()
             return {'status': 'allowed_correction', 'remote_calls': 0,
-                    'suite': 'prepare then provide a fixed answer; no accepted answer modified.'}
+                    'next': 'prepare then provide a fixed answer; no accepted answer modified.'}
 
     def _apply_turn(self, work, response):
         prepared = work['prepared']

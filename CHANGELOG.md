@@ -38,6 +38,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
   `action en waiting` in every language.
 - An object without a figure is refused as a `Null quantity (not counted)` when its precision is not `unknown`; the
   message said `Zero quantity`, which told the model that an uncounted quantity was zero.
+- The planner's chronicle packet names `recent_manifestations` and `limits.manifestations_per_review` instead of the
+  French `manifestations_recentes` and `manifestations_par_revision`; `novel routine correct` answers with `next`
+  instead of `suite`.
 
 ## 0.1.0
 

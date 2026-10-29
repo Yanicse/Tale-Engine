@@ -362,9 +362,9 @@ class WorldPlanner:
             clocks=self.clocks()
             nodes=self.chronology_nodes()
             packet['chronicle']={'clocks':clocks,'canon_chronology':nodes,'agenda_active':agenda,
-                'manifestations_recentes':resolved,
+                'recent_manifestations':resolved,
                 'limits':{'active_clocks':MAX_CLOCKS,'new_clocks':MAX_NEW_CLOCKS,'max_advance':MAX_STEP,
-                           'manifestations_par_revision':MAX_MANIFESTATIONS,'pending_manifestations':MAX_PENDING,
+                           'manifestations_per_review':MAX_MANIFESTATIONS,'pending_manifestations':MAX_PENDING,
                            'horizon_minutes':CHRONICLE_HORIZON}}
             allowed|={c['reference'] for c in clocks}|{'chronology:'+n['id'] for n in nodes}
             allowed|={'agenda:'+a['entry_id'] for a in agenda}
