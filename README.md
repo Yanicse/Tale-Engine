@@ -1,6 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Tale Engine: turn a novel into an interactive campaign" width="100%"></p>
 
 <p align="center">
+  <a href="https://github.com/Yanicse/Tale-Engine/actions/workflows/tests.yml"><img alt="tests" src="https://github.com/Yanicse/Tale-Engine/actions/workflows/tests.yml/badge.svg"></a>
+  <a href="https://github.com/Yanicse/Tale-Engine/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Yanicse/Tale-Engine"></a>
   <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-3776ab">
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
   <img alt="No dependencies" src="https://img.shields.io/badge/dependencies-none-brightgreen">
