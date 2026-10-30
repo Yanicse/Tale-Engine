@@ -1,7 +1,6 @@
 """Anthropic API and manual narrators, and the engine factory."""
 import json
 import shutil
-import sys
 import tempfile
 import threading
 import unittest

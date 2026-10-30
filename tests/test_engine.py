@@ -1,6 +1,5 @@
 """Tests of the local engine, of the races and of the separation of information."""
 from copy import deepcopy
-import hashlib
 import io
 import json
 from pathlib import Path

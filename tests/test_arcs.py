@@ -2,7 +2,6 @@
 from copy import deepcopy
 import json
 from pathlib import Path
-import sqlite3
 import unittest
 from unittest.mock import patch
 

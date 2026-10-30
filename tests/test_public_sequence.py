@@ -21,7 +21,6 @@ from novel_engine.adapters import ModelUnavailable
 from novel_engine.agenda import Agenda
 from novel_engine.campaign import Campaign
 from novel_engine.contracts import ROOT as HOME
-from novel_engine.demo import proposal
 from novel_engine.narrative import NarrativeLoop, narrative_lock
 from novel_engine.scripts.play_narrative import main
 from test_loop_audit import LocalNarrator, LocalPlanner

@@ -15,7 +15,7 @@ from novel_engine.narration_codex import CodexNarrator
 from novel_engine.narrative import NarrativeLoop
 from novel_engine.campaign import Campaign
 from novel_engine.demo import initial_state,configuration
-from novel_engine.planner import WorldPlanner,review_world,CodexPlanner
+from novel_engine.planner import review_world,CodexPlanner
 
 
 class DiagnosticTests(unittest.TestCase):

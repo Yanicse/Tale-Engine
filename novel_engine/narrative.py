@@ -13,7 +13,6 @@ from . import attempt_archives as archives
 from .contracts import ASSETS, ROOT, check, check_json
 from .memory import select_facts
 from .magic import cost_table
-from .instructions import CHRONICLE_REPORTS
 
 # Ceiling raised from 192 to 256 KiB on 17 October 2026: the useful context reached 98%.
 CONTEXT_BUDGET_BYTES=262144

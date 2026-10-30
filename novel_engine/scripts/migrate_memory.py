@@ -10,7 +10,6 @@ import uuid
 
 PKG_PARENT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG_PARENT))
-from novel_engine.campaign import Campaign
 from novel_engine.indexed_memory import MemoryIndex
 from novel_engine.narrative import narrative_lock
 

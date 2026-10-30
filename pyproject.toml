@@ -38,3 +38,19 @@ packages = ["novel_engine", "novel_engine.scripts"]
 
 [tool.setuptools.package-data]
 novel_engine = ["*.html", "*.json", "resources/**/*", "assets/**/*", "prompts/**/*"]
+
+[tool.ruff]
+target-version = "py310"
+extend-exclude = ["novels", "campaigns"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+ignore = ["F841"]
+
+[tool.coverage.run]
+source = ["novel_engine"]
+omit = ["novel_engine/scripts/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

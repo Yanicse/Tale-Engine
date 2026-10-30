@@ -1,6 +1,5 @@
 """Explicit bounded resumes and the documentary repair, with receipts kept and no remote call."""
 from contextlib import closing
-from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path

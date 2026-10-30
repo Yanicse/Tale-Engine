@@ -1,5 +1,4 @@
 """Summarizer, chronicler, mandatory deadlines and resumes without a remote call."""
-from copy import deepcopy
 import json
 from pathlib import Path
 import sys

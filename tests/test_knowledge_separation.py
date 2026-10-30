@@ -1,5 +1,4 @@
 """Who may know what: beliefs, secrets, old promises and canon access, with a canon built from the bundled example."""
-from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path

@@ -37,7 +37,6 @@ class CreationPolicyTests(unittest.TestCase):
             self.assertNotIn(creation_policy.TRANSPORT, built)
 
     def test_transport_is_added_only_for_the_creation_format(self):
-        import json
         import tempfile
         from novel_engine.campaign import Campaign
         from novel_engine.contracts import ROOT

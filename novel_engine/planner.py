@@ -6,7 +6,7 @@ import time
 import unicodedata
 
 from .adapters import AwaitingAnswer, ModelUnavailable
-from .agenda import Agenda, ACTIVE, RESPONSE_LIMIT, date
+from .agenda import Agenda, RESPONSE_LIMIT, date
 from .contracts import ASSETS, ROOT, check_json
 from .indexed_memory import MemoryIndex
 from .narration_codex import CodexNarrator

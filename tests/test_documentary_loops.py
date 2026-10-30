@@ -1,5 +1,4 @@
 """Targeted search, knowledge transmission and persistent budgets, offline."""
-from copy import deepcopy
 from contextlib import closing
 import json
 from pathlib import Path
@@ -9,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from novel_engine.campaign import Campaign
-from novel_engine.canon_selection import CanonSelector, retain_context, public_references
+from novel_engine.canon_selection import CanonSelector
 from novel_engine.contracts import ROOT, check_json
 from novel_engine.demo import initial_state, configuration
 from novel_engine.narrative import NarrativeLoop

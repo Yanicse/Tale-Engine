@@ -1,7 +1,6 @@
 """Targeted context, optional reductions and calculated consequences, with no remote call."""
 from copy import deepcopy
 import json
-import os
 from pathlib import Path
 import sys
 import tempfile

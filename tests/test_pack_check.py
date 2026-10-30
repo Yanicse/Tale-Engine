@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from novel_engine import cli, pack, resume
+from novel_engine import cli, pack
 from novel_engine.character import ability_context
 from novel_engine.contracts import ROOT
 from novel_engine.pack_check import check_pack
