@@ -204,6 +204,8 @@ class Reader:
     def creations(self):
         with closing(self._connect()) as con:
             _, config = self._campaign(con)
-            if config.get('creation_format') != '1' or not CreationRegistry(con).exists():
+            if config.get('creation_format') != '1':
                 return None
+            if not CreationRegistry(con).exists():  # Active format, nothing invented yet.
+                return {'creations': []}
             return _clean({'creations': CreationRegistry(con).packet('', 'player')})

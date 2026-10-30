@@ -86,11 +86,26 @@ class CliTest(unittest.TestCase):
     def test_game_commands_forward_leading_options(self):
         seen = {}
 
-        def fake(path, run_name=None):
+        def fake(module, run_name=None, alter_sys=False):
             seen['argv'] = list(sys.argv)
-        with mock.patch.object(cli.runpy, 'run_path', fake):
+        with mock.patch.object(cli.runpy, 'run_module', fake):
             self.assertEqual(cli.main(['play', '--text', 'I wait.', '--engine', 'manual']), 0)
         self.assertEqual(seen['argv'][1:], ['--text', 'I wait.', '--engine', 'manual'])
+
+    def test_the_help_of_a_game_command_names_the_novel_command(self):
+        raw = io.BytesIO()
+        stream = io.TextIOWrapper(raw, encoding='utf-8')
+        with mock.patch.object(sys, 'stdout', stream):
+            self.assertEqual(cli.main(['resume', '--help']), 0)
+            stream.flush()
+        self.assertTrue(raw.getvalue().startswith(b'usage: novel resume'), raw.getvalue()[:60])
+
+    def test_the_ability_prompt_shows_a_single_percent_sign(self):
+        with mock.patch('builtins.input', side_effect=['']) as asked:
+            cli.ability_rules([], ask_abilities=True)
+        prompt = asked.call_args[0][0]
+        self.assertIn('% of max mana', prompt)
+        self.assertNotIn('%%', prompt)
 
     def test_remote_engine_requires_confirmation(self):
         self.run_cli('init', 'demo')

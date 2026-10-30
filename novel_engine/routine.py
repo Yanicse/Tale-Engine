@@ -30,8 +30,8 @@ DEFAULT_POLICY = {'points_per_step': None, 'period_days': 7, 'pause_period': Fal
 LEGACY_POLICY = {'points_per_step': 1, 'period_days': None, 'pause_period': False,
                  'stop_on': ['critical'], 'alert_days': 0, 'arcs_review_days': 2,
                  'bulletins': False, 'signals': False}
-DEFAULT_TOPICS = ['political factions and decisions', 'levies and military movements',
-                  'inhabitants and relatives', 'projects and commitments', 'threats and world initiatives']
+DEFAULT_TOPICS = ['factions and their decisions', 'inhabitants and relatives', 'projects and commitments',
+                  'threats and world initiatives']
 DEFAULT_DELEGATION = load_prompt('routine.default_delegation')
 GUIDANCE = load_prompt('routine.guidance')
 
@@ -70,7 +70,7 @@ def write_json(path, value):
 
 
 def read_state(campaign):
-    """Read-only, including for the preview and the opening of a file."""
+    """Read-only, including for the preview and the opening of a routine."""
     if not campaign.path.is_file():
         raise ValueError('Existing save required.')
     with closing(sqlite3.connect(campaign.path.resolve().as_uri() + '?mode=ro', uri=True)) as con:
@@ -156,10 +156,10 @@ class Routine:
         self.manifest = self.folder / 'session.json'
         self.data = read_json(self.manifest)
         if self.data.get('version') != 1:
-            raise ValueError('Incompatible routine file version.')
+            raise ValueError('Incompatible routine folder version.')
         self.campaign = Campaign(self.data['campaign'])
         if not self.campaign.path.is_file():
-            raise ValueError('File save missing; no automatic database creation.')
+            raise ValueError('The save of this routine folder is missing; no automatic database creation.')
 
     @classmethod
     def create(cls, folder, campaign, days=7, objective='', topics=None, delegation=DEFAULT_DELEGATION,
@@ -190,7 +190,7 @@ class Routine:
         return self.data['start_minute'] + (self._period(minute) + 1) * days * DAY if days else None
 
     def review(self, period, end):
-        """Compact review of a period, reread in the accepted receipts of the file."""
+        """Compact review of a period, reread in the accepted receipts of the folder."""
         steps = [s for s in self.data['steps'] if s['phase'] == 'turn' and s.get('period') == period]
         narrations = [read_json(self.folder / s['file'] / 'result.json').get('narration', '')
                       for s in steps]
@@ -204,12 +204,12 @@ class Routine:
     def _reload(self):
         self.data = read_json(self.manifest)
         if Path(self.data['campaign']).resolve() != self.campaign.path.resolve():
-            raise ValueError('The file changed campaign; explicitly reopen the file.')
+            raise ValueError('The folder changed campaign; open the routine again explicitly.')
         if not self.campaign.path.is_file():
-            raise ValueError('File save missing; no automatic database creation.')
+            raise ValueError('The save of this routine folder is missing; no automatic database creation.')
 
     def _action(self):
-        return (f"Routine of {self.data['days']} days of file {self.data['id']} until {self.data['end']} "
+        return (f"Routine of {self.data['days']} days (folder {self.data['id']}) until {self.data['end']} "
                 f"(minute {self.data['end_minute']}, fixed end). "
                 f"Goal: {self.data['goal']} Topics: {'; '.join(self.data['subjects'])}. "
                 f"Delegation: {self.data['delegation']} Narrator in the chat, no remote call.")
@@ -217,7 +217,7 @@ class Routine:
     def status(self):
         self._reload()
         state = read_state(self.campaign)
-        return {'status': self.data['status'], 'file': str(self.folder),
+        return {'status': self.data['status'], 'folder': str(self.folder),
                 'current_date': date(state['world_minute']), 'end': self.data['end'],
                 'minutes_left': max(0, self.data['end_minute'] - state['world_minute']),
                 'recorded_steps': len(self.data['steps']), 'active': self.data['active'],

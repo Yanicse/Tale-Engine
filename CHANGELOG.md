@@ -41,6 +41,16 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - The planner's chronicle packet names `recent_manifestations` and `limits.manifestations_per_review` instead of the
   French `manifestations_recentes` and `manifestations_par_revision`; `novel routine correct` answers with `next`
   instead of `suite`.
+- Routines call their folder a folder: `novel routine status` answers with `folder` instead of `file`, and the messages
+  no longer speak of a "file". The default topics and delegation fit any novel; they spoke of levies, military movements
+  and war.
+- `novel play --help` and the other game commands show `usage: novel play` instead of the script file name, and the
+  ability prompt of `novel character new` shows `%` instead of `%%`.
+- `novel resume --enable campaigns/<slug>/campaign.sqlite` finds the save from any folder (it was read from the current
+  folder, not `NOVEL_HOME`), reports a refused path without a traceback, and is documented.
+- The reading page shows an empty Creations tab on a new campaign instead of "Creative format inactive".
+- The documentation no longer says that a `corpus/` folder is created. `campaign_cli` reads the active campaign by
+  default, except `init` and `action-demo` which keep the fictional demo save.
 
 ## 0.1.0
 

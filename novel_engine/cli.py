@@ -136,7 +136,7 @@ def ability_rules(specs, ask_abilities=False):
     specs = list(specs or [])
     while ask_abilities:
         try:
-            line = input('Ability as id:Label[:cost %% of max mana at full power], empty to finish []: ').strip()
+            line = input('Ability as id:Label[:cost % of max mana at full power], empty to finish []: ').strip()
         except EOFError:
             break
         if not line:
@@ -314,10 +314,11 @@ def configure(args):
 
 
 def run_script(name, rest):
-    script = PACKAGE / 'scripts' / SCRIPTS[name]
-    sys.argv = [str(script)] + list(rest)
+    module = 'novel_engine.scripts.' + SCRIPTS[name].removesuffix('.py')
+    # argparse names the program after argv[0]; alter_sys=False keeps it, so the help shows `novel play`.
+    sys.argv = ['novel ' + name] + list(rest)
     try:
-        runpy.run_path(str(script), run_name='__main__')
+        runpy.run_module(module, run_name='__main__', alter_sys=False)
     except SystemExit as stop:
         return stop.code or 0
     return 0

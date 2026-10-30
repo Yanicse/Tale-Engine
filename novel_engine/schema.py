@@ -1,7 +1,7 @@
 """SQLite schema version through PRAGMA user_version; explicit, ordered migrations.
 
 Resuming or reading never applies a migration. Existing databases migrate
-only through `campaign_cli.py migrate-schema --apply`; a new database is born up to date.
+only through `python -m novel_engine.scripts.campaign_cli migrate-schema --apply`; a new database is born up to date.
 The historical CREATE TABLE IF NOT EXISTS statements of the modules stay valid and unchanged.
 """
 

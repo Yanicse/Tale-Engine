@@ -89,9 +89,17 @@ class RoutineTests(unittest.TestCase):
         code, opened = call('--campaign', str(self.c.path), 'open', '--days', '2', '--folder', str(folder), '--legacy-mode')
         self.assertEqual((code, opened['status']), (0, 'ready'))
         code, status = call('status', '--folder', str(folder))
-        self.assertEqual((code, status['status']), (0, 'ready'))
+        self.assertEqual((code, status['status'], status['folder']), (0, 'ready', str(folder.resolve())))
         code, failure = call('--campaign', str(self.c.path), 'open', '--folder', str(folder))
         self.assertEqual((code, failure['status']), (1, 'error'))
+
+    def test_default_topics_and_delegation_fit_any_novel(self):
+        routine = Routine.create(self.root / 'plain', self.c)
+        action = routine._action()
+        for word in ('military', 'levies', 'war', 'political'):
+            self.assertNotIn(word, action.casefold())
+        self.assertIn('(folder ' + routine.data['id'] + ')', action)
+        self.assertNotIn(' of file ', action)
 
     def test_invalid_duration_and_existing_folder_refused(self):
         for value in (0, -1, 366, True, 1.5):

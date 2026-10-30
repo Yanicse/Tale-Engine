@@ -10,7 +10,10 @@ ACTIVE = ROOT / 'campaigns/active.json'
 
 
 def select_campaign(path, allow_demo=False, selection=ACTIVE):
-    path = Path(path).resolve()
+    path = Path(path)
+    if not path.is_absolute() and (ROOT/path).is_file():
+        path = ROOT/path  # campaigns/<slug>/campaign.sqlite, as printed by `novel resume`, from any folder
+    path = path.resolve()
     if not path.is_relative_to((ROOT/'campaigns').resolve()) or not path.is_file():
         raise ValueError('Existing save expected in campaigns/')
     campaign = Campaign(path)

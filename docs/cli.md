@@ -15,7 +15,7 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `novel campaign new <slug> [--start PLACE] [--no-creations] [--bounded-recovery]` | creates `campaigns/<slug>/campaign.sqlite` from a validated pack and selects it. The campaign keeps the creations register, selects the canon claims that match each turn for the narrator, installs the periodic planner (summaries) and, when the pack ships them, the chronicler and the arcs; `--no-creations` and `--bounded-recovery` change the two optional formats (see `novel configure`) |
 | `novel example [--slug S] [--world]` | installs the bundled example novel and starts its campaign; `--world` adds the example chronicler (two clocks) and arcs, which make the planner review the world on the first turn |
 | `novel play ...` | plays turns; every option below is passed to it |
-| `novel resume` | shows the active campaign and its pending action, without changing anything |
+| `novel resume [--enable PATH] [--demo]` | shows the active campaign and its pending action, without changing anything; `--enable campaigns/<slug>/campaign.sqlite` first selects another campaign (`--demo` allows the fictional demo) |
 | `novel read [--port P] [--no-browser]` | serves the reading page on 127.0.0.1 (port 8765 by default) |
 | `novel unblock [--campaign P] [--apply]` | previews, then with `--apply` grants one more generation (backed up first) to a pending action whose budget of two generations is spent |
 | `novel configure [--creations on\|off] [--bounded-recovery on\|off] [--canon-selection on\|off] [--campaign P] [--apply]` | previews, then switches the creations register, the bounded automatic recovery or the canon selection of an existing campaign (backed up first); `--canon-selection on` gives a campaign created before it was the default the sourced claims that match each turn |
@@ -43,5 +43,5 @@ Statuses in the JSON output: `recorded` and `question` (the narration is saved a
 
 | Variable | Use |
 | --- | --- |
-| `NOVEL_HOME` | folder that holds `novels/`, `campaigns/` and `corpus/` |
+| `NOVEL_HOME` | folder that holds `novels/` and `campaigns/` |
 | `ANTHROPIC_API_KEY` | enables the `api` engine; read from the environment only, never stored |

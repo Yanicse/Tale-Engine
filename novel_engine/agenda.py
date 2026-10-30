@@ -474,8 +474,8 @@ class Agenda:
                             ('agenda:'+planned['entry_id'] in u['references'] or
                              outcome['event_id'] in u['references'])]
                 if not successors:
-                    raise ValueError((('An accomplished step must have a next step for its actor, or explicitly finish the '
-                                       'file. Entry: '))+planned['entry_id']+'; actor: '+planned['actor']+
+                    raise ValueError((('An accomplished step must have a next step for its actor, or close the matter explicitly with '
+                                       'the status finished. Entry: '))+planned['entry_id']+'; actor: '+planned['actor']+
                                      '; expected link: agenda:'+planned['entry_id']+' or event '+outcome['event_id']+'.')
         if interruptions and end_instant!=min(interruptions):
             raise ValueError('The turn goes past an interruption requiring a choice from the player.')

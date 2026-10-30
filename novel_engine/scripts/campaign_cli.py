@@ -36,7 +36,7 @@ def migrate_schema(campaign,apply):
 
 
 def main():
-    parser=argparse.ArgumentParser(description='Administration of the local prototype.')
+    parser=argparse.ArgumentParser(description='Low-level JSON commands on a campaign (the active one by default).')
     parser.add_argument('--campaign')
     parser.add_argument('--compact',action='store_true',help='JSON without indentation')
     subs=parser.add_subparsers(dest='command',required=True)
@@ -62,7 +62,8 @@ def main():
     p=subs.add_parser('enter-action');p.add_argument('--text',required=True)
     p=subs.add_parser('search-canon');p.add_argument('--search',required=True);p.add_argument('--sources',action='store_true')
     args=parser.parse_args()
-    if args.command in ('prepare-turn','agenda') and args.campaign is None:
+    # Only init and action-demo work on the fictional demo save; every other command reads the active campaign.
+    if args.command not in ('init','action-demo') and args.campaign is None:
         _,campaign=active_campaign()
         if campaign is None:
             parser.error('No active campaign; select an existing save.')

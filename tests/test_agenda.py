@@ -756,6 +756,13 @@ class AgendaTests(unittest.TestCase):
         self.assertEqual(json.loads(out.getvalue())['status'],'recorded')
         with self.c.transaction() as con:self.assertEqual(Agenda(con).get('courier')['status'],'done')
 
+    def test_manual_cli_reads_the_active_campaign_without_a_campaign_option(self):
+        from novel_engine.scripts import campaign_cli
+        out=io.StringIO()
+        with patch.object(campaign_cli,'active_campaign',return_value=({},self.c)),              patch('sys.argv',['campaign_cli','state']),redirect_stdout(out):
+            campaign_cli.main()
+        self.assertEqual(json.loads(out.getvalue())['state_version'],self.c.state()['state_version'])
+
     def test_conflicting_agenda_replay_is_rejected_without_changing_world(self):
         entry=self.put(self.entry())
         result,loop,_=self.run_response(self.response([self.event(entry['due_minute'],'agenda:courier')],

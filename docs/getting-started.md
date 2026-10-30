@@ -20,7 +20,7 @@ novel doctor
 
 ## Where your files go
 
-`novels/`, `campaigns/` and `corpus/` are created in the **current folder**. Set `NOVEL_HOME` to keep them somewhere
+`novels/` and `campaigns/` are created in the **current folder**. Set `NOVEL_HOME` to keep them somewhere
 else. When you run from a clone of the repository, the clone itself is used.
 
 ## Try the example (no account, no model)

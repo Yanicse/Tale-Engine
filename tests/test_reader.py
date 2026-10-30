@@ -235,6 +235,14 @@ class LectureTests(unittest.TestCase):
         self.assertNotIn(SECRET + 'object', data['possessions'])
         self.assertEqual([e['title'] for e in self.get('/api/agenda')['events']], ['Public appointment'])
 
+    def test_an_active_creations_format_with_nothing_invented_yet_is_an_empty_list(self):
+        from novel_engine.reader import Reader
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tmp-tests') as folder:
+            state, config = initial_state(), configuration()
+            config['creation_format'] = '1'
+            campaign = Campaign(Path(folder) / 'campaign.sqlite').create(state, config)
+            self.assertEqual(Reader(campaign.path).creations(), {'creations': []})
+
     def test_creations_tab_only_when_the_format_is_active(self):
         self.assertEqual(self.request('/api/creations')[0], 404)
         self.assertFalse(self.get('/api/state')['creations_tab'])

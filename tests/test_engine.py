@@ -435,6 +435,18 @@ class EngineTests(unittest.TestCase):
             selection.write_text('{"campaign_path":"../campaign.sqlite","kind":"demo"}',encoding='utf-8')
             with self.assertRaises(ValueError):resume_active(selection)
 
+    def test_a_relative_selection_is_read_from_the_workspace_not_the_current_folder(self):
+        local=Path(self.temp.name)
+        directory=local/'campaigns'/'other';directory.mkdir(parents=True)
+        c=Campaign(directory/'campaign.sqlite').create(initial_state(),configuration())
+        c.open_scene('Other campaign.')
+        selection=local/'campaigns'/'active.json'
+        with patch('novel_engine.resume.ROOT',local), patch('os.getcwd',return_value=str(ROOT)):
+            select_campaign('campaigns/other/campaign.sqlite',allow_demo=True,selection=selection)
+            self.assertEqual(resume_active(selection)['session']['scene'],'Other campaign.')
+            with self.assertRaisesRegex(ValueError,'Existing save expected'):
+                select_campaign('campaigns/missing/campaign.sqlite',allow_demo=True,selection=selection)
+
     def test_prepare_turn_saves_once_and_returns_one_consistent_snapshot(self):
         self.c.open_scene('The guard waits.')
         before=self.c.state()
