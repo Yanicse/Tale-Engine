@@ -18,10 +18,24 @@ __pycache__/
 *.pyc
 .tmp-*/
 
-# Generated novel packs and campaigns
-novels/*/text/
-novels/*/work/
-novels/*/sources/
+# Your novel packs and campaigns: a pack may quote your book, so none of it is committed
+novels/
 campaigns/
 .routines/
+
+# Build, environments and tool caches
 *.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
