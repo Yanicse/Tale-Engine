@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- `novel play --help` is rewritten in plain English: "Consult", "registry", "Structured return for use in a chat"
+  and the other word-for-word texts are gone, and the delays say they are in seconds.
 - The possessions rules name `novel play --inventory --json` instead of the internal `play_narrative.py` script.
 - The archivist rules no longer describe the search scripts of the original project, which "update files": they
   ask to use the save read-only and filter by date and recipient.
