@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The archivist rules no longer describe the search scripts of the original project, which "update files": they
+  ask to use the save read-only and filter by date and recipient.
 - The possessions rules said "buying the balance" for the French "acheter le complément": they now say buying what is
   still missing within the available funds.
 - The character sheets page no longer mentions the original project, its private saves, a hunger rule or saves
