@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The command reference documents every option of `novel play`, adding `--campaign`, `--search`,
+  `--planner-effort`, `--planner-delay`, `--codex` and `--claude`, and calls the local views lookups.
 - `novel --help` lists `.md` among the book formats `novel ingest` accepts.
 - The descriptions of `novel diagnose` and `novel read` and the error of a lookup given with an action no longer
   use the calques "technical consultation" and "official path".

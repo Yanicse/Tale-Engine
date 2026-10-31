@@ -34,7 +34,7 @@ rejection, `--result ID` shows a recorded result with no call. A durable budget 
 
 ## Who knows what
 
-Events and facts name their recipients: `narrator`, `player`, `npc:<id>`. The reading page and the consultation commands
+Events and facts name their recipients: `narrator`, `player`, `npc:<id>`. The reading page and the lookup commands
 read the `player` audience only. Tracked NPCs and factions act through private agenda steps the player does not see.
 Canon facts are private to the narrator; knowing a fact in the book does not mean the character knows it.
 A testimony or an offer is not a verified fact, and a creation (an invented detail) is recorded as such.

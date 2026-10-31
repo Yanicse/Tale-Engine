@@ -1,4 +1,5 @@
 """The documentation stays true: links resolve, commands exist, keys and files it names are real."""
+import argparse
 import re
 import unittest
 from pathlib import Path
@@ -58,6 +59,19 @@ class DocsTest(unittest.TestCase):
     def test_no_page_mentions_the_original_project(self):
         for page in PAGES:
             for phrase in ('source project', 'hunger', 'older save'):
+                self.assertNotIn(phrase, text(page), page.name)
+
+    def test_every_option_of_novel_play_is_documented(self):
+        from tests.test_cli_help import parser_of
+        from novel_engine.scripts import play_narrative
+        page = text(DOCS / 'cli.md')
+        for action in parser_of(play_narrative.main)._actions:
+            if action.option_strings and action.dest != 'help' and action.help != argparse.SUPPRESS:
+                self.assertIn('`' + action.option_strings[0], page)
+
+    def test_no_page_uses_a_word_for_word_phrase(self):
+        for page in PAGES:
+            for phrase in ('consultation',):
                 self.assertNotIn(phrase, text(page), page.name)
 
     def test_the_documented_defaults_match_the_code(self):
