@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- `novel --help` lists `.md` among the book formats `novel ingest` accepts.
 - The descriptions of `novel diagnose` and `novel read` and the error of a lookup given with an action no longer
   use the calques "technical consultation" and "official path".
 - Every `novel` subcommand and option now has a help text: `novel --help` describes `play`, `resume`, `read`,

@@ -58,6 +58,12 @@ class HelpTexts(unittest.TestCase):
         self.assertIn('Play one action and exit', text)
         self.assertIn('review, in seconds', text)
 
+    def test_ingest_help_names_every_accepted_format(self):
+        text = help_text().casefold()
+        line = text[text.rindex(' ingest '):text.rindex(' validate ')]
+        for suffix in ('txt', 'md', 'epub', 'pdf'):
+            self.assertRegex(line, rf'\b{suffix}\b')
+
     def test_every_subcommand_and_option_has_a_help_text(self):
         missing = []
         mains = [('novel', cli.main)] + [(f'novel {name}', importlib.import_module(

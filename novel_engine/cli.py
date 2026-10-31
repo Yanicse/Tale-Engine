@@ -349,7 +349,7 @@ def main(argv=None):
     p.add_argument('--language', default='en', help='language of the narration and the page, such as en or fr')
     p.add_argument('--preset', choices=PRESETS, default='auto', help='look of the reading page')
     p.set_defaults(func=init)
-    p = subs.add_parser('ingest', help='extract the text of a TXT, EPUB or PDF book')
+    p = subs.add_parser('ingest', help='extract the text of a .txt, .md, .epub or .pdf book')
     p.add_argument('file', help='the book file')
     p.add_argument('--novel', required=True, help='slug of the novel pack')
     p.add_argument('--volume', type=int, help='volume number (default: the next one)')
