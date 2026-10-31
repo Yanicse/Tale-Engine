@@ -17,6 +17,9 @@ THEME_JSON = {'preset': 'auto', 'title': '', 'subtitle': '',
               'input_hint': '', 'clock': True, 'colors': {}, 'labels': {}, 'icons': {}}
 SCRIPTS = {'play': 'play_narrative.py', 'resume': 'resume_game.py', 'read': 'read_game.py',
            'routine': 'routine.py', 'diagnose': 'diagnose_context.py'}
+SCRIPT_HELP = {'play': 'play turns', 'resume': 'show the active campaign and its pending action',
+               'read': 'serve the reading page', 'routine': 'play several fictional days, step by step',
+               'diagnose': 'show how the context of one attempt was selected'}
 
 
 def pack(slug):
@@ -341,48 +344,49 @@ def main(argv=None):
     subs = parser.add_subparsers(dest='command', required=True)
     subs.add_parser('doctor', help='check Python, SQLite FTS5 and available engines').set_defaults(func=doctor)
     p = subs.add_parser('init', help='create a novel pack in novels/<slug>')
-    p.add_argument('slug')
-    p.add_argument('--title')
-    p.add_argument('--language', default='en')
-    p.add_argument('--preset', choices=PRESETS, default='auto')
+    p.add_argument('slug', help='folder name of the pack, used in every later command')
+    p.add_argument('--title', help='title of the novel (default: the slug)')
+    p.add_argument('--language', default='en', help='language of the narration and the page, such as en or fr')
+    p.add_argument('--preset', choices=PRESETS, default='auto', help='look of the reading page')
     p.set_defaults(func=init)
     p = subs.add_parser('ingest', help='extract the text of a TXT, EPUB or PDF book')
-    p.add_argument('file')
-    p.add_argument('--novel', required=True)
-    p.add_argument('--volume', type=int)
+    p.add_argument('file', help='the book file')
+    p.add_argument('--novel', required=True, help='slug of the novel pack')
+    p.add_argument('--volume', type=int, help='volume number (default: the next one)')
     p.set_defaults(func=ingest_cmd)
     p = subs.add_parser('validate', help='check a novel pack and list every problem (all packs when no name is given)')
-    p.add_argument('novel', nargs='?')
+    p.add_argument('novel', nargs='?', help='slug of the novel pack')
     p.set_defaults(func=validate)
     p = subs.add_parser('canon', help='plan or build the sourced canon, or search its claims')
-    p.add_argument('action', choices=('plan', 'build', 'search'))
-    p.add_argument('novel')
+    p.add_argument('action', choices=('plan', 'build', 'search'), help='plan the batches, build the canon or search it')
+    p.add_argument('novel', help='slug of the novel pack')
     p.add_argument('words', nargs='*', help='words to look for (search only)')
-    p.add_argument('--engine', choices=('claude', 'codex', 'api', 'manual'), default='manual')
-    p.add_argument('--model')
+    p.add_argument('--engine', choices=('claude', 'codex', 'api', 'manual'), default='manual',
+                   help='engine that extracts the claims (default: manual)')
+    p.add_argument('--model', help='model name (default: the engine default)')
     p.add_argument('--budget', type=int, default=12000, help='input tokens per batch')
     p.add_argument('--limit', type=int, help='stop after this many batches')
     p.add_argument('--yes', action='store_true', help='run after the estimate (needed for remote engines)')
     p.set_defaults(func=canon)
-    p = subs.add_parser('character', help='character sheet assistant')
-    p.add_argument('action', choices=('new',))
-    p.add_argument('novel')
-    p.add_argument('--name')
-    p.add_argument('--hp')
+    p = subs.add_parser('character', help='write a character sheet, asking for what you leave out')
+    p.add_argument('action', choices=('new',), help='write a new character sheet')
+    p.add_argument('novel', help='slug of the novel pack')
+    p.add_argument('--name', help="the character's name")
+    p.add_argument('--hp', help='maximum hit points (default: 100)')
     p.add_argument('--mana', help='maximum mana (default: 100; 0 for a character without magic)')
-    p.add_argument('--description')
+    p.add_argument('--description', help='a short description, sent to the narrator')
     p.add_argument('--ability', action='append', metavar='ID:LABEL[:COST]',
                    help='an ability; COST is the percent of maximum mana paid at 100%% power (0 = free); repeatable')
-    p.add_argument('--force', action='store_true')
+    p.add_argument('--force', action='store_true', help='replace an existing character.json')
     p.set_defaults(func=character_new)
     p = subs.add_parser('example', help='install the bundled example novel and start its campaign (no account needed)')
-    p.add_argument('--slug', default='lantern-bay')
+    p.add_argument('--slug', default='lantern-bay', help='folder name of the example pack and campaign')
     p.add_argument('--world', action='store_true',
                    help='also install the example chronicler (two clocks) and arcs, which add a world review at the first turn')
     p.set_defaults(func=example)
     p = subs.add_parser('campaign', help='create a campaign from a novel pack')
-    p.add_argument('action', choices=('new',))
-    p.add_argument('novel')
+    p.add_argument('action', choices=('new',), help='create a new campaign')
+    p.add_argument('novel', help='slug of the novel pack')
     p.add_argument('--start', default='start', help='starting place identifier')
     p.add_argument('--no-creations', action='store_true',
                    help='do not keep a register of invented NPCs, places and quests')
@@ -402,8 +406,8 @@ def main(argv=None):
                    help='give the narrator the sourced canon claims that match each turn (on for new campaigns)')
     p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
     p.set_defaults(func=configure)
-    for name in SCRIPTS:
-        p = subs.add_parser(name, help=f'run the {name} script (arguments are passed on)')
+    for name, summary in SCRIPT_HELP.items():
+        p = subs.add_parser(name, help=summary)
         p.add_argument('rest', nargs=argparse.REMAINDER)
         p.set_defaults(func=passthrough(name))
     args = parser.parse_args(argv)

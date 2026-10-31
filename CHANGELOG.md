@@ -4,6 +4,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Every `novel` subcommand and option now has a help text: `novel --help` describes `play`, `resume`, `read`,
+  `routine` and `diagnose` instead of "run the script", and the `routine` subcommands, `read --port` and the options of
+  `init`, `ingest`, `canon`, `character`, `campaign` and `example` say what they do.
 - `novel play --help` is rewritten in plain English: "Consult", "registry", "Structured return for use in a chat"
   and the other word-for-word texts are gone, and the delays say they are in seconds.
 - The possessions rules name `novel play --inventory --json` instead of the internal `play_narrative.py` script.

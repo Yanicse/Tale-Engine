@@ -13,18 +13,27 @@ from novel_engine.resume import active_campaign
 from novel_engine.routine import Routine, preview, read_json, DEFAULT_DELEGATION, DEFAULT_POLICY, LEGACY_POLICY
 
 
+COMMANDS = {'preview': 'show the dates a routine would cover, changing nothing',
+            'open': 'open a routine and its folder',
+            'prepare': 'write the packet of the next step',
+            'apply': 'validate and save the answer of a step',
+            'correct': 'reopen a refused step for a corrected answer',
+            'status': 'show where the routine stands',
+            'report': 'print the accepted narrations'}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--campaign', help='Existing save; active campaign by default')
+    parser.add_argument('--campaign', help='Path of a campaign.sqlite (the active campaign by default; preview and open only)')
     sub = parser.add_subparsers(dest='command', required=True)
     for name in ('preview', 'open'):
-        p = sub.add_parser(name)
-        p.add_argument('--days', type=int, default=7)
+        p = sub.add_parser(name, help=COMMANDS[name])
+        p.add_argument('--days', type=int, default=7, help='Number of fictional days covered (default: 7)')
         if name == 'open':
-            p.add_argument('--folder')
-            p.add_argument('--objective', default='')
-            p.add_argument('--topic', action='append')
-            p.add_argument('--delegation', default=DEFAULT_DELEGATION)
+            p.add_argument('--folder', help='Folder of the routine (default: a new folder in .routines/)')
+            p.add_argument('--objective', default='', help='What the character does during the period')
+            p.add_argument('--topic', action='append', help='Memory subject looked up at each step; repeatable')
+            p.add_argument('--delegation', default=DEFAULT_DELEGATION, help='The decisions the narrator may take alone')
             p.add_argument('--points-per-step', type=int, help='Daily points per step (1: one step per day); default: next deadline')
             p.add_argument('--period-days', type=int, default=DEFAULT_POLICY['period_days'], help='Length of a review period; 0: no period')
             p.add_argument('--pause-period', action='store_true', help='Stop at the end of each period (resume with prepare)')
@@ -33,8 +42,8 @@ def main(argv=None):
             p.add_argument('--arcs-review-days', type=int, default=DEFAULT_POLICY['arcs_review_days'], help='Maximum delay between arc reviews, 2 to 30 days')
             p.add_argument('--legacy-mode', action='store_true', help='Old behavior: one step per 6 pm point, no bulletin or signals')
     for name in ('prepare', 'apply', 'correct', 'status', 'report'):
-        p = sub.add_parser(name)
-        p.add_argument('--folder', required=True)
+        p = sub.add_parser(name, help=COMMANDS[name])
+        p.add_argument('--folder', required=True, help='Folder of the routine')
         if name == 'apply':
             p.add_argument('--file', required=True, help='UTF-8 JSON answer, or - for stdin')
             p.add_argument('--next', action='store_true', help='Also prepare the next packet if the routine continues')

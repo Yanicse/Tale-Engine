@@ -193,9 +193,9 @@ def make_server(path, port=8765):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--campaign', help='Existing save; active campaign by default')
-    parser.add_argument('--port', type=int, default=8765)
-    parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument('--campaign', help='Path of a campaign.sqlite (the active campaign by default)')
+    parser.add_argument('--port', type=int, default=8765, help='Port on 127.0.0.1 (default: 8765)')
+    parser.add_argument('--no-browser', action='store_true', help='Do not open the page in the browser')
     args = parser.parse_args(argv)
     if args.campaign:
         path = Path(args.campaign)
