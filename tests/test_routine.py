@@ -145,7 +145,7 @@ class RoutineTests(unittest.TestCase):
 
     def test_external_progress_stops_before_new_action(self):
         self.c.apply(proposal(self.c.state(), 'A minute passes.', [event(self.c.state(),
-            'Attente.', [], minute=1081)]))
+            'Waiting.', [], minute=1081)]))
         with self.assertRaisesRegex(ValueError, 'evolved'): self.r.prepare()
         self.assertTrue(self.r.status()['external_drift'])
 
@@ -242,10 +242,10 @@ class RoutineTests(unittest.TestCase):
             agenda = Agenda(con)
             agenda.initialize()
             agenda._put({'entry_id': 'encounter:embassy', 'expected_revision': -1,
-                'title': 'Arrival of an embassy', 'actor': 'Ambassadeur', 'location': 'gate',
+                'title': 'Arrival of an embassy', 'actor': 'Ambassador', 'location': 'gate',
                 'kind': 'risk', 'due_minute': 1110, 'conditions': [],
                 'references': ['demo:initial_configuration'], 'audience': ['narrator', 'player'],
-                'interrupt': True, 'status': 'planned', 'reason': 'Demande policy important.',
+                'interrupt': True, 'status': 'planned', 'reason': 'Request policy important.',
                 'outcome_event_index': None}, 'fixture', 1080)
         work = self.work()
         self.assertEqual(work['bound'], 1110)
@@ -317,7 +317,7 @@ class RoutineTests(unittest.TestCase):
         response = self.response(work, end)
         lines = ['%s: nothing important reaches Mira.' % p['marker']
                  for p in daily_points(work['prepared']['state']['world_minute'], end)]
-        response['narration'] = '\n'.join(lines) if bulletins else 'Rien.'
+        response['narration'] = '\n'.join(lines) if bulletins else 'Nothing.'
         response['events'][0]['description'] = 'The days pass with no news.'
         response['routine_signals'] = signals or []
         return work, response

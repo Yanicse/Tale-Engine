@@ -27,7 +27,7 @@ class AgendaRetryTests(unittest.TestCase):
                     ('title', 'actor', 'location', 'kind', 'conditions', 'audience', 'interrupt')}
         creation['title'] = 'Prepare the next step'
         command = {'entry_id': self.entry['entry_id'], 'status': 'planned', 'due_minute': None,
-                   'reason': 'Consigne fictional.', 'references': ['agenda:'+self.entry['entry_id']],
+                   'reason': 'Fictional instruction.', 'references': ['agenda:'+self.entry['entry_id']],
                    'outcome_event_index': None, 'creation': creation}
         self.bad = fixtures.DocumentaryFixture.memory(self)
         self.bad.update(memory_request=None, narration='Rejected text.', agenda_updates=[command])
@@ -63,7 +63,7 @@ class AgendaRetryTests(unittest.TestCase):
             self.assertEqual(json.loads(archived[0])['received'], json.loads(old['proposal'])['received'])
             self.assertEqual(Agenda(con).get(self.entry['entry_id'])['title'], self.entry['title'])
         self.n.transform = lambda packet, response: (self.assertNotIn('agenda_command_correction', packet) or response)
-        self.assertEqual(self.loop.run_turn('Merci.')['status'], 'recorded')
+        self.assertEqual(self.loop.run_turn('Thanks.')['status'], 'recorded')
 
     def test_plain_resume_revalidates_old_receipt_without_call_or_correction(self):
         self.reject()

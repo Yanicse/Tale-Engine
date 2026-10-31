@@ -55,7 +55,7 @@ CLOCK={'id':'bandits','faction':'Hill bandits','goal':'Control the merchant road
 
 def install_test_chronicle(con,progression=2,segments=3):
     """Invented clock that triggers a chronicle on the first turn, without a canonical source."""
-    WorldPlanner(con).install_chronicle([{**CLOCK,'id':'messenger','faction':'Messagers','origin':'invention',
+    WorldPlanner(con).install_chronicle([{**CLOCK,'id':'messenger','faction':'Messengers','origin':'invention',
         'segments':segments,'progression':progression,'references':['demo:initial_configuration']}],
         'tests/fixtures/chronology.json')
 
@@ -148,7 +148,7 @@ class PlannerTests(unittest.TestCase):
     def test_narrator_packet_has_no_old_tracks_or_private_notes(self):
         with self.c.transaction() as con:
             p=WorldPlanner(con)
-            p._summary(1,1,{'text':'Promesse open.','references':['exchange:1']},['narrator','player'])
+            p._summary(1,1,{'text':'Promise open.','references':['exchange:1']},['narrator','player'])
             p._summary(1,1,{'text':'Secret note.','references':['exchange:1']},['narrator'])
             con.execute('INSERT INTO planner_situations VALUES (?,?,?,?)',
                         ('old',0,'reserve',json.dumps({'id':'old','status':'reserve'})))
@@ -235,7 +235,7 @@ class PlannerTests(unittest.TestCase):
     def test_public_summary_consultation_filters_private_notes(self):
         with self.c.transaction() as con:
             p=WorldPlanner(con)
-            p._summary(1,1,{'text':'Promesse still open.','references':['exchange:1']},['narrator','player'])
+            p._summary(1,1,{'text':'Promise still open.','references':['exchange:1']},['narrator','player'])
             p._summary(1,1,{'text':'Secret project.','references':['demo:initial_configuration']},['narrator'])
         before=self.c.state()
         public=self.c.world_summaries()
@@ -443,7 +443,7 @@ class PlannerTests(unittest.TestCase):
     def test_changed_agenda_without_state_change_refuses_chronicle(self):
         self.chronicle()
         with self.c.transaction() as con:
-            item={'entry_id':'test:date','expected_revision':-1,'title':'Suivi','actor':'guard','location':'gate',
+            item={'entry_id':'test:date','expected_revision':-1,'title':'Follow-up','actor':'guard','location':'gate',
                 'kind':'verification','due_minute':20,'conditions':[],'references':['exchange:1'],
                 'audience':['narrator'],'interrupt':False,'status':'planned','reason':'Check.','outcome_event_index':None}
             Agenda(con)._put(item,'test',0)

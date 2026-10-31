@@ -28,7 +28,7 @@ SECRET = 'SECRET_'
 def item(quantity, audience=('narrator', 'player'), references=('demo:initial_configuration',), equipped=False):
     return {'owner_id': 'player', 'quantity': quantity, 'equipped': equipped, 'description': 'An ordinary object.',
             'references': list(references), 'audience': list(audience), 'location': 'on:player',
-            'condition': 'Sain', 'quantity_precision': 'exact' if quantity is not None else 'unknown',
+            'condition': 'Sound', 'quantity_precision': 'exact' if quantity is not None else 'unknown',
             'possession_status': 'owns', 'unit': 'coin'}
 
 
@@ -46,7 +46,7 @@ class LectureTests(unittest.TestCase):
         state['inventory']['wood'] = item(5, references=('demo:initial_configuration', 'canon:volume1:p10'))
         state['inventory']['unknown_lot'] = item(None)
         state['inventory'][SECRET + 'object'] = item(1, audience=('narrator',))
-        state['powers']['power_public'] = {'actor_id': 'player', 'description': 'Pouvoir public : effect visible.',
+        state['powers']['power_public'] = {'actor_id': 'player', 'description': 'Public power: visible effect.',
             'limits': 'Limits known.', 'references': ['demo:initial_configuration'], 'audience': ['narrator', 'player']}
         state['powers'][SECRET + 'power'] = {'actor_id': 'player', 'description': SECRET + 'POWER: hidden.',
             'limits': 'x', 'references': ['demo:initial_configuration'], 'audience': ['narrator']}
@@ -132,10 +132,10 @@ class LectureTests(unittest.TestCase):
         with self.campaign.transaction() as con:
             CreationRegistry(con).initialize()
             for seq, (identifier, name, kind, audience, traits) in enumerate([
-                ('old', 'Ancien', 'npc', ['narrator', 'player'], ['Ancienne description.']),
-                ('old', 'Ancien', 'npc', ['narrator', 'player'], ['Updated description.']),
+                ('old', 'Old one', 'npc', ['narrator', 'player'], ['Old description.']),
+                ('old', 'Old one', 'npc', ['narrator', 'player'], ['Updated description.']),
                 ('secret', SECRET + 'NPC', 'npc', ['narrator'], [SECRET + 'TRAIT']),
-                ('place', 'The square', 'place', ['narrator', 'player'], ['Lieu public.']),
+                ('place', 'The square', 'place', ['narrator', 'player'], ['Public place.']),
                 *[(f'npc_{n}', f'Character {n}', 'npc', ['narrator', 'player'], ['a' * 790] * 12)
                   for n in range(3)]
             ]):
@@ -143,7 +143,7 @@ class LectureTests(unittest.TestCase):
                     (identifier, str(seq), check_json({'entity_id': identifier, 'name': name,
                      'kind': kind, 'audience': audience, 'traits': traits, 'status': 'established'})))
             public = event(state, 'Tomas is a traveler. Lena is a seamstress.', [], audience=['narrator', 'player', 'npc:tomas', 'npc:lena'])
-            private = event(state, SECRET + 'HISTOIRE', [], audience=['narrator', 'npc:secret'])
+            private = event(state, SECRET + 'STORY', [], audience=['narrator', 'npc:secret'])
             for value in (public, private):
                 con.execute('INSERT INTO events(event_id,state_version,payload) VALUES (?,?,?)',
                             (value['event_id'], state['state_version'], check_json(value)))
@@ -225,7 +225,7 @@ class LectureTests(unittest.TestCase):
             self.assertNotIn(name, text)
         self.assertIn('Public appointment', text)
         self.assertIn('Public summary.', text)
-        self.assertIn('Pouvoir public', text)
+        self.assertIn('Public power', text)
 
     def test_unknown_quantity_stays_null_and_money_is_shown(self):
         data = self.get('/api/possessions')
@@ -268,14 +268,14 @@ class LectureTests(unittest.TestCase):
         self.assertEqual(self.request('/api/nonexistent')[0], 404)
         self.assertEqual(self.server.server_address[0], '127.0.0.1')
 
-    def post(self, corps, host=None, origin=None, ctype='application/json'):
+    def post(self, body, host=None, origin=None, ctype='application/json'):
         connection = http.client.HTTPConnection('127.0.0.1', self.port, timeout=10)
         headers = {'Content-Type': ctype}
         if host:
             headers['Host'] = host
         if origin:
             headers['Origin'] = origin
-        connection.request('POST', '/api/turn', body=json.dumps(corps).encode('utf-8'), headers=headers)
+        connection.request('POST', '/api/turn', body=json.dumps(body).encode('utf-8'), headers=headers)
         response = connection.getresponse()
         body = response.read()
         connection.close()
@@ -293,7 +293,7 @@ class LectureTests(unittest.TestCase):
         lent = [sys.executable, '-c', "import time;time.sleep(0.6);print('{\"status\":\"recorded\",\"narration\":\"x\"}')"]
         with mock.patch.object(Turns, 'command', return_value=lent) as command:
             self.assertEqual(self.post({'text': 'I look.', 'engine': 'claude'})[0], 202)
-            self.assertEqual(self.post({'text': 'Encore.', 'engine': 'codex'})[0], 409)
+            self.assertEqual(self.post({'text': 'Again.', 'engine': 'codex'})[0], 409)
             state = self.wait_turn()
         self.assertEqual(state['result'], {'status': 'recorded'})
         self.assertIsNone(state['error'])
@@ -302,9 +302,9 @@ class LectureTests(unittest.TestCase):
     def test_dictation_only_fills_the_field_and_never_sends(self):
         page = (ROOT / 'novel_engine/reader_page.html').read_text(encoding='utf-8')
         self.assertIn('id="micro"', page)
-        corps = page.split('reco.onresult=', 1)[1].split('reco.onerror=', 1)[0]
-        self.assertNotIn('send(', corps)
-        self.assertNotIn('submit', corps)
+        body = page.split('reco.onresult=', 1)[1].split('reco.onerror=', 1)[0]
+        self.assertNotIn('send(', body)
+        self.assertNotIn('submit', body)
         self.assertIn("reco.lang=cfg.language||'en'", page)
 
     def test_turn_command_uses_the_official_script_and_modes(self):
@@ -318,10 +318,10 @@ class LectureTests(unittest.TestCase):
         self.assertEqual(turns.command('', 'codex', 'reevaluate')[-1], '--reevaluate')
 
     def test_turn_failure_is_reported(self):
-        casse = [sys.executable, '-c', 'import sys;sys.stderr.write("boum");sys.exit(1)']
-        with mock.patch.object(Turns, 'command', return_value=casse):
+        broken = [sys.executable, '-c', 'import sys;sys.stderr.write("boom");sys.exit(1)']
+        with mock.patch.object(Turns, 'command', return_value=broken):
             self.assertEqual(self.post({'text': 'I jump.'})[0], 202)
-            self.assertIn('boum', self.wait_turn()['error'])
+            self.assertIn('boom', self.wait_turn()['error'])
 
     def test_turn_post_is_guarded(self):
         with mock.patch.object(Turns, 'command') as command:
@@ -334,15 +334,15 @@ class LectureTests(unittest.TestCase):
             command.assert_not_called()
 
     def test_local_resources_are_served_and_confined(self):
-        status, corps = self.request('/resources/icons/broadsword.svg')
+        status, body = self.request('/resources/icons/broadsword.svg')
         self.assertEqual(status, 200)
-        self.assertIn(b'<svg', corps)
-        status, corps = self.request('/resources/fonts/cinzel.ttf')
+        self.assertIn(b'<svg', body)
+        status, body = self.request('/resources/fonts/cinzel.ttf')
         self.assertEqual(status, 200)
-        self.assertGreater(len(corps), 10000)
+        self.assertGreater(len(body), 10000)
         for path in ('/resources/icons/../../reader_page.html', '/resources/icons/%2e%2e/reader_page.html',
-                       '/resources/fonts/OFL-Cinzel.txt', '/resources/autre/x.svg', '/resources/icons/absent.svg',
-                       '/resources/icons/sous/x.svg', '/resources/'):
+                       '/resources/fonts/OFL-Cinzel.txt', '/resources/other/x.svg', '/resources/icons/absent.svg',
+                       '/resources/icons/sub/x.svg', '/resources/'):
             self.assertEqual(self.request(path)[0], 404, path)
         self.assertEqual(self.request('/resources/icons/broadsword.svg', host='evil.example')[0], 403)
 

@@ -153,7 +153,7 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(self.c.state()['commitments']['plans']['status'], 'open')
 
     def test_question_or_failed_generation_does_not_consume(self):
-        self.n.response = {'narration':'Specify your request.', 'events':[], 'blocking_questions':['Quels plans ?']}
+        self.n.response = {'narration':'Specify your request.', 'events':[], 'blocking_questions':['Which plans?']}
         self.assertEqual(self.loop.run_turn('Hello.')['status'], 'question')
         self.c.begin_action('The plans of the table.')
         self.assertTrue(self.packet()['place_reminders'])

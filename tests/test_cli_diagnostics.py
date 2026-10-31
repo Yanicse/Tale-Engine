@@ -83,7 +83,7 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_warning_plus_final_message_is_not_a_failure(self):
         response={'narrative_schema_version':'1.2','narration':'Hello.','events':[], 'blocking_questions':[], 'memory_request':None,'memory_updates':[], 'agenda_updates':[], 'continuation':None,'roll_checks':[]}
-        process=self.process([{'type':'item.completed','item':{'type':'error','message':'Avertissement local'}},
+        process=self.process([{'type':'item.completed','item':{'type':'error','message':'Local warning'}},
                               {'type':'item.completed','item':{'type':'agent_message','text':json.dumps(response)}}],
                              stderr=b'WARNING: optional cleanup failed',code=0)
         adapter=CodexNarrator(executable='codex.exe')

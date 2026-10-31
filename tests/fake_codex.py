@@ -53,7 +53,7 @@ def main():
             burst = item['progression'] == item['segments']
             if burst: item['status'] = 'burst'
             response['chronicle'] = {'clocks':[item], 'manifestations':[{'id':'test_visit',
-                'clock':clock['id'], 'type':'event' if burst else 'sign', 'title':'Visite',
+                'clock':clock['id'], 'type':'event' if burst else 'sign', 'title':'Visit',
                 'actor':'messenger', 'place':'gate', 'description':'A messenger brings news.',
                 'perception':'The messenger arrives at the door.', 'due_minute':packet['current_state']['world_minute']+3}]}
             registry = packet['chronicle'].get('arcs_registry')
@@ -111,9 +111,9 @@ def main():
                     e['changes']=[{'operation':'set','path':'/positions/player','value_json':json.dumps('market')}]
                     e['public_consequences']=[claim('arrival','/positions/player','market')]
                 elif mode=='site_purchase':
-                    item={'owner_id':'player','quantity':1,'equipped':False,'description':'Bois fictional.',
+                    item={'owner_id':'player','quantity':1,'equipped':False,'description':'Fictional wood.',
                         'references':['current_action'],'audience':['narrator','player'],'location':'on:player',
-                        'condition':'Sain','quantity_precision':'exact','possession_status':'owns','unit':'coin'}
+                        'condition':'Sound','quantity_precision':'exact','possession_status':'owns','unit':'coin'}
                     e['asset_operations']=[{'kind':'purchase','money_resource':'player_silver','money_delta':-3,
                         'inputs':[],'outputs':[{'item_id':'wood','item_json':json.dumps(item)}],'destination':None}]
                     e['public_consequences']=[claim('payment','/resources/player_silver',state['resources']['player_silver']-3)]
@@ -165,7 +165,7 @@ def main():
             if mode in ('npc_creation','offer_creation','creation_accept'):
                 quest=mode!='npc_creation'
                 response['creation_updates']=[{'entity_id':'lina_mission' if quest else 'lina',
-                    'name':'Bridge mission' if quest else 'Lina','aliases':['Pont old'] if quest else ['Pisteuse'],
+                    'name':'Bridge mission' if quest else 'Lina','aliases':['Old bridge'] if quest else ['Tracker'],
                     'kind':'quest' if quest else 'npc','origin':'campaign',
                     'status':('accepted' if mode=='creation_accept' else 'proposed') if quest else 'established',
                     'traits':['The mission requires a report before any bounty.'] if quest else ['Lina knows the trails of the town.'],

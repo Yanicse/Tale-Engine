@@ -181,9 +181,9 @@ class NarrativeTests(unittest.TestCase):
         self.narrator.response['narration']=''
         with self.assertRaises(ModelUnavailable):self.loop.run_turn('I speak.')
         self.assertEqual(self.c.state()['state_version'],0)
-        self.narrator.response['narration']='Texte'+chr(0x2014)+'suite'
+        self.narrator.response['narration']='Text'+chr(0x2014)+'more'
         result=self.loop.run_turn(resume=True,retry=True)
-        self.assertEqual(result['narration'],'Texte'+chr(0x2014)+'suite')
+        self.assertEqual(result['narration'],'Text'+chr(0x2014)+'more')
 
     def test_prompt_keeps_all_current_acquisitions_without_duplicate_scene(self):
         prepared=self.c.prepare_turn('I speak.')
@@ -379,7 +379,7 @@ class NarrativeTests(unittest.TestCase):
 
     def test_codex_decodes_warning_and_final_message_without_exposing_logs(self):
         self.narrator.response.update(narrative_schema_version='1.2',memory_request=None, memory_updates=[],agenda_updates=[],continuation=None,roll_checks=[])
-        events=[{'type':'item.completed','item':{'type':'error','message':'Avertissement local'}},
+        events=[{'type':'item.completed','item':{'type':'error','message':'Local warning'}},
                 {'type':'item.completed','item':{'type':'agent_message','text':json.dumps(self.narrator.response)}},
                 {'type':'turn.completed','usage':{'input_tokens':100,'output_tokens':80}}]
         process=unittest.mock.Mock()
@@ -478,7 +478,7 @@ class NarrativeTests(unittest.TestCase):
         self.assertEqual(self.c.state(),before)
 
     def test_diagnostics_escape_unicode_in_invalid_response(self):
-        self.narrator.response['narration']='Texte'+chr(0x2014)+'suite'
+        self.narrator.response['narration']='Text'+chr(0x2014)+'more'
         self.narrator.response['unknown_field']=True
         with self.assertRaises(ModelUnavailable):self.loop.run_turn('I speak.')
         with self.c.transaction() as con:

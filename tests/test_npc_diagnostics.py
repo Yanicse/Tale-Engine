@@ -19,7 +19,7 @@ from novel_engine.narrative import NarrativeLoop, packet_references
 
 def npc(ident='lina', **overrides):
     return dict(entity_id=ident, name='Lina', aliases=['The tracker'], kind='npc', origin='campaign',
-        status='established', traits=['Parle soberly.', 'Current goal: Find her caravan again.',
+        status='established', traits=['Speaks soberly.', 'Current goal: Find her caravan again.',
                                   'Current attitude: Wary of the player.'],
         unknowns=['Destination unknown.'], links=[], audience=['narrator','player'],
         references=['exchange:1']) | overrides
@@ -106,7 +106,7 @@ class NpcProjection(unittest.TestCase):
         sheets, _ = project({}, [value], 'I question Lina.')
         self.assertEqual(sheets[0]['current_goal'], 'Find her caravan again.')
         self.assertEqual(sheets[0]['declared_attitude'], 'Wary of the player.')
-        self.assertEqual(sheets[0]['traits'], ['Parle soberly.'])
+        self.assertEqual(sheets[0]['traits'], ['Speaks soberly.'])
         self.assertEqual(sheets[0]['unknowns'], ['Destination unknown.'])
         self.assertEqual(value, before)
 
@@ -159,7 +159,7 @@ class PromptIntegration(unittest.TestCase):
 
     def test_current_revision_and_prompt_diagnostic_without_model(self):
         with self.c.transaction() as con:
-            value = npc(traits=['Parle soberly.', 'Current goal: Wait for the merchant.'])
+            value = npc(traits=['Speaks soberly.', 'Current goal: Wait for the merchant.'])
             con.execute('INSERT INTO creation_revisions(entity_id,request_id,payload) VALUES (?,?,?)',
                         ('lina','revision',json.dumps(value)))
         before = self.c.state()

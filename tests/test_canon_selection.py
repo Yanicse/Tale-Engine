@@ -58,7 +58,7 @@ def build_canon(path):
          'sheet_class_level', None, 5),
         ('v05_p0100_0104:c2', 'tolven', 'Tolven is loyal and kind-hearted; his karma is positive.',
          'sheet_karma', None, 5),
-        ('v05_p0100_0104:c3', 'tolven', 'Tolven learned a healing spell from a travelling priest.',
+        ('v05_p0100_0104:c3', 'tolven', 'Tolven learned a healing spell from a traveling priest.',
          'ability', None, 5),
         ('v03_p0050_0052:c1', 'brenn', 'Brenn commands the lower floors and values order and loyalty.',
          'sheet_function', None, 3),

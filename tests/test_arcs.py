@@ -192,7 +192,7 @@ class ArcTests(unittest.TestCase):
         self.planner.transform = self.response
         self.loop.run_turn('Hello.')
         state = self.c.state()
-        self.c.apply(proposal(state, 'Attendre.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
+        self.c.apply(proposal(state, 'Wait.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
         self.planner.transform = lambda p, r: self.response(p, r, status='achieved', next_review=None,
             world_fact='The bandits close the road and ransom the convoys.')
         self.assertEqual(self.loop.run_turn('Hello.')['status'], 'recorded')
@@ -242,7 +242,7 @@ class ArcTests(unittest.TestCase):
         for i in range(2):
             self.assertEqual(self.loop.run_turn('Hello.')['status'], 'recorded')
             state = self.c.state()
-            self.c.apply(proposal(state, 'Attendre.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
+            self.c.apply(proposal(state, 'Wait.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
         with self.assertRaisesRegex(ModelUnavailable, 'postponements exhausted'):
             self.loop.run_turn('Hello.')
         self.planner.transform = self.response
@@ -281,7 +281,7 @@ class ArcTests(unittest.TestCase):
         self.planner.transform = self.response
         self.loop.run_turn('Hello.')
         state = self.c.state()
-        self.c.apply(proposal(state, 'Attendre.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
+        self.c.apply(proposal(state, 'Wait.', [event(state, 'Time passes.', [], minute=state['world_minute'] + REVIEW_DELAY)]))
         self.planner.transform = lambda p, r: self.response(p, r, status='achieved', next_review=None)
         with self.assertRaisesRegex(ModelUnavailable, 'effective resolution'):
             self.loop.run_turn('Hello.')
@@ -290,7 +290,7 @@ class ArcTests(unittest.TestCase):
             planner = WorldPlanner(con)
             clock = {**planner.clocks()[0], 'progression': 4, 'status': 'burst'}
             planner._put_clock(clock, 'fixture')
-            entry = {'entry_id': 'chronicle:attack', 'title': 'Attaque', 'actor': 'Bandits',
+            entry = {'entry_id': 'chronicle:attack', 'title': 'Attack', 'actor': 'Bandits',
                      'location': 'Route', 'kind': 'risk', 'due_minute': state['world_minute'],
                      'conditions': [], 'references': ['chronicle:bandits:1'], 'audience': ['narrator'],
                      'interrupt': True, 'status': 'planned', 'reason': 'Big event scheduled.',

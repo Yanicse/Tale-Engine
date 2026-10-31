@@ -218,7 +218,7 @@ class CompleteLoopTests(unittest.TestCase):
         self.assertEqual(result['narration'],'The craftsman answers you.')
 
     def test_chronicle_sign_may_be_reported_by_a_named_npc(self):
-        entry={'entry_id':'chronicle:test_sign','expected_revision':-1,'title':'Signe',
+        entry={'entry_id':'chronicle:test_sign','expected_revision':-1,'title':'Sign',
                'actor':'guard','location':'town_gate','kind':'risk','due_minute':2,
                'conditions':[],'references':[],'audience':['narrator'],'interrupt':False,
                'status':'planned','reason':'Isolated test.','outcome_event_index':None}

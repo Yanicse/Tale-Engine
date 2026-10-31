@@ -25,11 +25,11 @@ class DocumentaryFixture(unittest.TestCase):
         self.folder=Path(self.temp.name)
         self.snapshot=create_fixture(self.folder/'canon.sqlite')
         with closing(sqlite3.connect(self.snapshot)) as con, con:
-            for ident,name,kind in [('cercle','Cercle Emeraude','faction'),('maera','Maera','character')]:
+            for ident,name,kind in [('circle','Emerald Circle','faction'),('maera','Maera','character')]:
                 con.execute('INSERT INTO entities VALUES (?,?,?,?)',(ident,kind,name,'named'))
                 con.execute('INSERT INTO aliases VALUES (?,?)',(ident,name))
                 con.execute('INSERT INTO canonical_entities VALUES (?,?)',(ident,ident))
-            records=[('v01_p0001_0004:c1','cercle','Cercle Emeraude',
+            records=[('v01_p0001_0004:c1','circle','Emerald Circle',
                       'The Emerald Circle has five adventurers.','composition'),
                      ('v01_p0001_0004:c2','maera','Maera',
                       'Maera leads the Emerald Circle, an adamantite-rank team.','direction'),
@@ -122,7 +122,7 @@ class DocumentaryFixture(unittest.TestCase):
         self.assertEqual(first['status'],'memory_required')
         second=NarrativeLoop(Campaign(self.c.path),self.n).run_turn(resume=True)
         self.assertEqual(second['diagnostic_code'],'recovery_blocked')
-        for options in ({},{'retry':True},{'query':'canon: Maera'},{'retry':True,'query':'Guilde'}):
+        for options in ({},{'retry':True},{'query':'canon: Maera'},{'retry':True,'query':'Guild'}):
             planner=FakePlanner();loop=NarrativeLoop(Campaign(self.c.path),self.n,planner=planner)
             result=loop.run_turn(resume=True,**options)
             self.assertEqual(result['status'],'memory_required')
@@ -145,7 +145,7 @@ class DocumentaryFixture(unittest.TestCase):
     def test_received_second_answer_is_reused_even_when_budget_is_exhausted(self):
         self.n.transform=lambda packet,result:self.memory() if self.n.calls==1 else result
         loop=NarrativeLoop(self.c,self.n);loop.run_turn('I ask for a clarification.')
-        with patch.object(loop,'_proposal',side_effect=OSError('Panne locale')):
+        with patch.object(loop,'_proposal',side_effect=OSError('Local failure')):
             with self.assertRaises(OSError):loop.run_turn(resume=True)
         self.assertEqual(NarrativeLoop(self.c,self.n).run_turn(resume=True)['status'],'recorded')
         self.assertEqual(self.n.calls,2)
@@ -191,7 +191,7 @@ class DocumentaryFixture(unittest.TestCase):
                          'causes':['current_action',ref],'conditions':[],'changes':[],
                          'audience':['narrator','player']}],
                 memory_updates=[{'topic_id':'guild_hint','title':"Innkeeper's hint",
-                                 'aliases':['Guilde locale'],'references':['current_turn']}])
+                                 'aliases':['Local guild'],'references':['current_turn']}])
             return result
         self.n.transform=answer
         result=NarrativeLoop(self.c,self.n).run_turn('I ask where the local Guild welcomes adventurers.')

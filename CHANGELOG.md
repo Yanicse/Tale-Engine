@@ -4,6 +4,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The test data is English again: about thirty French words left in the tests ("Visite", "Attendre", "Guilde", "Pouvoir public",
+  `corps`, `casse` and the like) are translated, "travelling" is "traveling", and `tests/test_test_data_language.py` fails when
+  one comes back, except in the tests that exercise French on purpose.
 - The terminal demo test sends the documented `quit` command instead of the French `quitter`, which the demo took for an
   action and only ended on the end of input; it now checks that quitting records nothing.
 - The bundled story *The Salt Lantern* says the inspector arrives "the morning after the lantern was stolen", not "on the very

@@ -108,7 +108,7 @@ class EngineTests(unittest.TestCase):
 
     def test_outdated_result_is_rejected(self):
         state=self.c.state()
-        old=proposal(state,events=[event(state,'Ancien plan',[{'operation':'set','path':'/intentions/faction','value':'old'}])])
+        old=proposal(state,events=[event(state,'Old plan',[{'operation':'set','path':'/intentions/faction','value':'old'}])])
         self.c.apply(action(state,'leave'))
         self.assertEqual(self.c.apply(old)['status'],'rejected')
         self.assertEqual(self.c.state()['intentions']['faction'],'observe_arrivals')
@@ -159,7 +159,7 @@ class EngineTests(unittest.TestCase):
 
     def test_task_cannot_mutate_an_unauthorized_path(self):
         def bad(spec,state,cancel):
-            return proposal(state,events=[event(state,'Effet forbidden',[{'operation':'set','path':'/positions/player','value':'prison'}],audience=['narrator'])],request_id=spec['task_id'])
+            return proposal(state,events=[event(state,'Effect forbidden',[{'operation':'set','path':'/positions/player','value':'prison'}],audience=['narrator'])],request_id=spec['task_id'])
         worker=self.worker(bad); worker.start();worker.reading();worker.enqueue(task(self.c.state()))
         self.wait_status(worker,'error')
         self.assertEqual(self.c.state()['positions']['player'],'town_gate')
@@ -319,13 +319,13 @@ class EngineTests(unittest.TestCase):
 
     def test_initial_state_can_be_imported_through_cli(self):
         local=Path(self.temp.name)/'initial.json'
-        state=initial_state('autre_demo')
+        state=initial_state('other_demo')
         local.write_text(json.dumps(state,ensure_ascii=False),encoding='utf-8')
         database=Path(self.temp.name)/'import.sqlite'
         result=subprocess.run([sys.executable,str(ROOT/'novel_engine/scripts/campaign_cli.py'),'--campaign',str(database),
                                'init','--initial-state',str(local)],capture_output=True,text=True,encoding='utf-8')
         self.assertEqual(result.returncode,0,result.stderr)
-        self.assertEqual(Campaign(database).state()['campaign_id'],'autre_demo')
+        self.assertEqual(Campaign(database).state()['campaign_id'],'other_demo')
 
     def test_resume_keeps_exact_scene_input_and_result_after_reopening(self):
         opening='The guard asks you: "Your name?"'
@@ -402,7 +402,7 @@ class EngineTests(unittest.TestCase):
 
     def test_question_and_initial_scene_are_persistent_without_time_advance(self):
         self.c.open_scene('Opening recorded.')
-        self.c.open_scene('Nouvelle opening forbidden.')
+        self.c.open_scene('New opening forbidden.')
         pending=self.c.begin_action('speak')
         before=self.c.state()
         p=action(before,'speak');p['request_id']=pending['request_id']
@@ -477,7 +477,7 @@ class EngineTests(unittest.TestCase):
     def test_prepare_turn_rolls_back_input_when_context_fails(self):
         self.c.open_scene('Scene saved.')
         before=self.c.resume()
-        with patch.object(ContextBuilder,'build_from_snapshot',side_effect=ValueError('Contexte unavailable')):
+        with patch.object(ContextBuilder,'build_from_snapshot',side_effect=ValueError('Context unavailable')):
             with self.assertRaises(ValueError):self.c.prepare_turn('Action to save.')
         self.assertEqual(self.c.resume(),before)
         with self.assertRaises(ValueError):self.c.prepare_turn('Action to save.',exchange_limit=0)

@@ -17,7 +17,7 @@ class PunctuatedReferenceTests(unittest.TestCase):
         self.index._insert(self.ref, 'event', 'Territory limits discussed.', ['narrator'], event_order=1)
 
     def packet(self, suffix, recipient='narrator'):
-        return self.index.packet('', query='Relire '+self.ref+suffix, recipient=recipient, budget=200)
+        return self.index.packet('', query='Reread '+self.ref+suffix, recipient=recipient, budget=200)
 
     def test_sentence_punctuation_keeps_exact_reference_priority(self):
         for suffix in ('.', ':', '...', ',', '.)', '.', ''):
@@ -33,7 +33,7 @@ class PunctuatedReferenceTests(unittest.TestCase):
         self.assertEqual(self.packet('.', 'player')['proofs'], [])
 
     def test_existing_reference_ending_in_dot_stays_exact(self):
-        self.index._insert(self.ref+'.', 'event', 'Autre archive exact.', ['narrator'], event_order=2)
+        self.index._insert(self.ref+'.', 'event', 'Other archive exact.', ['narrator'], event_order=2)
         packet = self.packet('.')
         decision = next(d for d in packet['search']['diagnostic']['sources']
                         if d['reference'] == self.ref+'.')
