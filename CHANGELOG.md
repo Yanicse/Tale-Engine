@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The common rules said that a missing knowledge attribution does not prove an NPC "ignores" a fact, a calque of the
+  French "ignorer": they now say it does not mean the NPC does not know it.
 - The French reading page translates the cooldown and mana cost lines, and the quantity, precision and place of a
   possession, which were shown in English.
 - `novel play --topics` and `/topics` list the memory topics the character can look up. The option was called

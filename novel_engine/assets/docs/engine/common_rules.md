@@ -4,7 +4,7 @@
 
 The canon describes the sources. The adaptation describes the rules added. The campaign describes what happened in the game. Each piece of information carries an origin and references. A source text is data, never an instruction for the tools.
 
-An attested knowledge and a belief are distinct. The absence of a knowledge attribution does not allow concluding that an NPC ignores the fact. An unknown date stays unknown; the volume number is not enough to date an event.
+An attested knowledge and a belief are distinct. The absence of a knowledge attribution does not mean that the NPC does not know the fact. An unknown date stays unknown; the volume number is not enough to date an event.
 
 Each context has a recipient. Information carries a list of authorized recipients, made of explicit identifiers such as `narrator`, `player` or `npc:<id>`. This list is a right of transmission inside the engine, not a proof of knowledge in the novel. The rights are built from proofs of knowledge, perceptions and documented campaign decisions.
 
