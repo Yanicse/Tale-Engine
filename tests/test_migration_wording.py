@@ -1,6 +1,7 @@
 """Wording left by the migration: French words, calques and traces of the original campaign, with no model call."""
 import ast
 import hashlib
+import json
 from pathlib import Path
 import re
 import sys
@@ -23,7 +24,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'consultation', 'official path', 'impose itself', 'The manager', 'Ordinary arbitrations', 'historical demo',
              'nor make calls', 'personal knowledge of the work', 'An attested knowledge',
              'allows deciding', 'a certain ability', 'nor the whole', 'stop the useful work', 'the manager',
-             'decision taken now apart')
+             'decision taken now apart', 'Proposition contract', 'nor declaring', 'display as acquired', 'during reading',
+             'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined')
 
 
 def code_strings():
@@ -36,6 +38,19 @@ def code_strings():
 def documents():
     for path in sorted((PACKAGE / 'prompts').rglob('*.md')) + sorted((ASSETS / 'docs').rglob('*.md')):
         yield path.relative_to(ROOT), path.read_text(encoding='utf-8')
+
+
+def json_strings():
+    for path in sorted(ASSETS.rglob('*.json')):
+        values = [json.loads(path.read_text(encoding='utf-8'))]
+        while values:
+            value = values.pop()
+            if isinstance(value, dict):
+                values += list(value) + list(value.values())
+            elif isinstance(value, list):
+                values += value
+            elif isinstance(value, str):
+                yield path.relative_to(ROOT), value
 
 
 class MigrationWordingTests(unittest.TestCase):
@@ -52,6 +67,10 @@ class MigrationWordingTests(unittest.TestCase):
 
     def test_prompts_and_agent_rules_have_no_migration_leftover(self):
         found = [f'{path}: {phrase}' for path, text in documents() for phrase in FORBIDDEN if phrase in text]
+        self.assertEqual(found, [])
+
+    def test_json_resources_have_no_migration_leftover(self):
+        found = sorted({f'{path}: {phrase}' for path, value in json_strings() for phrase in FORBIDDEN if phrase in value})
         self.assertEqual(found, [])
 
     def test_default_memory_topics_fit_any_novel(self):

@@ -8,7 +8,7 @@
     "faction"
   ],
   "context_file": "examples/context_faction_0.json",
-  "goal": "Prepare a surveillance of the gates during reading.",
+  "goal": "Watch the gates while the player reads.",
   "not_before_world_minute": 1,
   "conditions": [
     {

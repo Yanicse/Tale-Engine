@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The JSON contracts, scenarios and examples are reworded: "Proposition contract" is "Proposal contract", and the
+  scenarios and demo examples lose "nor", "display as acquired" and "a surveillance of the gates during reading".
 - The referee, off-screen and archivist rules are reworded: no more "the missing arbitration", "a certain ability",
   "stop the useful work", "the manager" or "nor" after a negation.
 - The common rules sent to the narrator lose their remaining calques: "the manager" is the engine, "arbitrations"

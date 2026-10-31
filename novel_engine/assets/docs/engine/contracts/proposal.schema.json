@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Proposition contract 0.1",
+  "title": "Proposal contract 0.1",
   "type": "object",
   "properties": {
     "schema_version": {

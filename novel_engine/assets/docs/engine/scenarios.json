@@ -19,7 +19,7 @@
     {
       "id": "off_screen_adaptation",
       "trigger": "The faction actually observed the departure.",
-      "expected": "It adapts its intention without revealing the plan to the player nor declaring a pursuit that already succeeded.",
+      "expected": "It adapts its intention without revealing the plan to the player or declaring that a pursuit already succeeded.",
       "example_files": [
         "examples/context_faction_1.json",
         "examples/task_1.json",
@@ -67,7 +67,7 @@
     {
       "id": "unknown",
       "trigger": "A power has a range that is not quantified in the sources.",
-      "expected": "Keep the unknown; an arbitration that is added is identified as an adaptation.",
+      "expected": "Keep the unknown; any added ruling is marked as an adaptation.",
       "example_files": []
     },
     {
@@ -85,7 +85,7 @@
     {
       "id": "narration",
       "trigger": "A transaction fails after a narrative proposal.",
-      "expected": "Do not display as acquired a success that was not recorded.",
+      "expected": "Never show an unrecorded success as acquired.",
       "example_files": []
     }
   ]

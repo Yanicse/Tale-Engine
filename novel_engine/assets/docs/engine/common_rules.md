@@ -22,7 +22,7 @@ A proposal may contain a blocking question. In that case no event is applied; th
 
 ## Clock and resume
 
-In the active narrative loop, no background work runs during reading. The planner, if any, prepares the explicit turn; only the narrator resolves its consequences. Real time never advances the fictional clock. The task mechanisms below only concern the legacy demo.
+In the active narrative loop, no background work runs while the player reads. The planner, if any, prepares the explicit turn; only the narrator resolves its consequences. Real time never advances the fictional clock. The task mechanisms below only concern the legacy demo.
 
 Compute the deducible consequences with scripts. Call the off-screen role only for a useful narrative decision. Do not generate every possible branch or make calls in a loop during a long pause.
 

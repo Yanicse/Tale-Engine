@@ -10,7 +10,7 @@
     "adaptation_version": "demo-0.1"
   },
   "recipient": "npc:faction",
-  "scene": "Fictional demo town, with no attribution to the canon.",
+  "scene": "Fictional demo town, not attributed to the canon.",
   "player_action": "",
   "information": [
     {
@@ -55,7 +55,7 @@
     }
   ],
   "unknowns": [
-    "Identity and powers of the player not defined."
+    "The player's identity and powers are not defined."
   ],
   "commitment_ids": [],
   "rules": [
