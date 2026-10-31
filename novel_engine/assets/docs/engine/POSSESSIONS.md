@@ -48,7 +48,7 @@ Add the new steps to `completed` without removing or rewording the acquired entr
 
 ## Memory and unknowns
 
-A missing historical source can justify `memory_request`. An uncounted stock, an undefined dimension or a price that was never discussed are checked in play if the action allows it. An authorized purchase allows asking for a quote and buying the balance within the available funds, without retroactively inventing an old price. A commitment exceeding the funds or changing the goal requires the player's choice. An uncertainty with no effect on what follows stays unknown.
+A missing historical source can justify `memory_request`. An uncounted stock, an undefined dimension or a price that was never discussed are checked in play if the action allows it. An authorized purchase allows asking for a quote and buying what is still missing within the available funds, without retroactively inventing an old price. A commitment exceeding the funds or changing the goal requires the player's choice. An uncertainty with no effect on what follows stays unknown.
 
 Recovery compares the content of the proofs. Without progress, it provides `in_game_verification`: the next resume must use the available facts and carry out the ordinary checks. A new request without progress goes to `blocked`; no automatic call is made. `/reminder` targets another archive and `/retry` explicitly allows a new attempt. No additional memory limit and no remote verification call is needed.
 
