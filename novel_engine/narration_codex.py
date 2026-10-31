@@ -1,7 +1,6 @@
 """Codex narrator with no tools, one structured generation per turn."""
 from copy import deepcopy
 import json
-import re
 import os
 from pathlib import Path
 import shutil
@@ -133,25 +132,6 @@ def normalize_response(response):
     return response
 
 
-def replace_em_dash(value):
-    """Replace U+2014 with a simple hyphen in every string of the response; return (value, count)."""
-    dash=chr(0x2014)
-    if isinstance(value,str):
-        if dash not in value:return value,0
-        return re.sub(r'\s*'+dash+r'\s*',' - ',value),value.count(dash)
-    if isinstance(value,list):
-        out=[replace_em_dash(v) for v in value]
-        return [v for v,_ in out],sum(n for _,n in out)
-    if isinstance(value,dict):
-        out={}
-        total=0
-        for k,v in value.items():
-            k2,a=replace_em_dash(k);v2,b=replace_em_dash(v)
-            out[k2]=v2;total+=a+b
-        return out,total
-    return value,0
-
-
 class CodexNarrator:
     provider = 'Codex'
 
@@ -216,8 +196,6 @@ class CodexNarrator:
                 if callback is not None:
                     callback(self.last_response)
                 response = json.loads(self.last_response)
-                response,replaced = replace_em_dash(response)
-                if replaced:self.last_metrics['em_dashes_replaced']=replaced
                 check_json(response)
                 self.validate_response(response,schema)
                 return deepcopy(response)
@@ -228,7 +206,7 @@ class CodexNarrator:
                 self.last_error=failure;self.last_metrics['cli_error']=failure
                 raise ModelUnavailable(failure_summary(failure, self.provider)) from exc
             except (ValueError, TypeError, KeyError, UnicodeError) as exc:
-                detail=str(exc).replace(chr(0x2014),'-')
+                detail=str(exc)
                 if self.last_error is None:
                     self.last_error=collect_failure(b'',safe_detail(detail),None)
                     self.last_error['category']='invalid_response'

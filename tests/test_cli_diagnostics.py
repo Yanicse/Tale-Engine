@@ -65,13 +65,14 @@ class DiagnosticTests(unittest.TestCase):
             error=collect_failure(b'',text,1)
             self.assertEqual(error['category'],kind,text)
 
-    def test_tokens_cookies_and_forbidden_punctuation_are_masked(self):
+    def test_tokens_and_cookies_are_masked_and_punctuation_kept(self):
         raw='Authorization: Bearer secrettoken Cookie: session-secret\n'
         raw+='{"access_token":"secret-access", "refresh_token":"secret-refresh", "password":"secret-pass"}\n'
         raw+='api_key=sk-abcdefghijklmnop JWT=eyJheader.eyJpayload.signature'+chr(0x2014)
         safe=safe_detail(raw)
-        for secret in ('secrettoken','session-secret','secret-access','secret-refresh','secret-pass','sk-abcdefghijklmnop','eyJheader.eyJpayload.signature',chr(0x2014)):
+        for secret in ('secrettoken','session-secret','secret-access','secret-refresh','secret-pass','sk-abcdefghijklmnop','eyJheader.eyJpayload.signature'):
             self.assertNotIn(secret,safe)
+        self.assertIn(chr(0x2014),safe)
         self.assertLessEqual(len(safe_detail('x'*10000)),4000)
 
     def test_error_does_not_copy_request_body_or_narration(self):

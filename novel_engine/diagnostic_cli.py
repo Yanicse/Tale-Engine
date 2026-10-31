@@ -8,8 +8,7 @@ MAX_DETAIL=4000
 
 
 def safe_detail(value,limit=MAX_DETAIL):
-    text=str(value).replace(chr(0x2014),'-')
-    text=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',text)
+    text=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',str(value))
     text=re.sub(r'(?im)\b((?:set[-_]?)?cookie\s*:\s*)[^\r\n]+',r'\1[mask]',text)
     text=re.sub(r'(?i)\b(Bearer|Basic)\s+[^\s,;"\']+',r'\1 [mask]',text)
     text=re.sub(r'''(?ix)

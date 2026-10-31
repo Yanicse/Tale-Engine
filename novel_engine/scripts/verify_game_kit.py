@@ -119,9 +119,6 @@ def main() -> None:
     for scenario in scenarios:
         for relative in scenario["example_files"]:
             require((KIT / relative).is_file(), f"Example missing: {relative}")
-    for p in KIT.rglob("*"):
-        if p.is_file():
-            require(chr(0x2014) not in p.read_text(encoding="utf-8"), f"Forbidden punctuation: {p.name}")
     print(json.dumps({"status": "ok", "contracts": len(schemas), "examples": len(examples),
                       "specified_scenarios": len(scenarios), "engine_executed": False}, ensure_ascii=False))
 

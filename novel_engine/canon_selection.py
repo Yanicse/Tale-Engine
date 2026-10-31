@@ -285,7 +285,7 @@ class CanonSelector:
                 # The summary of an assertion may omit a decisive detail of its proof.
                 # Provide only a short whole quotation, without loading the volume or truncating a caveat.
                 if has_quotes and source['quote'] and len(source['quote'])<=450:
-                    item['source']['excerpt']=source['quote'].replace(chr(0x2014),';')
+                    item['source']['excerpt']=source['quote']
                 if claim['category']=='testimony':
                     speaker=claim.get('canonical_speaker_id') or claim.get('speaker_id')
                     row=con.execute('SELECT name FROM entities WHERE entity_id=?',(speaker,)).fetchone() if speaker else None

@@ -34,7 +34,7 @@ An interruption of the process resumes from the log and the persistent state. A 
 
 ## Outputs and budget
 
-Answer in the narration language set for the campaign. Keep names and quotations in their source language. Never write U+2014. Return messages stay short; the detailed data is in the files.
+Answer in the narration language set for the campaign. Keep names and quotations in their source language. Return messages stay short; the detailed data is in the files.
 
 Any information that cannot be found triggers a targeted search if it is needed; otherwise keep the unknown. Do not fill it in from your own knowledge of the book or from the Internet.
 

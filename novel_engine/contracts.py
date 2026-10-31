@@ -50,10 +50,7 @@ def load_schema(kind, stack=()):
 
 
 def check_json(value):
-    text = json.dumps(value, ensure_ascii=False, allow_nan=False)
-    if chr(0x2014) in text:
-        raise ValueError('The U+2014 character is forbidden.')
-    return text
+    return json.dumps(value, ensure_ascii=False, allow_nan=False)
 
 
 def check(kind, value):

@@ -212,9 +212,9 @@ class EngineTests(unittest.TestCase):
         adapter=CommandAdapter([sys.executable,'-c','print("not JSON")'])
         with self.assertRaises(ModelUnavailable):adapter.proposed({},task(self.c.state()))
 
-    def test_prohibited_punctuation_and_boolean_resource_fail(self):
+    def test_em_dash_is_accepted_and_boolean_resource_fails(self):
         state=self.c.state();state['intentions']['faction']=chr(0x2014)
-        with self.assertRaises(ValueError):check('state',state)
+        check('state',state)
         state=initial_state();state['resources']['player_gold']=True
         with self.assertRaises(ValueError):check('state',state)
 

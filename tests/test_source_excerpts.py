@@ -43,12 +43,12 @@ class SourceExcerptTests(unittest.TestCase):
         packet = self.selector().select(query='canon:' + CLAIM)
         self.assertNotIn('excerpt', packet['facts'][0]['source'])
 
-    def test_source_punctuation_is_normalized_without_changing_snapshot(self):
+    def test_source_punctuation_is_kept_without_changing_snapshot(self):
         self.quote('Description' + chr(0x2014) + 'caveat.')
         before = self.digest()
         packet = self.selector().select(query='canon:' + CLAIM)
-        self.assertNotIn(chr(0x2014), check_json(packet))
-        self.assertIn('caveat', packet['facts'][0]['source']['excerpt'])
+        self.assertIn(chr(0x2014), check_json(packet))
+        self.assertEqual(packet['facts'][0]['source']['excerpt'], 'Description' + chr(0x2014) + 'caveat.')
         self.assertEqual(self.digest(), before)
 
     def test_legacy_sources_without_quote_column_remain_usable(self):

@@ -138,8 +138,9 @@ class TargetedContextTests(Fixture):
         value = {'text': 'A sentence with spaces, "quotes" and a caveat: not confirmed.', 'quantity': None}
         self.assertEqual(json.loads(serialize(value)), value)
         self.assertEqual(serialize({'a': 1, 'b': [1, 2]}), '{"a":1,"b":[1,2]}')
+        self.assertEqual(json.loads(serialize({'text': chr(0x2014)})), {'text': chr(0x2014)})
         with self.assertRaises(ValueError):
-            serialize({'text': chr(0x2014)})
+            serialize({'n': float('nan')})
 
     def test_spell_preserves_full_selected_sheet_costs_and_explicit_recovery(self):
         a, b = self.compare('I cast lightning at 10 %.', 'named_spell')

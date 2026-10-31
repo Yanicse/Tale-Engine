@@ -15,4 +15,4 @@ is recalled briefly only if useful. No predefined figure, event or success.
 Use the normal transports for projects, possessions, creations, agenda and memory.
 Write the syntheses in complete sentences; never truncate narrations to make a summary.
 Respect the delegation limits. An important choice and the interruptions stay with the player.
-Answer in the narration language, without the U+2014 character. No remote call, tool or extra sub-agent.
+Answer in the narration language. No remote call, tool or extra sub-agent.

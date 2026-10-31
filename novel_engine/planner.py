@@ -680,7 +680,7 @@ def review_world(campaign,adapter,prepared,retry=False):
         return metrics
     except (ModelUnavailable,ValueError,TypeError,KeyError,KeyboardInterrupt) as exc:
         if launched:metrics.update(getattr(adapter,'last_metrics',{}))
-        reason=str(exc).replace(chr(0x2014),'-')
+        reason=str(exc)
         with campaign.transaction() as con:
             raw=getattr(adapter,'last_response',None) if launched else None
             if launched and raw is None and getattr(adapter,'last_error',None) is not None:

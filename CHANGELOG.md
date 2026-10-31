@@ -4,6 +4,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The em dash (U+2014) is an ordinary character again: the narrator and planner instructions no longer forbid it,
+  a response that contains one is kept as written instead of being refused or rewritten, and canon excerpts and
+  error messages keep it too.
 - `novel diagnose` names an omitted block `block` instead of `bloc`, and the planning reduction of the targeted
   context is called `planning` instead of `planification`.
 - The reading page code uses English class and function names (`titles`, `gold`, `coin`, `purse-label`,

@@ -27,11 +27,11 @@ class PromptFiles(unittest.TestCase):
         self.assertEqual(sorted(files - used), [], 'prompt file that no code loads')
         self.assertGreaterEqual(len(files), 30)
 
-    def test_prompts_are_not_empty_and_have_no_em_dash(self):
+    def test_prompts_are_not_empty_and_do_not_forbid_the_em_dash(self):
         for name in prompts.names('en'):
             text = prompts.load(name)
             self.assertTrue(text.strip(), name)
-            self.assertNotIn(chr(0x2014), text, name)
+            self.assertNotIn('U+2014', text, name)
 
     def test_placeholders_that_the_code_fills_exist(self):
         story = prompts.load('instructions.story')

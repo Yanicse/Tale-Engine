@@ -9,10 +9,9 @@ from novel_engine.narrative_preparation import ALL_MODULES, build_instructions
 
 
 class CreationPolicyTests(unittest.TestCase):
-    def test_policy_texts_are_plain_single_strings_without_forbidden_punctuation(self):
+    def test_policy_texts_are_plain_ascii_single_strings(self):
         for text in (creation_policy.INSTRUCTIONS, creation_policy.TRANSPORT):
             self.assertIsInstance(text, str)
-            self.assertNotIn(chr(0x2014), text)
             self.assertTrue(text.endswith(' '), 'blocks are concatenated without separator')
             text.encode('ascii')
 

@@ -344,8 +344,7 @@ class Routine:
     def apply(self, response):
         """A single packet, never a generation loop or a silent fix."""
         response = deepcopy(response)
-        if chr(0x2014) in check_json(response):
-            raise ValueError('The U+2014 character is forbidden.')
+        check_json(response)
         with narrative_lock(self.campaign):
             self._reload()
             active = self.data['active']

@@ -87,7 +87,6 @@ class PacketTests(SceneFixture):
         directive = packet['scene_pacing'][0]
         self.assertEqual(directive['entry_id'], 'meeting')
         self.assertIn('postponement does not replace', directive['instruction'])
-        self.assertNotIn(chr(0x2014), directive['instruction'])
 
     def test_no_directive_means_no_block_in_the_prompt(self):
         with self.c.transaction() as con:

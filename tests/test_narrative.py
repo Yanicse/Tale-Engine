@@ -177,12 +177,13 @@ class NarrativeTests(unittest.TestCase):
         self.assertEqual(self.c.state(),before)
         self.assertEqual(self.c.resume()['session']['scene'],result['narration'])
 
-    def test_empty_narration_and_forbidden_punctuation_are_refused(self):
+    def test_empty_narration_is_refused_and_an_em_dash_is_kept(self):
         self.narrator.response['narration']=''
         with self.assertRaises(ModelUnavailable):self.loop.run_turn('I speak.')
-        self.narrator.response['narration']='Texte'+chr(0x2014)+'suite'
-        with self.assertRaises(ModelUnavailable):self.loop.run_turn(resume=True,retry=True)
         self.assertEqual(self.c.state()['state_version'],0)
+        self.narrator.response['narration']='Texte'+chr(0x2014)+'suite'
+        result=self.loop.run_turn(resume=True,retry=True)
+        self.assertEqual(result['narration'],'Texte'+chr(0x2014)+'suite')
 
     def test_prompt_keeps_all_current_acquisitions_without_duplicate_scene(self):
         prepared=self.c.prepare_turn('I speak.')
@@ -476,12 +477,13 @@ class NarrativeTests(unittest.TestCase):
             self.assertEqual(data['response'],'{invalid')
         self.assertEqual(self.c.state(),before)
 
-    def test_diagnostics_escape_forbidden_unicode_in_invalid_response(self):
+    def test_diagnostics_escape_unicode_in_invalid_response(self):
         self.narrator.response['narration']='Texte'+chr(0x2014)+'suite'
+        self.narrator.response['unknown_field']=True
         with self.assertRaises(ModelUnavailable):self.loop.run_turn('I speak.')
         with self.c.transaction() as con:
             text=con.execute('SELECT payload FROM narrative_diagnostics').fetchone()[0]
-            self.assertNotIn(chr(0x2014),text)
+            self.assertTrue(text.isascii())
             self.assertEqual(json.loads(text)['response']['narration'],self.narrator.response['narration'])
 
 

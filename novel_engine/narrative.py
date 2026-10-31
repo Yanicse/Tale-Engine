@@ -411,7 +411,7 @@ class NarrativeLoop:
             return {**dict(row),'proposal':archives.restore(con,request_id,row['proposal'])} if row else None
 
     def _received_response(self, request_id, response, prompt):
-        # Escaped ASCII: keep even a malformed output without writing U+2014.
+        # Escaped ASCII: keep even a malformed output.
         packet=json.loads(prompt.rsplit('\nCURRENT TURN\n',1)[1])
         decoded=response
         if isinstance(response,str):
@@ -823,7 +823,7 @@ class NarrativeLoop:
                         self.last_metrics.update(getattr(self.narrator,'last_metrics',{}))
                     self.last_metrics['model_calls']=(getattr(self.narrator,'last_metrics',{}).get('model_calls',1)
                         if received is None and generation_attempted else 0)+self.last_metrics.get('planner',{}).get('model_calls',0)
-                    reason=(type(exc).__name__+': '+str(exc)).replace(chr(0x2014),'-')
+                    reason=type(exc).__name__+': '+str(exc)
                     if generation_attempted and isinstance(exc,AwaitingAnswer):
                         # Nothing was generated: writing the request for a person must not use up the action's budget.
                         with self.campaign.transaction() as con:
