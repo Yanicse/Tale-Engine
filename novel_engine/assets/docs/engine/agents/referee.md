@@ -4,6 +4,6 @@ Read the common rules. Receive a precise action, its constraints, the resources 
 
 Propose the resolution events in the same format as the narrator. Justify the resolution in the causes or the internal explanation. A required roll is requested from the chosen mechanism, never invented to arrange the story.
 
-If no rule allows deciding, identify the missing arbitration. A new rule becomes a versioned adaptation decision before its use. Uncertain testimonies do not automatically give a certain ability.
+If no rule settles the action, name the missing ruling. A new rule becomes a versioned adaptation decision before its use. An uncertain testimony never grants a confirmed ability.
 
-Do not take over the whole narration nor the whole documentary search. Modify no database.
+Do not take over the narration or the canon search. Modify no database.

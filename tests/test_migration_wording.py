@@ -21,7 +21,9 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'closes the file', 'whole file', 'revelation of a private file', 'at the Guild', 'finished house', "'chef'", 'plaque',
              "'renamed'", '; An ', 'accessible files', 'NPC ignores', 'buying the balance', 'canonical search scripts', 'play_narrative.py --',
              'consultation', 'official path', 'impose itself', 'The manager', 'Ordinary arbitrations', 'historical demo',
-             'nor make calls', 'personal knowledge of the work', 'An attested knowledge')
+             'nor make calls', 'personal knowledge of the work', 'An attested knowledge',
+             'allows deciding', 'a certain ability', 'nor the whole', 'stop the useful work', 'the manager',
+             'decision taken now apart')
 
 
 def code_strings():

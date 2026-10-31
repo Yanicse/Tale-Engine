@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The referee, off-screen and archivist rules are reworded: no more "the missing arbitration", "a certain ability",
+  "stop the useful work", "the manager" or "nor" after a negation.
 - The common rules sent to the narrator lose their remaining calques: "the manager" is the engine, "arbitrations"
   are rulings, "the historical demo" is the legacy demo, and "personal knowledge of the work" is your own knowledge
   of the book.
