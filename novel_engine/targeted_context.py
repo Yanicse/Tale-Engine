@@ -126,7 +126,7 @@ def project(packet):
         _project_inventory(packet)
     if reduction('index'):
         _project_projects(packet)
-    if reduction('planification'):
+    if reduction('planning'):
         _project_planning(packet)
     return packet
 

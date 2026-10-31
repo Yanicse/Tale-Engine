@@ -36,7 +36,7 @@ def build(packet, selection=None, npc=None, omitted=(), omitted_entities=None):
         if sheet['status']=='kept' and not sheet['sent']:
             sheet['final_reason'] = 'prompt_budget' if 'npc_sheets' in omitted else 'sheet_absent_from_prompt'
     return {'memory':sources, 'neighbors':deepcopy((selection or {}).get('neighbors', [])),
-            'npc':npc_diagnostic, 'omitted_blocks':[{'bloc':key, 'reason':'prompt_budget'} for key in omitted],
+            'npc':npc_diagnostic, 'omitted_blocks':[{'block':key, 'reason':'prompt_budget'} for key in omitted],
             'omitted_entities':deepcopy(omitted_entities if omitted_entities is not None else packet.get('omitted_entities_index', {})),
             'rule_modules':list(packet.get('rule_modules', [])),
             'sent_memory_references':sorted(set(packet.get('memory_references', [])) & evidence)}

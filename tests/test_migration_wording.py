@@ -75,6 +75,13 @@ class MigrationWordingTests(unittest.TestCase):
         found = sorted({f'{path}: {phrase}' for path, value in json_strings() for phrase in FORBIDDEN if phrase in value})
         self.assertEqual(found, [])
 
+    def test_keys_are_english(self):
+        french = {'bloc', 'planification'}
+        found = [f'{path}:{line}: {value}' for path, line, value in code_strings() if value in french]
+        settings = json.loads((PACKAGE / 'targeted_context_settings.json').read_text(encoding='utf-8'))
+        found += sorted(set(settings['reductions']) & french)
+        self.assertEqual(found, [])
+
     def test_default_memory_topics_fit_any_novel(self):
         self.assertEqual([topic[0] for topic in TOPICS], ['magic'])
 

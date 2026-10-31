@@ -19,7 +19,7 @@ from novel_engine.narrative_preparation import select_modules, select_documents
 from novel_engine.targeted_context import analysis, deduplicate_documents, project, reduction, serialize
 import test_reliability as reliability
 
-NAMES = ('danger_hp', 'agenda_risk', 'recent_threat', 'current_action', 'inventory', 'planification')
+NAMES = ('danger_hp', 'agenda_risk', 'recent_threat', 'current_action', 'inventory', 'planning')
 CURRENT_TURN = '\nCURRENT TURN\n'
 
 # Fictional abilities. A catalogue entry makes the sheet optional in the prompt; mind_link has none.
@@ -176,7 +176,7 @@ class TargetedContextTests(Fixture):
     def test_projection_does_not_mutate_the_packet(self):
         packet, _ = self.packet('I ask for news about the furniture.')
         original = deepcopy(packet)
-        with reductions('inventory,index,planification'):
+        with reductions('inventory,index,planning'):
             project(packet)
         self.assertEqual(packet, original)
 
@@ -286,7 +286,7 @@ class ReductionTests(Fixture):
              'due_minute': None, 'reference': 'plan:reserve:0'}],
             'private_notes': ['Private note.'], 'player_summaries': ['Summary.']}
         original = deepcopy(packet)
-        with reductions('planification'):
+        with reductions('planning'):
             result = project(packet)
         self.assertEqual(packet, original)
         situations = {item['id']: item for item in result['world_planning']['situations']}

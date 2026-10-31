@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- `novel diagnose` names an omitted block `block` instead of `bloc`, and the planning reduction of the targeted
+  context is called `planning` instead of `planification`.
 - The reading page code uses English class and function names (`titles`, `gold`, `coin`, `purse-label`,
   `purse-amount`, `paragraphs`) instead of French ones.
 - The canon selection no longer lists `kingdom` twice and the French `theocratie` among the words that mark a state.
