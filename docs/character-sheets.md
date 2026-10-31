@@ -85,12 +85,11 @@ replace health, mana or money. `novel validate` checks the configuration before 
 
 `catalogue` can give an ability `aliases`, `offensive` and `bound` flags for targeted context selection. `parameters` and
 `scaling` describe effects at reduced power. `forbidden_resources` lists resource names the story must never create.
-Automatic regeneration and health-derived hunger rules are not supported.
+Automatic regeneration is not supported.
 
 For `effect: "death_prevention"`, the active cast saves its scaled damage capacity and survival HP, so another
 ability's parameters cannot replace them after reopening. Survival HP and duration round up to whole hit points
 and fictional seconds; damage capacity rounds down. A later activation replaces those active values.
-If an older save has an active ward without a saved survival value, activate the ability again before using it.
 
 ## From the terminal
 
@@ -105,4 +104,4 @@ novel character new my-novel --name Ana --hp 40 --mana 60 \
 ## Existing saves
 
 No existing campaign is rewritten automatically. The former `vitality-1.0` mode is refused with an explicit message;
-create a new campaign from an updated pack to use mana. The source project and its private saves are unaffected.
+create a new campaign from an updated pack to use mana.

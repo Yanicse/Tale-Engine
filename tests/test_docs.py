@@ -55,6 +55,11 @@ class DocsTest(unittest.TestCase):
         self.assertEqual(len(prompts.names('en')), 30)
         self.assertIn('(30 files)', text(DOCS / 'prompts-and-languages.md'))
 
+    def test_no_page_mentions_the_original_project(self):
+        for page in PAGES:
+            for phrase in ('source project', 'hunger', 'older save'):
+                self.assertNotIn(phrase, text(page), page.name)
+
     def test_the_documented_defaults_match_the_code(self):
         self.assertTrue(90 <= len(ui_text.EN) <= 130, 'docs say about 100 page texts')
         from novel_engine.narration_codex import DEFAULT_NARRATIVE_TIMEOUT

@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The character sheets page no longer mentions the original project, its private saves, a hunger rule or saves
+  older than the first release.
 - The common rules said that a missing knowledge attribution does not prove an NPC "ignores" a fact, a calque of the
   French "ignorer": they now say it does not mean the NPC does not know it.
 - The French reading page translates the cooldown and mana cost lines, and the quantity, precision and place of a
