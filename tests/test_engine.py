@@ -296,8 +296,10 @@ class EngineTests(unittest.TestCase):
             wait_intention('watch_gates')
             process.stdin.write('leave\n');process.stdin.flush()
             wait_intention('have_follow_route')
-            output,error=process.communicate('memories\nquitter\n',timeout=5)
+            before=self.c.resume()['exchange_count']
+            output,error=process.communicate('memories\nquit\n',timeout=5)
             self.assertEqual(process.returncode,0,error)
+            self.assertEqual(Campaign(self.c.path).resume()['exchange_count'],before,'the quit command is not an action')
             self.assertIn('take the road',output)
             self.assertNotIn('lookout',output)
             self.assertNotIn('surveillance',output)

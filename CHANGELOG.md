@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The terminal demo test sends the documented `quit` command instead of the French `quitter`, which the demo took for an
+  action and only ended on the end of input; it now checks that quitting records nothing.
 - The bundled story *The Salt Lantern* says the inspector arrives "the morning after the lantern was stolen", not "on the very
   day", since the lantern goes dark the evening before.
 - The narrator, chronicler, planner and agenda rules lose fifteen "nor" that followed "without", "do not" or "no" (it is
