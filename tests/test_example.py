@@ -149,6 +149,11 @@ class ExampleNovelTest(unittest.TestCase):
             json.loads((cli.EXAMPLE / name).read_text(encoding='utf-8'))
         self.assertGreater(len((cli.EXAMPLE / 'story.txt').read_text(encoding='utf-8')), 5000)
 
+    def test_the_inspector_arrives_the_morning_after_the_theft(self):
+        story = (cli.EXAMPLE / 'story.txt').read_text(encoding='utf-8')
+        self.assertNotIn('on the very day the lantern was stolen', story)
+        self.assertIn('the morning after the lantern was stolen', story)
+
 
 if __name__ == '__main__':
     unittest.main()

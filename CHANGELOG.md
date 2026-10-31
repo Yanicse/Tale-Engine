@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The bundled story *The Salt Lantern* says the inspector arrives "the morning after the lantern was stolen", not "on the very
+  day", since the lantern goes dark the evening before.
 - The narrator, chronicler, planner and agenda rules lose fifteen "nor" that followed "without", "do not" or "no" (it is
   now "or"), two verbs that did not agree after "or" ("stays what it is", "a creation or a postponement provides"),
   "give no knowledge ... automatically" in the canon rule, "a lot of elapsed time" and the capital letter of the identifier
