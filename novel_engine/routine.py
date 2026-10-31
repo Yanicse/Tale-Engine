@@ -1,4 +1,4 @@
-"""Local handling of ellipses, with the narrator's answers in the chat."""
+"""Local handling of ellipses, answered by hand or by a chat assistant."""
 from copy import deepcopy
 from contextlib import closing
 from pathlib import Path
@@ -26,7 +26,7 @@ CATEGORIES = ('base_threat', 'harm_to_player_or_relatives', 'key_npc', 'arc_in_c
 DEFAULT_POLICY = {'points_per_step': None, 'period_days': 7, 'pause_period': False,
                   'stop_on': ['critical'], 'alert_days': 3, 'arcs_review_days': 2,
                   'bulletins': True, 'signals': True}
-# Files without a recorded policy: old behavior, one step per 6 pm point.
+# Routines without a recorded policy: old behavior, one step per 6 pm point.
 LEGACY_POLICY = {'points_per_step': 1, 'period_days': None, 'pause_period': False,
                  'stop_on': ['critical'], 'alert_days': 0, 'arcs_review_days': 2,
                  'bulletins': False, 'signals': False}
@@ -147,7 +147,7 @@ def turn_limit(prepared, target, max_points=None, period_end=None, fine_until=No
 
 class NoRemote:
     def generate(self, prompt):
-        raise RuntimeError('The routine is run in the chat; no remote generator available.')
+        raise RuntimeError('The routine is answered by hand or by a chat assistant; no remote generator available.')
 
 
 class Routine:
@@ -212,7 +212,7 @@ class Routine:
         return (f"Routine of {self.data['days']} days (folder {self.data['id']}) until {self.data['end']} "
                 f"(minute {self.data['end_minute']}, fixed end). "
                 f"Goal: {self.data['goal']} Topics: {'; '.join(self.data['subjects'])}. "
-                f"Delegation: {self.data['delegation']} Narrator in the chat, no remote call.")
+                f"Delegation: {self.data['delegation']} Answered by hand or by a chat assistant, no remote call.")
 
     def status(self):
         self._reload()
@@ -246,7 +246,7 @@ class Routine:
                 return self._view(self.folder / active['file'])
             state = read_state(self.campaign)
             if state['state_version'] != self.data['expected_state_version']:
-                raise ValueError('The campaign evolved outside this file; examine the resume before continuing.')
+                raise ValueError('The campaign evolved outside this routine; examine the resume before continuing.')
             saved = self.campaign.resume()
             pending = saved['session']['pending_action']
             if pending and (not active or pending['request_id'] != active['request_id']):

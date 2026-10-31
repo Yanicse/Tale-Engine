@@ -52,7 +52,7 @@ def load_schema(kind, stack=()):
 def check_json(value):
     text = json.dumps(value, ensure_ascii=False, allow_nan=False)
     if chr(0x2014) in text:
-        raise ValueError('Ponctuation U+2014 forbidden')
+        raise ValueError('The U+2014 character is forbidden.')
     return text
 
 

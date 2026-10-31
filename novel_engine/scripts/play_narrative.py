@@ -183,7 +183,7 @@ def main(argv=None):
     # is reread transactionally at every action.
     loop._documents()
     display(loop.run_turn())
-    print('\nCommands: /quit, /resume, /retry, /reevaluate, /memories <subject>, /files, /reminder <subject>, /agenda, /summaries, /inventory, /purse, /projects, /skills [subject].',file=sys.stderr)
+    print('\nCommands: /quit, /resume, /retry, /reevaluate, /memories <subject>, /files, /creations [subject], /reminder <subject>, /agenda, /summaries, /inventory, /purse, /projects, /skills [subject].',file=sys.stderr)
     extra_query=args.search
     if campaign.resume()['session']['pending_action']:
         print('An action is already waiting. /resume processes it explicitly.',file=sys.stderr)

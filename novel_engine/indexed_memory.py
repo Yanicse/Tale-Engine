@@ -1,4 +1,4 @@
-"""Indexed archives, extractive files and bounded recovery, with no model."""
+"""Indexed archives, extractive memos and bounded recovery, with no model."""
 import json
 import re
 import time
@@ -9,16 +9,9 @@ from .memory import memory_terms, memory_scores, words
 VERSION = 1
 MAX_CANDIDATES = 50
 TEXT_BUDGET = 16000
-# Default memory topics: (identifier, title, trigger words, facet words). Campaigns may add their own.
+# Default memory topics: (identifier, title, trigger words, facet words). The narrator adds the campaign's own
+# topics through memory_updates.
 TOPICS = (
-    ('guild', 'Guild file',
-     ('guild', 'examiner', 'evaluation', 'exam', 'promotion', 'rank', 'badge'),
-     ('favorable evaluation', 'address', 'signed report', 'promotion', 'confirmation')),
-    ('construction', 'Construction and land',
-     ('construction', 'building', 'site', 'land', 'planks', 'frame', 'house'),
-     ('plan', 'land', 'agreement', 'materials', 'supports')),
-    ('lodging', 'Lodging with hosts',
-     ('lodging', 'host', 'room', 'shed'), ('agreement', 'lodging')),
     ('magic', 'Confirmed powers and rules',
      ('spells', 'power', 'ability', 'magic', 'ritual'), ('confirmed', 'cost')),
 )
@@ -77,7 +70,7 @@ class MemoryIndex:
 
     def topic(self, identifier, title, aliases, facets=(), audience=None):
         if not re.fullmatch(r'[a-z0-9_:.-]{1,80}', identifier):
-            raise ValueError('Incorrect file identifier')
+            raise ValueError('Incorrect topic identifier')
         self.con.execute('INSERT OR IGNORE INTO memory_topics VALUES (?,?,?,?)',
                          (identifier, title, check_json(list(facets)),check_json(audience or ['narrator'])))
         for alias in (identifier, *aliases):

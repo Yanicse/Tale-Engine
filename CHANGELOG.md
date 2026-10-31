@@ -51,6 +51,16 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - The reading page shows an empty Creations tab on a new campaign instead of "Creative format inactive".
 - The documentation no longer says that a `corpus/` folder is created. `campaign_cli` reads the active campaign by
   default, except `init` and `action-demo` which keep the fictional demo save.
+- The prompts and agent rules lose the last traces of the original campaign: a dated rule number, an `accord` key in
+  the path examples, conscription words in the routine guidance, "the Codex loop", "a narrator running in the chat",
+  and "never cooldown an effect by reopening", which now says that reopening or resuming never refills a charge or
+  ends a cooldown. Memory and agenda texts say topic and matter instead of "file".
+- Messages left in French or in French word order are corrected (`Ressource`, `Ponctuation`, `Lien narrative`,
+  `Manifestation en double`, `Version narrative unknown`, `Base existing required` and others), and `/creations` is
+  listed in the interactive commands.
+- The default memory topics no longer include a guild exam, a building site and a lodging taken from the original
+  campaign; only the confirmed powers topic remains, and the narrator adds a campaign's own topics. The canon
+  selection word lists lose their French words and duplicates.
 
 ## 0.1.0
 

@@ -113,7 +113,7 @@ class RoutineTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(pending, self.c.resume()['session']['pending_action'])
         self.assertTrue(Path(first['model']).is_file())
-        self.assertIn('summoned', Path(first['instructions']).read_text(encoding='utf-8'))
+        self.assertIn('counted and total figures', Path(first['instructions']).read_text(encoding='utf-8'))
 
     def test_two_days_finish_without_duplicate_turn(self):
         response = self.response()

@@ -13,7 +13,7 @@ def main(argv=None):
     parser.add_argument('campaign', type=Path, help='Path of the existing SQLite database.')
     parser.add_argument('--request', help='Attempt identifier; latest attempt by default.')
     args = parser.parse_args(argv)
-    if not args.campaign.is_file(): parser.error('Base existing required.')
+    if not args.campaign.is_file(): parser.error('Existing database required.')
     print(json.dumps(read(args.campaign, args.request), ensure_ascii=False, indent=2))
     return 0
 

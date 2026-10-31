@@ -1,4 +1,4 @@
-"""JSON commands linking the tools and the chat to a local campaign."""
+"""JSON commands linking the tools and a chat assistant to a local campaign."""
 import argparse
 import json
 from pathlib import Path

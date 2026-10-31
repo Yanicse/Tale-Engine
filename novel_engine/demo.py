@@ -59,7 +59,7 @@ def action(state, text):
                      minute=state['world_minute']+minutes,causes=['adaptation:wait_demo'])
         return proposal(state,wait['description'],[wait])
     return proposal(state,questions=[('This demo offers leave or wait. Free actions will be resolved by the narrator '
-                                      'connected to the prototype.')])
+                                      'connected to the engine.')])
 
 
 def task(state, goal='surveillance'):

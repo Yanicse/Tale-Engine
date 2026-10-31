@@ -124,7 +124,7 @@ class NarrativeLoop:
         self.documents = None
         self.last_metrics = {}
         self.planner = planner
-        if type(context_budget_bytes) is not int or context_budget_bytes<=0:raise ValueError('Budget UTF-8 positive required.')
+        if type(context_budget_bytes) is not int or context_budget_bytes<=0:raise ValueError('Positive UTF-8 budget required.')
         self.context_budget_bytes=context_budget_bytes
         self.documents_root=Path(documents_root) if documents_root is not None else ROOT
         # Shipped rules come from the package unless a test or caller supplies its own root.

@@ -117,7 +117,7 @@ def classify(text):
 
 def failure_summary(error, provider='Codex'):
     titles={
-        'service':'Service Codex temporarily unavailable',
+        'service':'Codex service temporarily unavailable',
         'network':'Codex network connection interrupted',
         'rate_limit':'Codex request rate limited',
         'usage_limit':'Codex usage limit reached',

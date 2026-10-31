@@ -30,7 +30,7 @@ Advance by 0 to 2 segments per revision. A clock can go back if the campaign thw
 
 ## Manifestations
 
-A manifestation is what reaches the player character, within the seven fictional days (absolute due_minute, strictly in the future). At most three per revision and four pending. type=sign for a clock in progress: rumor at the Guild, refugees, rising prices, patrols, proclamation, disappearances. Favor the clocks that have already advanced, and produce at least one when a clock passes the halfway mark. type=event for the clock that bursts: the event itself, dated, with its actors and its effects.
+A manifestation is what reaches the player character, within the seven fictional days (absolute due_minute, strictly in the future). At most three per revision and four pending. type=sign for a clock in progress: rumor at the inn, refugees, rising prices, patrols, proclamation, disappearances. Favor the clocks that have already advanced, and produce at least one when a clock passes the halfway mark. type=event for the clock that bursts: the event itself, dated, with its actors and its effects.
 
 description says what happens in the world; perception says how it can reach the player character according to their position. place and actor are precise. The narrator is obliged to show each manifestation on its date; a big event interrupts the player character's turn.
 

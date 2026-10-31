@@ -196,7 +196,7 @@ class WorldPlanner:
             if group=='commitments' and (old is None or (isinstance(value,dict) and
                     value.get('status')!=(old or {}).get('status'))):major=True
             if group=='powers' and old is None:major=True
-            if group=='inventory' and re.search(r'rank|plaque',key):major=True
+            if group=='inventory' and re.search(r'rank|badge',key):major=True
         cursor=self.con.execute('INSERT OR IGNORE INTO planner_turns VALUES (?,?,?)',
                                 (proposal['request_id'],int(substantial),int(major)))
         if cursor.rowcount:
@@ -472,7 +472,7 @@ class WorldPlanner:
         if sum(c['status']=='in_progress' for c in final.values())>MAX_CLOCKS:
             raise ValueError('Too many active clocks; close or burst one before adding another.')
         manifestations=chronicle['manifestations']
-        if len({m['id'] for m in manifestations})!=len(manifestations):raise ValueError('Manifestation en double.')
+        if len({m['id'] for m in manifestations})!=len(manifestations):raise ValueError('Duplicate manifestation.')
         if sum(m['type']=='event' for m in manifestations)>1:raise ValueError('A single big event per revision.')
         pending=self.con.execute("SELECT COUNT(*) FROM world_agenda WHERE entry_id LIKE 'chronicle:%' AND status IN ('planned','postponed')").fetchone()[0]
         if pending+len(manifestations)>MAX_PENDING:

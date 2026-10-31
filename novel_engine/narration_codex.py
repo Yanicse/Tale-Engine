@@ -123,7 +123,7 @@ def normalize_response(response):
     validate(response_schema(version=response.get('narrative_schema_version', '1.1'),
                              creations='creation_schema_version' in response),response)
     if response['narrative_schema_version'] not in ('1.1', '1.2','1.3'):
-        raise ValueError('Version narrative unknown.')
+        raise ValueError('Unknown narrative version.')
     if response['memory_request'] and (response['events'] or response['blocking_questions'] or response['memory_updates']
                                      or response['agenda_updates'] or response['continuation'] or response['roll_checks']
                                      or response.get('creation_updates')):

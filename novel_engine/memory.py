@@ -151,7 +151,7 @@ class ContextBuilder:
             audience=['narrator']
             if owner:
                 audience.append('player' if owner=='player' else f'npc:{owner}')
-            add('resource:'+resource,f'Ressource {resource} : {amount}.','fact',
+            add('resource:'+resource,f'Resource {resource}: {amount}.','fact',
                 [f"state:{state['state_version']}:/resources/{resource}"],audience)
         for holder, beliefs in state['beliefs'].items():
             if recipient not in ('narrator', 'player' if holder=='player' else f'npc:{holder}'):

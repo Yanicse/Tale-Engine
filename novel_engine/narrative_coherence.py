@@ -65,7 +65,7 @@ def render_state_links(text, state, config):
 
     result = re.sub(r'\[\[state:([^\[\]\n]+)\]\]', replace, text)
     if '[[state:' in result:
-        raise ValueError('Lien narrative incomplete.')
+        raise ValueError('Incomplete narrative link.')
     return result
 
 

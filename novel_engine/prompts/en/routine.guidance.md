@@ -6,7 +6,7 @@ the private progress of the actors. Do not advance all the clocks uniformly.
 Preserve causality: decision, preparation, action, consequence, possible transmission to the player character.
 A report requires a plausible source and distinguishes observation, document, testimony, rumor and unknown.
 A new number requires a situated and sourced counting step, with its scope; do not confuse
-summoned, departures, enlisted, total strength and people taken by force. Do not copy a figure
+announced, departed, counted and total figures. Do not copy a figure
 from the novel as a current count. The canon is never proof that an episode has already happened.
 Private facts stay private until a credible transmission is recorded.
 Review steps are not narrated to the player. Summarize the routine without filler paragraphs;

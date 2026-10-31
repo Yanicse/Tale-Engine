@@ -1,4 +1,4 @@
-"""Routine and chronicle tool, driven by the narrator in the chat."""
+"""Routine and chronicle tool, answered by hand or by a chat assistant."""
 import argparse
 import json
 from pathlib import Path

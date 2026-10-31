@@ -74,7 +74,7 @@ def install(campaign, plan):
 
 def main(argv=None):
     args_parser = parser(__doc__)
-    args_parser.add_argument('--plan', required=True, help='Plan JSON prospective explicitly chosen')
+    args_parser.add_argument('--plan', required=True, help='Prospective arcs plan (JSON), chosen explicitly')
     args = args_parser.parse_args(argv)
     plan = json.loads(Path(args.plan).read_text(encoding='utf-8'))
     report = install(Campaign(args.campaign), plan) if args.apply else preview(args.campaign, plan)

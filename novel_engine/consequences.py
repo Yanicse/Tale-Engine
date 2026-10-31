@@ -89,8 +89,8 @@ def validate_public(before,after,events,config,source_audience):
                                     or not any(op['kind'] in ('ability', 'restore_mana')
                                                for e in events for op in e.get('mechanical_operations', []))):
                     raise ValueError('Mana consequence without a computed change.')
-            if kind=='project' and not path.startswith('/projects/'):raise ValueError('Project outside the persistent file.')
-            if kind=='commitment' and not path.startswith('/commitments/'):raise ValueError('Commitment outside the persistent file.')
+            if kind=='project' and not path.startswith('/projects/'):raise ValueError('Project outside /projects/.')
+            if kind=='commitment' and not path.startswith('/commitments/'):raise ValueError('Commitment outside /commitments/.')
             if kind in ('recall','intention'):
                 prior,_key=pointer(before,path)
                 if not same_value(prior.get(_key),expected):

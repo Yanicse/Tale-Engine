@@ -157,7 +157,7 @@ def select_documents(documents, modules, packet):
                     # Installed rules and computed effects are authoritative; keep the qualitative limits.
                     skip = paragraph.startswith('|') or paragraph.startswith('All paid costs')
             elif source == 'docs/engine/agents/narrator.md':
-                skip = paragraph.startswith(('For a narrator running in the chat,', 'Do not write directly to the campaign.'))
+                skip = paragraph.startswith(('For a narrator answering by hand or through a chat assistant,', 'Do not write directly to the campaign.'))
                 if paragraph.startswith(('In envelope 1.2,', 'In envelope 1.2,')):
                     skip = 'agenda' not in modules
                 if paragraph.startswith('Possessions, currencies and projects'):

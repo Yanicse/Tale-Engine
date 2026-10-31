@@ -23,7 +23,7 @@ STOP=set(words(('village town road forest gate guard character group man woman h
                 'request traveler customer speak speaks search seek know knowing inspect greet greeting '
                 'hello observe watch look find place original')))
 TOPICS={
-    'guild':('guild','adventurers','guild'),
+    'guild':('guild','adventurers'),
     'rank':('hierarchy','ranks','promotion','adventurers'),
     'ranks':('hierarchy','ranks','promotion','adventurers'),
     'promotion':('promotion','ranks','guild'),
@@ -173,7 +173,7 @@ class CanonSelector:
         specific=[s for s in requested if s['type']!='place' and not re.search(
             r'\b(kingdom|empire|theocracy|kingdom|theocratie)\b',normalized(s['name']))]
         focused=specific or requested
-        reputation=bool(set(words(action)) & {'famous','famous','reputation','fame','known','known','star'})
+        reputation=bool(set(words(action)) & {'famous','reputation','fame','known','star'})
         if reputation and not specific:
             focused=[]
             explicit_subjects=set()
@@ -305,10 +305,9 @@ class CanonSelector:
             # Finding the right name does not prove its reputation, rank or chronology.
             query_terms=set(words(query_focus))
             facets_to_check=[
-                ({'reputation','fame','famous','famous','known','known'},
-                 {'reputation','fame','renamed','famous','famous','known','known','respect','achievements'}),
-                ({'leader','leaders','chef','leader','leader'},
-                 {'leads','leader','leader','chef','leader'}),
+                ({'reputation','fame','famous','known'},
+                 {'reputation','fame','renowned','famous','known','respect','achievements'}),
+                ({'leader','leaders'},{'leads','leader'}),
                 ({'rank','ranks'},{'rank','ranks','adamantite','orichalcum','mithril','copper'})]
             evidence=set(words(' '.join(f['statement'] for f in packet['facts'])))
             facets_ok=all(not query_terms&asked or bool(evidence&needed) for asked,needed in facets_to_check)

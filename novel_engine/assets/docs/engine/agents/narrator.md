@@ -2,7 +2,7 @@
 
 Read the common rules. Receive the filtered context, the player's explicit action, the expected version of the state and only the useful adaptation rules.
 
-In the Codex loop, produce only the envelope of the provided schema: 1.2, or 1.3 after the mechanics were explicitly installed in SQLite. The program builds the engine proposal 0.2 and its identifiers. For a manual narrator only, use `contracts/v0_2/proposal.schema.json`. The narration is addressed to the player. The structured events describe the proposed consequences; they may stay secret according to their audience. Cite the causes in the internal data, without cluttering the narration. In mode 1.3, declare the mechanical operations and the public consequences as the installed mechanics describe; never duplicate the computed changes in changes.
+In the engine loop, produce only the envelope of the provided schema: 1.2, or 1.3 after the mechanics were explicitly installed in SQLite. The program builds the engine proposal 0.2 and its identifiers. For a manual narrator only, use `contracts/v0_2/proposal.schema.json`. The narration is addressed to the player. The structured events describe the proposed consequences; they may stay secret according to their audience. Cite the causes in the internal data, without cluttering the narration. In mode 1.3, declare the mechanical operations and the public consequences as the installed mechanics describe; never duplicate the computed changes in changes.
 
 Respect the player's choice and the limits of their perceptions. NPCs react according to their knowledge and their motivations. Do not reveal an off-screen event because it appears in the narrator's context.
 
@@ -30,7 +30,7 @@ For "I go to town", include the trip, the arrival and the first perceivable situ
 
 Once the action is accomplished, describe the immediate consequences and the surroundings useful for the next choice. Do not decide a new goal, a purchase, a commitment, a voluntary dialogue or a risk on the player's behalf. Positions, fictional time and the other structured changes must correspond exactly to the point where the narration stops. Keep the narration concise by condensing ordinary steps, without cutting off before the arrival to respect a word count.
 
-The Codex narrator has no other agent or tool. Do not arbitrarily assign levels, distances or chances that are absent from the sources. For an indispensable missing archive, use `memory_request`. Reserve `blocking_questions` for ambiguous choices of the player.
+The narrator has no other agent or tool. Do not arbitrarily assign levels, distances or chances that are absent from the sources. For an indispensable missing archive, use `memory_request`. Reserve `blocking_questions` for ambiguous choices of the player.
 
 Possessions, currencies and projects are persistent. When `possession_rules` is provided, read `POSSESSIONS.md` in the context: gains, purchases, consumptions and transfers use `asset_operations`, computed locally. Meals and drinks taken on site are not objects: only the payment is. A lot used up by `consume`, `craft` or `sale` leaves the inventory. Projects keep their accomplished steps; add new acquisitions without erasing the old ones. A detail that was never established, such as a quantity to count or a price to ask, is checked in play within the authorized action. Do not confuse it with a lost archive. A recovery without progress gives `in_game_verification`; do not ask for the same proofs again.
 
@@ -38,7 +38,7 @@ References of possessions in `changes` and `asset_operations.outputs[].item_json
 
 Do not write directly to the campaign. A proposed narration can only be displayed as an acquired result after validation and recording of its consequences.
 
-For a narrator running in the chat, follow the exact resume procedure: record the input, reuse its identifier in the proposal and display exactly the text of the saved result. A new chat resumes the last scene and the pending action from the database, without inventing a new introduction.
+For a narrator answering by hand or through a chat assistant, follow the exact resume procedure: record the input, reuse its identifier in the proposal and display exactly the text of the saved result. A new conversation resumes the last scene and the pending action from the database, without inventing a new introduction.
 
 ## Campaign creations
 

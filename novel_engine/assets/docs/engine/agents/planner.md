@@ -8,7 +8,7 @@ player_summary is required if exchanges_to_summarize contains narrations that we
 
 Summarize in a few lines the important actions, results, relations, information learned, commitments and open goals. The player's inputs are intentions; the recorded narrations establish their results. action_to_resolve is not played yet and never appears among the accomplishments.
 
-Explicitly keep the caveats: announced, attempted, promised, assumed, unknown or confirmed. Do not confuse a building site with a finished house, a recommendation with a promotion, a reported story with a verified fact. Partial historical excerpts do not prove the absence of omitted details. Mechanical figures and acquired facts are reread in the current state, not in a synthesis.
+Explicitly keep the caveats: announced, attempted, promised, assumed, unknown or confirmed. Do not confuse work under way with finished work, a recommendation with a decision, a reported story with a verified fact. Partial historical excerpts do not prove the absence of omitted details. Mechanical figures and acquired facts are reread in the current state, not in a synthesis.
 
 Summaries are public: put in them neither private intentions of NPCs, nor secret projects, nor faction clocks. No summary is an event added to the log.
 

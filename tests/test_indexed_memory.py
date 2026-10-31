@@ -25,6 +25,12 @@ REPORT = ("The examiner at the guild reads Mira's file aloud. The evaluation is 
           "addressed to Captain Oren and Captain Lysa, is closed with a copper seal. The badge was made by hand "
           "from adamantite, but the examiner gives no confirmation of any promotion nor of a decision.")
 CONSTRUCTION = 'Mira inspects the house site. The planks are stacked beside the frame and the land is still soft.'
+# Topics of this played history, added the way memory_updates adds a campaign's own topics.
+CAMPAIGN_TOPICS = (
+    ('guild', 'Guild file', ('guild', 'examiner', 'evaluation', 'exam', 'promotion', 'rank', 'badge'),
+     ('favorable evaluation', 'address', 'signed report', 'promotion', 'confirmation')),
+    ('construction', 'Construction and land', ('construction', 'building', 'site', 'land', 'planks', 'frame', 'house'),
+     ('plan', 'land', 'agreement', 'materials', 'supports')))
 LONG = ' '.join('Stall number %d sells ropes, lanterns and salted fish to the passing sailors.' % n
                 for n in range(1, 41))
 
@@ -58,6 +64,11 @@ class MemoryTests(unittest.TestCase):
         cls.source = Path(cls.shared.name) / 'source.sqlite'
         campaign = Campaign(cls.source).create(initial_state(), configuration())
         campaign.open_scene('The harbor wakes under a grey sky.')
+        with campaign.transaction() as con:
+            index = MemoryIndex(con)
+            index.initialize()
+            for identifier, title, aliases, facets in CAMPAIGN_TOPICS:
+                index.topic(identifier, title, aliases, facets, ['narrator', 'player'])
         narrator = RecordedNarrator()
         loop = NarrativeLoop(campaign, narrator)
         script = [('I go to the guild hall for my evaluation.', plain(REPORT)),
