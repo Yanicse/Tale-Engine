@@ -69,6 +69,10 @@ class DocsTest(unittest.TestCase):
             if action.option_strings and action.dest != 'help' and action.help != argparse.SUPPRESS:
                 self.assertIn('`' + action.option_strings[0], page)
 
+    def test_the_reader_page_opens_with_novel_read(self):
+        first = text(DOCS / 'reader.md').split('\n\n')[1]
+        self.assertTrue(first.startswith('`novel read`'), first)
+
     def test_no_page_uses_a_word_for_word_phrase(self):
         for page in PAGES:
             for phrase in ('consultation',):

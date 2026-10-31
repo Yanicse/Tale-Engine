@@ -1,7 +1,5 @@
 # Reader page
 
-The abilities tab shows separate hit point and mana bars, mana costs, charges and cooldown availability.
-
 `novel read` serves one local page on `127.0.0.1` (port 8765 by default, `--port` to change). It binds only to your
 machine, loads no external resource (fonts and icons are bundled) and shows only what the player character may know.
 
@@ -11,6 +9,8 @@ Tabs: Story, Scene, NPC, Possessions, Agenda, Summaries, Abilities, and Creation
 box sends an action through the same path as `novel play`; the engine selector lists `codex`, `claude`, `api` and
 `manual`. A pending action shows Resume, Retry and Re-evaluate buttons. Settings (Aa) change the text size, the
 immersive mode and the ambient sound; dictation uses the browser's speech recognition where available.
+
+The Abilities tab shows separate hit point and mana bars, mana costs, charges and cooldown availability.
 
 ## Presentation comes from the novel pack
 
