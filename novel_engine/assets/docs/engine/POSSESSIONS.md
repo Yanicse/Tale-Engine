@@ -52,4 +52,4 @@ A missing historical source can justify `memory_request`. An uncounted stock, an
 
 Recovery compares the content of the proofs. Without progress, it provides `in_game_verification`: the next resume must use the available facts and carry out the ordinary checks. A new request without progress goes to `blocked`; no automatic call is made. `/reminder` targets another archive and `/retry` explicitly allows a new attempt. No additional memory limit and no remote verification call is needed.
 
-`/inventory`, `/purse` and `/projects` are local lookups with no model and no fictional advance. `play_narrative.py --inventory --json` returns the same structured view.
+`/inventory`, `/purse` and `/projects` are local lookups with no model and no fictional advance. `novel play --inventory --json` returns the same structured view.

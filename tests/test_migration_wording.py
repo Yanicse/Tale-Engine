@@ -19,7 +19,7 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'outside this file', 'the prototype', 'in the chat', 'RULE 20261017', 'cooldown an effect',
              '/commitments/accord', 'enlisted', 'taken by force', 'Codex loop', 'The Codex narrator', 'memory files',
              'closes the file', 'whole file', 'revelation of a private file', 'at the Guild', 'finished house', "'chef'", 'plaque',
-             "'renamed'", '; An ', 'accessible files', 'NPC ignores', 'buying the balance', 'canonical search scripts')
+             "'renamed'", '; An ', 'accessible files', 'NPC ignores', 'buying the balance', 'canonical search scripts', 'play_narrative.py --')
 
 
 def code_strings():

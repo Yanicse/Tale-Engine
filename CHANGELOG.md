@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The possessions rules name `novel play --inventory --json` instead of the internal `play_narrative.py` script.
 - The archivist rules no longer describe the search scripts of the original project, which "update files": they
   ask to use the save read-only and filter by date and recipient.
 - The possessions rules said "buying the balance" for the French "acheter le complément": they now say buying what is
