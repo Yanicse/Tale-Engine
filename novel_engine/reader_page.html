@@ -617,8 +617,8 @@ function possessions(){
     content.appendChild(el('h2',null,tr('tab.possessions')));
     var g2=el('div','grid');
     Object.keys(r.possessions||{}).forEach(function(k){
-      var v=r.possessions[k];var q=(v.quantity===null||v.quantity===undefined)?'not counted':String(v.quantity);
-      g2.appendChild(cardBadge(capitalize(k.replace(/_/g,' ')),q+(v.unit?' '+v.unit:''),'or',[(v.quantity_precision||'exact')+', '+(v.location||'place unknown'),v.description],pickIcon(ICONS_OBJECTS,k.replace(/_/g,' '),'chest',v.description)));
+      var v=r.possessions[k];var q=(v.quantity===null||v.quantity===undefined)?tr('quantity.not_counted'):String(v.quantity);
+      g2.appendChild(cardBadge(capitalize(k.replace(/_/g,' ')),q+(v.unit?' '+v.unit:''),'or',[tr('precision.'+(v.quantity_precision||'exact'))+', '+(v.location||tr('place.unknown')),v.description],pickIcon(ICONS_OBJECTS,k.replace(/_/g,' '),'chest',v.description)));
     });
     content.appendChild(g2);
     content.appendChild(el('h2',null,tr('projects.title')));

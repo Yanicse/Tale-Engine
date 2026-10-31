@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The French reading page translates the cooldown and mana cost lines, and the quantity, precision and place of a
+  possession, which were shown in English.
 - `novel play --topics` and `/topics` list the memory topics the character can look up. The option was called
   `--files` and described as a list of files; `--files` still works. The `--json` status of this view is now `topics`.
 - New campaigns turn the canon selection on: the narrator receives the sourced claims that match each turn and may

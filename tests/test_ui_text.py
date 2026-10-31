@@ -20,6 +20,11 @@ class LanguagePacks(unittest.TestCase):
                 self.assertEqual(set(ui_text.PLACEHOLDER.findall(text)),
                                  set(ui_text.PLACEHOLDER.findall(ui_text.EN[key])), (code, key))
 
+    def test_the_french_pack_translates_every_text(self):
+        same = {'tab.possessions', 'tab.agenda', 'mode.auto', 'mode.arcane', 'input.aria', 'mana.title', 'header.version'}
+        untranslated = {key for key, text in ui_text.PACKS['fr'].items() if text == ui_text.EN[key]}
+        self.assertEqual(sorted(untranslated - same), [])
+
     def test_language_names_and_codes(self):
         for value, expected in (('fr', 'fr'), ('fr-FR', 'fr'), ('French', 'fr'), ('Français', 'fr'), ('en', 'en'),
                                 ('xx', 'en'), (None, 'en'), ('', 'en')):
@@ -40,6 +45,7 @@ class PageUsesKnownKeys(unittest.TestCase):
         # Keys built at run time ('mode.' + name, 'tab.' + id) are checked through the lists below.
         asked = {k for k in re.findall(r"\btr\('([a-z_.]+)'", PAGE) if not k.endswith('.')}
         asked |= {f'mode.{m}' for m in ('auto', 'day', 'night', 'arcane', 'frost', 'scifi')}
+        asked |= {f'precision.{p}' for p in ('exact', 'approximate', 'unknown')}
         asked |= {f'tab.{t}' for t in ('story', 'scene', 'npc', 'possessions', 'agenda', 'summaries', 'abilities', 'creations')}
         self.assertTrue(asked)
         self.assertEqual(sorted(asked - set(ui_text.EN)), [])
@@ -51,7 +57,8 @@ class PageUsesKnownKeys(unittest.TestCase):
 
     def test_no_english_prose_is_left_in_the_script(self):
         script = PAGE[PAGE.index('<script>'):PAGE.index('</script>')]
-        for phrase in ('No scene', 'Reading failed', 'Turn recorded', 'Search the story', 'Hit points', 'Sending...'):
+        for phrase in ('No scene', 'Reading failed', 'Turn recorded', 'Search the story', 'Hit points', 'Sending...',
+                       'not counted', 'place unknown'):
             self.assertNotIn("'" + phrase, script)
 
     def test_header_chips_are_translated(self):
