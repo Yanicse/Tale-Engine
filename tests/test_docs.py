@@ -75,11 +75,12 @@ class DocsTest(unittest.TestCase):
 
     def test_no_page_uses_a_word_for_word_phrase(self):
         for page in PAGES:
-            for phrase in ('consultation',):
+            for phrase in ('consultation', '`French`-style'):
                 self.assertNotIn(phrase, text(page), page.name)
 
     def test_the_documented_defaults_match_the_code(self):
-        self.assertTrue(90 <= len(ui_text.EN) <= 130, 'docs say about 100 page texts')
+        self.assertTrue(110 <= len(ui_text.EN) <= 130, 'docs say about 120 page texts')
+        self.assertIn('about 120 keys', text(DOCS / 'prompts-and-languages.md'))
         from novel_engine.narration_codex import DEFAULT_NARRATIVE_TIMEOUT
         self.assertEqual(DEFAULT_NARRATIVE_TIMEOUT, 240)
         self.assertIn('240 seconds', text(DOCS / 'engines.md'))

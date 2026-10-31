@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The languages page counts about 120 page texts, not 100, and explains `LANGUAGE_NAMES` plainly.
 - The reader page documentation opens with `novel read`; the sentence on the Abilities tab moved to "What it shows".
 - The command reference documents every option of `novel play`, adding `--campaign`, `--search`,
   `--planner-effort`, `--planner-delay`, `--codex` and `--claude`, and calls the local views lookups.
