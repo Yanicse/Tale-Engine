@@ -25,7 +25,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'nor make calls', 'personal knowledge of the work', 'An attested knowledge',
              'allows deciding', 'a certain ability', 'nor the whole', 'stop the useful work', 'the manager',
              'decision taken now apart', 'Proposition contract', 'nor declaring', 'display as acquired', 'during reading',
-             'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined')
+             'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined',
+             'incertitude')
 
 
 def code_strings():
