@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The reading page code uses English class and function names (`titles`, `gold`, `coin`, `purse-label`,
+  `purse-amount`, `paragraphs`) instead of French ones.
 - The canon selection no longer lists `kingdom` twice and the French `theocratie` among the words that mark a state.
 - The demo adaptation rule `adaptation:incertitude` is now `adaptation:uncertainty`; demo campaigns already created
   keep the identifier they saved.

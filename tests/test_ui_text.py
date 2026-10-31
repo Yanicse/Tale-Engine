@@ -69,6 +69,11 @@ class PageUsesKnownKeys(unittest.TestCase):
             self.assertIn("tr('" + key + "'", script)
         self.assertEqual(ui_text.labels_for('fr')['header.pending'], 'action en attente')
 
+    def test_the_page_code_uses_english_names(self):
+        # Class and function names of the page, outside the translated texts.
+        for name in ('titres', 'paragraphes', 'classer', 'classe', 'or', 'sou', 'lib', 'som'):
+            self.assertIsNone(re.search(r"(class=\"|[.'(,]|function )" + name + r"\b(?![.:])", PAGE), name)
+
 
 if __name__ == '__main__':
     unittest.main()
