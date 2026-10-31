@@ -129,7 +129,7 @@ def main(argv=None):
         return 0
     if args.memories is not None or args.topics or args.agenda or args.summaries or args.inventory or args.creations is not None or args.skills is not None:
         if text is not None or args.resume or args.reevaluate or args.result:
-            parser.error('A local consultation cannot resolve an action.')
+            parser.error('A local lookup cannot play an action.')
         if args.agenda:
             return display_memories(campaign.world_agenda())
         if args.skills is not None:

@@ -1,4 +1,4 @@
-"""Private technical consultation of an existing attempt, read-only SQLite."""
+"""Show how the context of one attempt was selected; opens the campaign read-only."""
 import argparse
 import json
 from pathlib import Path

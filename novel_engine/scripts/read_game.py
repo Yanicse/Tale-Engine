@@ -1,4 +1,4 @@
-"""Local page of the game: reading, plus entering a turn through the official path (127.0.0.1 only, no external resource)."""
+"""Reading page of the active campaign; a turn typed in it goes through novel play (127.0.0.1 only, no external resource)."""
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -32,7 +32,7 @@ def engine_choices():
 
 
 class Turns:
-    """One turn at a time, launched through the official path play_narrative.py (no resolution specific to this page)."""
+    """One turn at a time, run through play_narrative.py like novel play (the page resolves nothing itself)."""
 
     def __init__(self, campaign):
         self.campaign = str(campaign)
