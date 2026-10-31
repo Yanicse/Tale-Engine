@@ -77,3 +77,14 @@ class PageUsesKnownKeys(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class EnglishWording(unittest.TestCase):
+    def test_english_texts_read_as_english(self):
+        self.assertEqual(ui_text.EN['input.hint'], 'What does {name} do? (Ctrl+Enter to send)')
+        self.assertIn('What does your character do?', PAGE)
+        self.assertEqual(ui_text.EN['npc.count'], '{n} of {total} NPCs')
+        self.assertEqual(ui_text.EN['theme.forced'], 'Mood is fixed (click to change)')
+
+    def test_english_percentages_have_no_space(self):
+        self.assertEqual([key for key, text in ui_text.EN.items() if ' %' in text], [])

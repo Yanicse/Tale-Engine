@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The English reading page asks "What does {name} do?" instead of "What {name} does...", counts NPCs as "{n} of {total} NPCs",
+  says "Mood is fixed" for a forced theme, and writes "Default power: 10%." without the French space before the sign.
 - The character sheets and troubleshooting pages no longer describe the former `vitality-1.0` magic mode, which
   only served the original campaign.
 - The canon selection no longer gives a bonus to the `sheet_*` predicates (level, karma, alignment and the like),
