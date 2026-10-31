@@ -4,6 +4,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The narrator, chronicler, planner and agenda rules lose fifteen "nor" that followed "without", "do not" or "no" (it is
+  now "or"), two verbs that did not agree after "or" ("stays what it is", "a creation or a postponement provides"),
+  "give no knowledge ... automatically" in the canon rule, "a lot of elapsed time" and the capital letter of the identifier
+  `Descriptive_marker` that opened a sentence. A campaign already open asks for an explicit restart because the narrator
+  document changed.
 - Messages read as English: "SQLite integrity check failed" replaces "Incorrect SQLite integrity" and "incorrect integrity" in the
   maintenance and installation scripts, `novel validate` says "must be text" and "is not a page text" instead of "must be a
   text", the maintenance preview says the application compatibility is checked "when it is applied", and an arc

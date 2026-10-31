@@ -29,7 +29,11 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined',
              'incertitude', 'theocratie', 'U+2014', 'ncorrect integrity', 'ncorrect SQLite integrity',
              'Business compatibility', 'be a text', 'be a non-empty text', 'needs a text', 'is not a text of the page',
-             'a really open')
+             'a really open', 'a past nor contradicting', 'gauge nor', 'systematically nor', 'event nor reveal',
+             'date, nor finishing', 'fact nor invent', 'audience nor expose', 'preparations nor making',
+             'success nor arbitrary', 'replay it nor make', 'character nor to an NPC', 'past nor a supposition',
+             'balances nor an assumed', 'arrival nor grant', 'testimony or an offer stay ', 'postponement provide ',
+             'automatically give no knowledge', 'a lot of elapsed time', 'Descriptive_marker')
 
 
 def code_strings():

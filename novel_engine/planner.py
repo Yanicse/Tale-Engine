@@ -262,7 +262,7 @@ class WorldPlanner:
             packet['private_world_facts']=registry.facts(query=action+' '+position)
             packet['arcs_instruction']=(("These off-screen facts are acquired by the world at their date, not known to the player "
                                       "character. A revelation requires a credible local means: report, witness, mail or "
-                                      "observation. Do not re-execute the fact nor invent that the player character took part "
+                                      "observation. Do not re-execute the fact or invent that the player character took part "
                                       "in it. Intentions do not prove their success. Respect the agenda's arcs_review_horizon "
                                       "for ellipses."))
         return packet
