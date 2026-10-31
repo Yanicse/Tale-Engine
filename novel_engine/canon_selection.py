@@ -14,10 +14,7 @@ BUDGETS={'narrator':3000,'planner':6000}
 LIMITS={'narrator':5,'planner':10}
 MAX_CANDIDATES=96
 MAX_QUERIES=3
-GENERAL_PREDICATES={
-    'species','nature','creator','rank_hierarchy','geography',
-    'sheet_total_level','sheet_level_split','sheet_racial_level',
-    'sheet_class_level','sheet_karma','sheet_alignment','sheet_type','sheet_function'}
+GENERAL_PREDICATES={'species','nature','creator','rank_hierarchy','geography'}
 STOP=set(words(('village town road forest gate guard character group man woman human day night form '
                 'world life level power system object unknown guild kingdom table house path service '
                 'request traveler customer speak speaks search seek know knowing inspect greet greeting '
@@ -280,7 +277,7 @@ class CanonSelector:
                 if claim['claim_id'] in public:
                     note=public[claim['claim_id']]
                     item['public_marker']={'status':note['status'],'limit':note['limit']}
-                    if note['status']=='descriptive_marker' and claim['predicate'] in ('composition','direction','sheet_function'):
+                    if note['status']=='descriptive_marker' and claim['predicate'] in ('composition','direction'):
                         item['usage']='documentary_marker'
                 # The summary of an assertion may omit a decisive detail of its proof.
                 # Provide only a short whole quotation, without loading the volume or truncating a caveat.

@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The canon selection no longer gives a bonus to the `sheet_*` predicates (level, karma, alignment and the like),
+  which came from the character sheets of one novel and are never produced by `novel canon`.
 - The em dash (U+2014) is an ordinary character again: the narrator and planner instructions no longer forbid it,
   a response that contains one is kept as written instead of being refused or rewritten, and canon excerpts and
   error messages keep it too.

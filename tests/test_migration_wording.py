@@ -10,6 +10,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from novel_engine import instructions
+from novel_engine.canon_selection import GENERAL_PREDICATES
 from novel_engine.indexed_memory import TOPICS
 
 PACKAGE = ROOT / 'novel_engine'
@@ -84,6 +85,11 @@ class MigrationWordingTests(unittest.TestCase):
 
     def test_default_memory_topics_fit_any_novel(self):
         self.assertEqual([topic[0] for topic in TOPICS], ['magic'])
+
+    def test_general_canon_predicates_fit_any_novel(self):
+        self.assertEqual(sorted(GENERAL_PREDICATES), ['creator', 'geography', 'nature', 'rank_hierarchy', 'species'])
+        source = (PACKAGE / 'canon_selection.py').read_text(encoding='utf-8')
+        self.assertNotIn("'sheet_", source)
 
     def test_known_paragraph_signatures_match_the_shipped_documents(self):
         for registry in (instructions.KNOWN_DOCUMENT_PARAGRAPHS, instructions.DOCUMENT_DUPLICATES):
