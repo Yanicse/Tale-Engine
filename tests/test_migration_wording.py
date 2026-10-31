@@ -26,7 +26,7 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'allows deciding', 'a certain ability', 'nor the whole', 'stop the useful work', 'the manager',
              'decision taken now apart', 'Proposition contract', 'nor declaring', 'display as acquired', 'during reading',
              'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined',
-             'incertitude')
+             'incertitude', 'theocratie')
 
 
 def code_strings():
@@ -64,6 +64,7 @@ class MigrationWordingTests(unittest.TestCase):
         source = (PACKAGE / 'canon_selection.py').read_text(encoding='utf-8') + (PACKAGE / 'planner.py').read_text(encoding='utf-8')
         found = [phrase for phrase in FORBIDDEN if phrase in source]
         found += re.findall(r"('(\w+)',\s*'\2')", source)
+        found += re.findall(r'\((?:\w+\|)*(\w+)\|(?:\w+\|)*\1(?:\|\w+)*\)', source)
         self.assertEqual(found, [])
 
     def test_prompts_and_agent_rules_have_no_migration_leftover(self):

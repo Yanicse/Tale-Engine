@@ -171,7 +171,7 @@ class CanonSelector:
         query_focus=re.split('\\b(?:set aside|exclude|ignore|without importing|distinguish)\\b',normalized(query),maxsplit=1)[0]
         requested=self.subjects([query_focus]) if query else []
         specific=[s for s in requested if s['type']!='place' and not re.search(
-            r'\b(kingdom|empire|theocracy|kingdom|theocratie)\b',normalized(s['name']))]
+            r'\b(kingdom|empire|theocracy)\b',normalized(s['name']))]
         focused=specific or requested
         reputation=bool(set(words(action)) & {'famous','reputation','fame','known','star'})
         if reputation and not specific:
