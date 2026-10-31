@@ -25,7 +25,7 @@ Start with `novel doctor` and `novel validate`.
 | port already in use | `novel read --port 8800` |
 | the page ignores my `theme.json` edit | the campaign keeps the presentation it was created with; create a new campaign |
 | `Insufficient mana` | the turn was refused without spending resources; choose a cheaper ability or explicitly recover mana in the story |
-| `Unsupported mechanics version` | the former health-based magic mode is not converted automatically; create a new campaign from an updated pack ([Character sheets](character-sheets.md)) |
+| `Unsupported mechanics version` | the campaign was saved with a mechanics version this engine does not know; create a new campaign from an updated pack ([Character sheets](character-sheets.md)) |
 
 Windows paths, the console encoding and the Claude desktop app's environment are handled by the tool; if a CLI engine
 still fails, run `novel play --text "..." --engine claude --measures` and read the failure category on stderr.

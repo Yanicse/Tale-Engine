@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The character sheets and troubleshooting pages no longer describe the former `vitality-1.0` magic mode, which
+  only served the original campaign.
 - The canon selection no longer gives a bonus to the `sheet_*` predicates (level, karma, alignment and the like),
   which came from the character sheets of one novel and are never produced by `novel canon`.
 - The em dash (U+2014) is an ordinary character again: the narrator and planner instructions no longer forbid it,

@@ -58,7 +58,7 @@ class DocsTest(unittest.TestCase):
 
     def test_no_page_mentions_the_original_project(self):
         for page in PAGES:
-            for phrase in ('source project', 'hunger', 'older save'):
+            for phrase in ('source project', 'hunger', 'older save', 'vitality-1.0', 'health-based'):
                 self.assertNotIn(phrase, text(page), page.name)
 
     def test_every_option_of_novel_play_is_documented(self):

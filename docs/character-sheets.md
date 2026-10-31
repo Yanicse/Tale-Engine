@@ -100,8 +100,3 @@ novel character new my-novel --name Ana --hp 40 --mana 60 \
 
 `ID:LABEL[:COST]` uses the percent of maximum mana at full power. Omitting COST makes the ability free. Without
 `--ability`, an interactive terminal asks for abilities. `novel validate` checks the result.
-
-## Existing saves
-
-No existing campaign is rewritten automatically. The former `vitality-1.0` mode is refused with an explicit message;
-create a new campaign from an updated pack to use mana.
