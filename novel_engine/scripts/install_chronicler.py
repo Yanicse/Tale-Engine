@@ -34,7 +34,7 @@ def install(campaign,clocks,chronology=CHRONOLOGY):
             after=preserved_fingerprint(con)
             if after!=before:raise ValueError('Installation cancelled: state, exchanges or agenda modified.')
             integrity=con.execute('PRAGMA integrity_check').fetchone()[0]
-            if integrity!='ok':raise ValueError('Installation cancelled: incorrect integrity.')
+            if integrity!='ok':raise ValueError('Installation cancelled: the integrity check failed.')
             active=len(planner.clocks())
     return {'status':'chronicler_installed','backup':str(backup.resolve()),'added_clocks':added,
             'active_clocks':active,'game_data_and_agenda_preserved':True,'integrity':integrity,

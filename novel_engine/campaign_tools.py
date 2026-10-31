@@ -72,7 +72,7 @@ def unblock(campaign, apply=False):
                 con.execute('UPDATE action_recovery_budget SET history=? WHERE request_id=?',
                             (check_json(history), budget.request_id))
                 if con.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-                    raise ValueError('Incorrect SQLite integrity.')
+                    raise ValueError('SQLite integrity check failed.')
     return {**report, 'status': 'granted', 'mutation': True, 'backup': str(backup), 'model_calls': 0,
             'next': 'Run `novel play --resume --retry`.'}
 

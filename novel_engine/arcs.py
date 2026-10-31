@@ -203,7 +203,7 @@ class ArcRegistry:
                         raise ValueError('Linked arc: wait for the effective resolution of the big event of its clock.')
             elif u['motif'] == 'dependency':
                 if not deps or step or terminal or u['world_fact'] or u['status'] != old['status']:
-                    raise ValueError('Wait without a really open dependency.')
+                    raise ValueError('Wait without a truly open dependency.')
                 # The root must advance; the acyclic graph prevents a circular wait.
             elif u['motif'] == 'obstacle':
                 if step or terminal or u['world_fact'] or u['status'] != old['status']:

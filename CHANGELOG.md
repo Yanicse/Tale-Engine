@@ -4,6 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Messages read as English: "SQLite integrity check failed" replaces "Incorrect SQLite integrity" and "incorrect integrity" in the
+  maintenance and installation scripts, `novel validate` says "must be text" and "is not a page text" instead of "must be a
+  text", the maintenance preview says the application compatibility is checked "when it is applied", and an arc
+  dependency must be "truly open".
 - The English reading page asks "What does {name} do?" instead of "What {name} does...", counts NPCs as "{n} of {total} NPCs",
   says "Mood is fixed" for a forced theme, and writes "Default power: 10%." without the French space before the sign.
 - The character sheets and troubleshooting pages no longer describe the former `vitality-1.0` magic mode, which

@@ -71,12 +71,12 @@ class ValidateTest(PackFiles):
         report = self.report(novel_json={'title': 'T', 'language': 'xx', 'tracked_npcs': [{'goal': 'x'}, 'bad', {'name': 'A'}, {'name': 'A'}],
                                          'currency_rates': {'gold': {'silver': 0}}, 'world_rules': [3],
                                          'opening': {'place': 'Quay'}, 'extra': 1})
-        self.assertError(report, 'tracked_npcs[0] needs a text "name"')
-        self.assertError(report, 'tracked_npcs[1] needs a text "name"')
+        self.assertError(report, 'tracked_npcs[0] needs "name" as text')
+        self.assertError(report, 'tracked_npcs[1] needs "name" as text')
         self.assertError(report, "duplicate id 'a'")
         self.assertError(report, 'currency_rates.gold')
         self.assertError(report, "'world_rules' must be a list of sentences")
-        self.assertError(report, "'opening' needs a text 'place' and a text 'scene'")
+        self.assertError(report, "'opening' needs 'place' and 'scene' as text")
         self.assertWarning(report, "language 'xx' has no interface pack")
         self.assertWarning(report, "unknown key 'extra'")
         self.assertWarning(report, 'has no goal')

@@ -42,7 +42,7 @@ def migrate(campaign):
             after=preserved_fingerprint(con)
             if after!=before:raise ValueError('Migration cancelled: state, exchanges or agenda modified.')
             integrity=con.execute('PRAGMA integrity_check').fetchone()[0]
-            if integrity!='ok':raise ValueError('Migration cancelled: incorrect integrity.')
+            if integrity!='ok':raise ValueError('Migration cancelled: the integrity check failed.')
             summaries=con.execute('SELECT COUNT(*) FROM planner_summaries').fetchone()[0]
         return {'status':'planner_installed','backup':str(backup.resolve()),
                 'fingerprint_before':before,'fingerprint_after':after,'game_data_and_agenda_preserved':True,

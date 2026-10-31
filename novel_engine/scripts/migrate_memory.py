@@ -40,7 +40,7 @@ def migrate(campaign,rebuild=False):
             if before!=after:
                 raise ValueError('The game data changed; migration cancelled.')
             if con.execute('PRAGMA integrity_check').fetchone()[0]!='ok':
-                raise ValueError('Incorrect SQLite integrity; migration cancelled.')
+                raise ValueError('SQLite integrity check failed; migration cancelled.')
             con.execute("INSERT INTO memory_fts(memory_fts,rank) VALUES ('integrity-check',1)")
             count=con.execute('SELECT COUNT(*) FROM memory_sources').fetchone()[0]
         return {'status':'indexed_memory','backup':str(backup.resolve()),'sources':count,

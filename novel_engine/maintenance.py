@@ -30,7 +30,7 @@ def execute(args, operation, apply):
         return {'status': 'preview', 'mutation': False, 'operation': operation,
                 'campaign_path': str(path), 'campaign_id': state['campaign_id'],
                 'state_version': state['state_version'], 'versions': state['versions'],
-                'description': 'Target checked read-only. Business compatibility will be checked on application.'}
+                'description': 'Target checked read-only. Compatibility with the application will be checked when it is applied.'}
     return apply(campaign)
 
 

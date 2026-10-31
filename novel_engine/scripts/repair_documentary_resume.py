@@ -105,7 +105,7 @@ def repair(path,apply=False):
                       "requirement absent from the request; preserve the sources' caveats. /resume allows "
                       "the generation, with no new goal.")))
                 if before!=fingerprint(con):raise ValueError('The repair modified protected data.')
-                if con.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('Incorrect SQLite integrity.')
+                if con.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('SQLite integrity check failed.')
                 remaining={key:report['limits'][key]-budget.state()[key] for key in ('generations','searches')}
             return {'status':'prepared_resume','request_id':rid,'state_version':report['state_version'],
                     'backup':str(backup),'game_data_preserved':True,'remaining':remaining,

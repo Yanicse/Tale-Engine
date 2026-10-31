@@ -66,7 +66,7 @@ def install(campaign, plan):
                 if before != after:
                     raise ValueError('Installation cancelled: played data or agenda modified.')
                 if con.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-                    raise ValueError('Installation cancelled: incorrect integrity.')
+                    raise ValueError('Installation cancelled: the integrity check failed.')
     return {**report, 'status': 'installed_arcs', 'arcs_added': added,
             'backup': str(backup.resolve()), 'fingerprint_before': before,
             'fingerprint_after': after, 'played_data_preserved': True}

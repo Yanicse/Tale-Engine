@@ -27,7 +27,9 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'allows deciding', 'a certain ability', 'nor the whole', 'stop the useful work', 'the manager',
              'decision taken now apart', 'Proposition contract', 'nor declaring', 'display as acquired', 'during reading',
              'an arbitration that is added', 'with no attribution to the canon', 'of the player not defined',
-             'incertitude', 'theocratie', 'U+2014')
+             'incertitude', 'theocratie', 'U+2014', 'ncorrect integrity', 'ncorrect SQLite integrity',
+             'Business compatibility', 'be a text', 'be a non-empty text', 'needs a text', 'is not a text of the page',
+             'a really open')
 
 
 def code_strings():

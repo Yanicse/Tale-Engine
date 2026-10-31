@@ -74,7 +74,7 @@ def check_novel(novel, report):
         report.warn(name, "no 'title': the pack folder name is used")
     language = novel.get('language', 'en')
     if not isinstance(language, str) or not language.strip():
-        report.error(name, "'language' must be a text such as 'en' or 'fr'")
+        report.error(name, "'language' must be text such as 'en' or 'fr'")
     elif language_code(language) == 'en' and not language.strip().casefold().startswith(('en', 'anglais')):
         report.warn(name, f"language '{language}' has no interface pack ({', '.join(PACKS)}): the page stays in English; "
                           "the narration still follows it, and 'labels' in theme.json can translate the page")
@@ -86,7 +86,7 @@ def check_novel(novel, report):
         for number, item in enumerate(npcs):
             where = f'{name}: tracked_npcs[{number}]'
             if not isinstance(item, dict) or not isinstance(item.get('name'), str) or not item['name'].strip():
-                report.error(name, f'tracked_npcs[{number}] needs a text "name"')
+                report.error(name, f'tracked_npcs[{number}] needs "name" as text')
                 continue
             ident = re.sub(r'[^a-z0-9_]+', '_', str(item.get('id') or item['name']).casefold()).strip('_')
             if ident in seen:
@@ -110,7 +110,7 @@ def check_novel(novel, report):
             if type(spec.get('initial_balance', 0)) is not int or spec.get('initial_balance', 0) < 0:
                 report.error(name, f'currencies.{key}.initial_balance must be a non-negative integer')
             if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
-                report.error(name, f'currencies.{key}.label must be a non-empty text')
+                report.error(name, f'currencies.{key}.label must be non-empty text')
     rates = novel.get('currency_rates', {})
     if not isinstance(rates, dict):
         report.error(name, "'currency_rates' must be an object such as {\"gold\": {\"silver\": 20}}")
@@ -135,7 +135,7 @@ def check_novel(novel, report):
     if opening is not None:
         if not isinstance(opening, dict) or not all(isinstance(opening.get(k), str) and opening[k].strip()
                                                     for k in ('place', 'scene')):
-            report.error(name, "'opening' needs a text 'place' and a text 'scene'")
+            report.error(name, "'opening' needs 'place' and 'scene' as text")
         else:
             unknown_keys(opening, {'place', 'scene'}, name + ': opening', report)
 
@@ -160,9 +160,9 @@ def check_theme(theme, report):
     else:
         for key, value in labels.items():
             if key not in EN:
-                report.error(name, f"labels.{key} is not a text of the page (see novel_engine/ui_text.py)")
+                report.error(name, f"labels.{key} is not a page text (see novel_engine/ui_text.py)")
             elif not isinstance(value, str) or not value.strip():
-                report.error(name, f'labels.{key} must be a non-empty text')
+                report.error(name, f'labels.{key} must be non-empty text')
             else:
                 if set(PLACEHOLDER.findall(value)) != set(PLACEHOLDER.findall(EN[key])):
                     report.warn(name, f"labels.{key} should keep the placeholders {sorted(set(PLACEHOLDER.findall(EN[key])))}")
@@ -170,7 +170,7 @@ def check_theme(theme, report):
                     report.warn(name, f'labels.{key} is longer than 200 characters and is cut')
     for key in ('title', 'subtitle', 'input_hint'):
         if key in theme and not isinstance(theme[key], str):
-            report.error(name, f"'{key}' must be a text")
+            report.error(name, f"'{key}' must be text")
         elif isinstance(theme.get(key), str) and len(theme[key]) > TEXT_LIMIT:
             report.warn(name, f'{key} is longer than {TEXT_LIMIT} characters and is cut')
     if 'clock' in theme and not isinstance(theme['clock'], bool):
@@ -207,12 +207,12 @@ def check_ability(kind, key, spec, report):
     for extra in sorted(set(spec) - ABILITY_KEYS):
         report.error(name, f"{where}.{extra}: unknown key")
     if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
-        report.error(name, f'{where}.label must be a non-empty text')
+        report.error(name, f'{where}.label must be non-empty text')
     if 'phase' in spec and not isinstance(spec['phase'], str):
-        report.error(name, f'{where}.phase must be a text')
+        report.error(name, f'{where}.phase must be text')
     for key in ('description', 'limits'):
         if key in spec and (not isinstance(spec[key], str) or not spec[key].strip()):
-            report.error(name, f'{where}.{key} must be a non-empty text')
+            report.error(name, f'{where}.{key} must be non-empty text')
     if 'free' in spec and not isinstance(spec['free'], bool):
         report.error(name, f'{where}.free must be true or false')
     if spec.get('phase', 'always') not in ('always', 'day', 'night'):
@@ -286,7 +286,7 @@ def check_sheet(sheet, report):
     if type(sheet.get('mana_max', 100)) is not int or sheet.get('mana_max', 100) < 0:
         report.error(name, "'mana_max' must be a non-negative integer")
     if 'description' in sheet and not isinstance(sheet['description'], str):
-        report.error(name, "'description' must be a text")
+        report.error(name, "'description' must be text")
     elif len(sheet.get('description', '')) > 2000:
         report.warn(name, "'description' is longer than 2000 characters and is cut")
     if type(hp) is not int or hp < 1:
