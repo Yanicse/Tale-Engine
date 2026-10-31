@@ -4,6 +4,9 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The common rules sent to the narrator lose their remaining calques: "the manager" is the engine, "arbitrations"
+  are rulings, "the historical demo" is the legacy demo, and "personal knowledge of the work" is your own knowledge
+  of the book.
 - The languages page counts about 120 page texts, not 100, and explains `LANGUAGE_NAMES` plainly.
 - The reader page documentation opens with `novel read`; the sentence on the Abilities tab moved to "What it shows".
 - The command reference documents every option of `novel play`, adding `--campaign`, `--search`,

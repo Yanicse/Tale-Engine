@@ -20,7 +20,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              '/commitments/accord', 'enlisted', 'taken by force', 'Codex loop', 'The Codex narrator', 'memory files',
              'closes the file', 'whole file', 'revelation of a private file', 'at the Guild', 'finished house', "'chef'", 'plaque',
              "'renamed'", '; An ', 'accessible files', 'NPC ignores', 'buying the balance', 'canonical search scripts', 'play_narrative.py --',
-             'consultation', 'official path')
+             'consultation', 'official path', 'impose itself', 'The manager', 'Ordinary arbitrations', 'historical demo',
+             'nor make calls', 'personal knowledge of the work', 'An attested knowledge')
 
 
 def code_strings():
