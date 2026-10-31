@@ -33,7 +33,7 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | `--retry` | allows a new model call after a failure or an interruption (needed with `--resume`) |
 | `--reevaluate` | re-evaluates an action that was rejected |
 | `--result ID` | shows a recorded result again, with no model call |
-| `--agenda`, `--summaries`, `--inventory`, `--skills`, `--memories Q`, `--files`, `--creations Q` | local consultations: no turn, no model |
+| `--agenda`, `--summaries`, `--inventory`, `--skills`, `--memories Q`, `--topics`, `--creations Q` | local consultations: no turn, no model |
 | `--json` | structured output; `--measures` prints durations and usage on stderr |
 
 Statuses in the JSON output: `recorded` and `question` (the narration is saved and shown), `resume`, `memory_required`,

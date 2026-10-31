@@ -335,13 +335,23 @@ class MemoryTests(unittest.TestCase):
         before = self.c.resume()
         out = io.StringIO()
         with patch('novel_engine.narration_codex.CodexNarrator') as model, \
-             patch('builtins.input', side_effect=['/memories guild', '/files', '/reminder my exam', '/quit']), \
+             patch('builtins.input', side_effect=['/memories guild', '/topics', '/reminder my exam', '/quit']), \
              patch('sys.stdin.isatty', return_value=False), \
              contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(main(['--campaign', str(self.path), '--engine', 'codex']), 0)
         model.return_value.generate.assert_not_called()
         self.assertEqual(self.c.resume(), before)
         self.assertIn('copper seal', out.getvalue())
+        self.assertIn('\nguild: ', out.getvalue())
+
+    def test_topics_lists_the_memory_topics_and_files_stays_an_alias(self):
+        for flag in ('--topics', '--files'):
+            out = io.StringIO()
+            with self.subTest(flag=flag), contextlib.redirect_stdout(out):
+                self.assertEqual(main(['--campaign', str(self.path), flag, '--json']), 0)
+                result = json.loads(out.getvalue())
+                self.assertEqual(result['status'], 'topics')
+                self.assertIn('guild', [item['id'] for item in result['topics']])
 
 
 if __name__ == '__main__':

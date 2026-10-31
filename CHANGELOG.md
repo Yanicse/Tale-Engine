@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- `novel play --topics` and `/topics` list the memory topics the character can look up. The option was called
+  `--files` and described as a list of files; `--files` still works. The `--json` status of this view is now `topics`.
 - New campaigns turn the canon selection on: the narrator receives the sourced claims that match each turn and may
   cite them as causes. It was off, so the canon never reached the narrator. `novel configure --canon-selection on`
   turns it on for an existing campaign.

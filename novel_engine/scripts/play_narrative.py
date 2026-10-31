@@ -63,7 +63,8 @@ def main(argv=None):
     parser.add_argument('--claude',help='Path of claude.exe if missing from PATH')
     parser.add_argument('--search',default='',help='Additional targeted search in memory')
     parser.add_argument('--memories',help="Consult the character's memories locally, with no game turn")
-    parser.add_argument('--files',action='store_true',help='List the locally accessible files')
+    parser.add_argument('--topics',action='store_true',help='List the memory topics the character can look up, with no turn')
+    parser.add_argument('--files',dest='topics',action='store_true',help=argparse.SUPPRESS)
     parser.add_argument('--creations',help='Consult the local public registry by name, alias or place')
     parser.add_argument('--agenda',action='store_true',help="Consult the character's known deadlines, with no turn")
     parser.add_argument('--summaries',action='store_true',help='Consult the public summaries, with no turn and no model')
@@ -98,8 +99,8 @@ def main(argv=None):
                 print(item['date']+': '+item['title']+' ('+item['status']+')')
             if not result['events']:
                 print('No known deadline recorded.')
-        elif result['status']=='files':
-            for item in result['files']:
+        elif result['status']=='topics':
+            for item in result['topics']:
                 print(item['id']+': '+item['title'])
         elif result['status']=='creations':
             for item in result['creations']:
@@ -126,7 +127,7 @@ def main(argv=None):
             if not result['proofs']:
                 print('No accessible memory found for this search.')
         return 0
-    if args.memories is not None or args.files or args.agenda or args.summaries or args.inventory or args.creations is not None or args.skills is not None:
+    if args.memories is not None or args.topics or args.agenda or args.summaries or args.inventory or args.creations is not None or args.skills is not None:
         if text is not None or args.resume or args.reevaluate or args.result:
             parser.error('A local consultation cannot resolve an action.')
         if args.agenda:
@@ -139,7 +140,7 @@ def main(argv=None):
             return display_memories(campaign.possessions())
         if args.creations is not None:
             return display_memories(campaign.creations(args.creations))
-        return display_memories(campaign.memories(args.memories or '',files=args.files))
+        return display_memories(campaign.memories(args.memories or '',topics=args.topics))
     if args.engine is None:
         interactive=text is None and not (args.resume or args.reevaluate or args.result or args.json) and sys.stdin.isatty()
         if interactive:
@@ -183,7 +184,7 @@ def main(argv=None):
     # is reread transactionally at every action.
     loop._documents()
     display(loop.run_turn())
-    print('\nCommands: /quit, /resume, /retry, /reevaluate, /memories <subject>, /files, /creations [subject], /reminder <subject>, /agenda, /summaries, /inventory, /purse, /projects, /skills [subject].',file=sys.stderr)
+    print('\nCommands: /quit, /resume, /retry, /reevaluate, /memories <subject>, /topics, /creations [subject], /reminder <subject>, /agenda, /summaries, /inventory, /purse, /projects, /skills [subject].',file=sys.stderr)
     extra_query=args.search
     if campaign.resume()['session']['pending_action']:
         print('An action is already waiting. /resume processes it explicitly.',file=sys.stderr)
@@ -217,8 +218,8 @@ def main(argv=None):
                     result.update(possessions={}, purse={})
                 display_memories(result)
                 continue
-            if name in ('/memories','/files'):
-                display_memories(campaign.memories(argument,files=name=='/files'))
+            if name in ('/memories','/topics'):
+                display_memories(campaign.memories(argument,topics=name=='/topics'))
                 continue
             if name=='/creations':
                 display_memories(campaign.creations(argument))

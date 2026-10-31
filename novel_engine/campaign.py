@@ -426,21 +426,21 @@ class Campaign:
                         (budget.state()['searches'],request_id))
             return result
 
-    def memories(self, query='', recipient='player', files=False):
+    def memories(self, query='', recipient='player', topics=False):
         from .indexed_memory import MemoryIndex
         with self.transaction() as con:
             self._session(con)
             index = MemoryIndex(con)
             index.sync()
             state = self._state(con)
-            if files:
+            if topics:
                 output=[]
                 for row in con.execute('SELECT topic_id,title FROM memory_topics ORDER BY topic_id'):
                     sources,_ = index._topic_sources(row['topic_id'],recipient)
                     if sources:
                         output.append({'id':row['topic_id'],'title':row['title'],
                                        'references':[item['reference'] for item in sources]})
-                return {'status':'files','files':output}
+                return {'status':'topics','topics':output}
             return {'status':'memories',**index.packet(query,position=state['positions'].get('player',''),
                                                        recipient=recipient)}
 
