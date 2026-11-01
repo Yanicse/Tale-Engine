@@ -492,7 +492,7 @@ class Agenda:
                                   'integer event_index pointing to an event whose audience includes player; otherwise '
                                   'continuation=null.'))
             if instant(events[index])!=end_instant:
-                raise ValueError('The turn goes past its circumstantial interruption.')
+                raise ValueError('The turn goes past its situational interruption.')
         elif continuation is not None and continuation['event_index'] is not None:
             raise ValueError('A finished or abandoned goal does not point to an interruption.')
         used=set()

@@ -65,7 +65,7 @@ def main(argv=None):
                                         args.topic, args.delegation, policy).status()
         else:
             if args.campaign:
-                parser.error('--campaign is reserved to preview and open; the folder fixes the save afterwards.')
+                parser.error('--campaign is reserved for preview and open; the folder fixes the save afterwards.')
             routine = Routine(args.folder)
             if args.command == 'prepare':
                 output = routine.prepare()

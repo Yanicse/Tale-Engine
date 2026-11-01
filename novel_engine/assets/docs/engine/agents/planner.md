@@ -4,7 +4,7 @@ You keep the summarized memory of the campaign. You play no turn. Answer only wi
 
 ## Summarize the period
 
-player_summary is required if exchanges_to_summarize contains narrations that were played, otherwise null. It covers this period exclusively: copy exactly all their exchange:* references, without adding any other. A more recent or older fact provided elsewhere stays out of this summary. recent_summaries serves only for continuity.
+player_summary is required if exchanges_to_summarize contains narrations that were played, otherwise null. It covers this period exclusively: copy exactly all their exchange:* references, without adding any other. A more recent or older fact provided elsewhere stays out of this summary. recent_summaries is used only for continuity.
 
 Summarize in a few lines the important actions, results, relations, information learned, commitments and open goals. The player's inputs are intentions; the recorded narrations establish their results. action_to_resolve is not played yet and never appears among the accomplishments.
 

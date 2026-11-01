@@ -42,7 +42,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'Incorrect topic', 'Incorrect memo', 'Incorrect currency', 'Incorrect lot', 'incorrect constant',
              'An old synthesis is required',
              'Common costs and dosage', 'Technical scope', 'All paid costs', 'campaigns/ and corpus/',
-             'motif=')
+             'motif=',
+             'must not personally guarantee', 'imposes keeping', 'its result imposes', 'reserved to ', 'its own file', 'attested in the archives', 'when the file is really', 'on the contrary', 'circumstantial', 'followed commitments', 'modalities that', 'non-consented', 'blow amount by', 'notably when', '(notably', 'absence of archive', 'within the seven', 'is obliged', 'serves only for', 'limits serve', 'check every application')
 
 # Phrases that must not come back in the comments of the code.
 FORBIDDEN_COMMENTS = ('restored big event', 'designate a proof', 'its proof', 'An accomplished step', 'neither proof',
