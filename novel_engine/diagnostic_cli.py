@@ -3,6 +3,8 @@ from datetime import datetime,timezone
 import json
 import re
 
+from .wording import counted
+
 
 MAX_DETAIL=4000
 
@@ -133,7 +135,7 @@ def failure_summary(error, provider='Codex'):
             ' (exit code '+str(error['exit_code'])+')' if error.get('exit_code') else '')
     message=title+suffix+'.'
     if error['category']=='timeout' and error.get('timeout_seconds'):
-        message+=' Limit: '+str(error['timeout_seconds'])+' seconds.'
+        message+=' Limit: '+counted(error['timeout_seconds'],'second')+'.'
     detail=error.get('detail') or error.get('stderr_tail')
     # Old diagnostics may still contain this warning alone.
     if detail and skill_budget_warning(detail) and error['category']=='timeout':

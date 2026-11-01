@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .contracts import PACKAGE, ROOT
 from .pack import PRESETS
+from .wording import counted
 
 NOVELS = ROOT / 'novels'
 NOVEL_JSON = {'title': '', 'language': 'en', 'tracked_npcs': [], 'currency_rates': {}, 'world_rules': []}
@@ -78,7 +79,7 @@ def init(args):
 def ingest_cmd(args):
     from .ingest import ingest
     volume, pages = ingest(pack(args.novel), args.file, args.volume)
-    print(f'Volume {volume}: {pages} pages extracted into novels/{args.novel}/text/')
+    print(f'Volume {volume}: {counted(pages, "page")} extracted into novels/{args.novel}/text/')
 
 
 def canon_search(path, words):
@@ -106,7 +107,7 @@ def canon(args):
         return canon_search(path, args.words)
     batches = canon_build.pending_batches(path, args.budget)
     figures = canon_build.estimate(batches)
-    print(f"{figures['batches']} batches, about {figures['input_tokens']:,} input tokens and "
+    print(f"{counted(figures['batches'], 'batch', 'batches')}, about {figures['input_tokens']:,} input tokens and "
           f"{figures['output_tokens']:,} output tokens with the engine '{args.engine}'.")
     if args.action == 'plan' or (args.engine != 'manual' and not args.yes):
         if args.action == 'build':
@@ -198,7 +199,7 @@ def report_pack(path, quiet_ok=False):
     for line in report.warnings:
         print('warning ' + line)
     if report.ok and not quiet_ok:
-        print(f"{Path(path).name}: no error, {len(report.warnings)} warning(s).")
+        print(f"{Path(path).name}: no error, {counted(len(report.warnings), 'warning')}.")
     return report.ok
 
 

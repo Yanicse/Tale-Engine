@@ -15,6 +15,7 @@ from .narrative import NarrativeLoop, narrative_lock
 from .narration_codex import response_schema
 from .planner import WorldPlanner, planner_schema, instructions_for
 from .prompts import load as load_prompt
+from .wording import counted
 
 DAY = 1440
 MAX_DAYS = 365
@@ -51,9 +52,9 @@ def policy_text(policy):
                        'or a relative, death or disappearance of a key NPC, arc in crisis, message or visitor '
                        'addressed to the player character, threatened unique resource, extreme roll. A critical '
                        'signal (or one of a stopping level: ')) + ', '.join(policy['stop_on']) + ((') ends the step at its world_minute and hands control back to the player; no event '
-                                                                                                  'after it. An alert brings the steps back to one day for ')) + str(policy['alert_days']) + ' days. An info is only logged.')
+                                                                                                  'after it. An alert brings the steps back to one day for ')) + counted(policy['alert_days'], 'day') + '. An info is only logged.')
     if policy['period_days']:
-        lines.append('Steps are grouped into periods of ' + str(policy['period_days']) + ' days; a review is recorded at the end of each period.')
+        lines.append('Steps are grouped into periods of ' + counted(policy['period_days'], 'day') + '; a review is recorded at the end of each period.')
     return '\n'.join(lines)
 
 
@@ -209,7 +210,7 @@ class Routine:
             raise ValueError('The save of this routine folder is missing; no automatic database creation.')
 
     def _action(self):
-        return (f"Routine of {self.data['days']} days (folder {self.data['id']}) until {self.data['end']} "
+        return (f"Routine of {counted(self.data['days'], 'day')} (folder {self.data['id']}) until {self.data['end']} "
                 f"(minute {self.data['end_minute']}, fixed end). "
                 f"Goal: {self.data['goal']} Topics: {'; '.join(self.data['subjects'])}. "
                 f"Delegation: {self.data['delegation']} Answered by hand or by a chat assistant, no remote call.")

@@ -9,6 +9,7 @@ import uuid
 
 from .contracts import ROOT, check, check_json
 from . import schema
+from .wording import counted
 
 GROUPS = {'positions', 'knowledge', 'intentions', 'resources', 'beliefs',
           'inventory', 'effects', 'relations', 'powers', 'commitments', 'projects'}
@@ -597,7 +598,7 @@ class Campaign:
             session=self._session(con)
             text=(f"# Campaign resume {state['campaign_id']}\n\n"
                   f"Saved state: version {state['state_version']}.\n\n"
-                  f"Fictional time: {state['world_minute']} minutes.\n\n"
+                  f"Fictional time: {counted(state['world_minute'], 'minute')}.\n\n"
                   f"Player position: {state['positions'].get('player','unknown')}.\n\n"
                   f"Canon: revision {state['versions']['canon_revision']}.\n\n"
                   f"The {self.path.name} database is authoritative. This summary is derived from the save.\n"

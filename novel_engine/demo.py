@@ -4,6 +4,7 @@ import json
 import uuid
 
 from .contracts import ASSETS
+from .wording import counted
 
 
 def initial_state(campaign_id='demo'):
@@ -54,7 +55,7 @@ def action(state, text):
         minutes = int(parts[1]) if len(parts)==2 and parts[1].isdigit() else 1
         if not 1<=minutes<=1440:
             return proposal(state,questions=['Choose a wait between one minute and one day.'])
-        wait = event(state,f'You wait {minutes} minute(s).',
+        wait = event(state,f'You wait {counted(minutes, "minute")}.',
                      [{'operation':'set','path':'/positions/player','value':state['positions']['player']}],
                      minute=state['world_minute']+minutes,causes=['adaptation:wait_demo'])
         return proposal(state,wait['description'],[wait])

@@ -160,7 +160,7 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(adapter.last_error['detail'],'')
         self.assertEqual(adapter.last_error['events'],[])
         self.assertEqual(adapter.last_error['progress_events'],['thread.started','turn.started'])
-        self.assertIn('Limit: 1 seconds',str(caught.exception))
+        self.assertIn('Limit: 1 second.',str(caught.exception))
         self.assertNotIn('skills',str(caught.exception))
         self.assertIn('No precise cause',str(caught.exception))
 

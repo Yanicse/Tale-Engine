@@ -15,6 +15,7 @@ from pathlib import Path
 
 from . import llm
 from .prompts import load as load_prompt
+from .wording import counted
 
 REVISION = '1'
 CHARS_PER_TOKEN = 4
@@ -282,7 +283,7 @@ def build(novel, engine, model=None, budget=12000, limit=None, log=print):
                 with con:
                     store(con, batch, entities, claims)
                 ran += 1
-                log(f"  {batch['id']}: {len(claims)} claims")
+                log(f"  {batch['id']}: {counted(len(claims), 'claim')}")
             except (ValueError, llm.ModelUnavailable) as error:
                 failed.append(batch['id'])
                 log(f"  {batch['id']}: failed ({error})")
