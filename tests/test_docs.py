@@ -92,7 +92,7 @@ class DocsTest(unittest.TestCase):
 
     def test_the_documented_defaults_match_the_code(self):
         self.assertTrue(130 <= len(ui_text.EN) <= 150, 'docs say about 140 page texts')
-        self.assertIn('about 120 keys', text(DOCS / 'prompts-and-languages.md'))
+        self.assertIn('about 140 keys', text(DOCS / 'prompts-and-languages.md'))
         from novel_engine.narration_codex import DEFAULT_NARRATIVE_TIMEOUT
         self.assertEqual(DEFAULT_NARRATIVE_TIMEOUT, 240)
         self.assertIn('240 seconds', text(DOCS / 'engines.md'))
