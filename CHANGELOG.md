@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- The ability lookup says "power" where it said "dosage" (a calque), like the character sheets page.
 - Messages and comments read as English: "Re-evaluation is reserved for a rejected action", "An action is still pending; resume it before starting another", "Cannot delete a value that does not exist", "The blow is not lethal or exceeds ...", "A started arc cannot go back to the preparation stage", "Invalid editorial exclusion", "Positions establish a location", the daily bulletin rule of routines, the memory entity reminder, and the "or ask" that followed "Do not invent". `tests/test_migration_wording.py` now also scans the comments of the code.
 - The test data is English again: about thirty French words left in the tests ("Visite", "Attendre", "Guilde", "Pouvoir public",
   `corps`, `casse` and the like) are translated, "travelling" is "traveling", and `tests/test_test_data_language.py` fails when

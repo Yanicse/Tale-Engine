@@ -50,16 +50,16 @@ def packet(state, config, recipient='player', query=''):
 
 def render(result):
     lines = [f"{result.get('character', 'Character')}: {result['hp']}/{result['hp_max']} HP. Mana: {result.get('mana', 0)}/{result.get('mana_max', 0)}. Default power: {result['default_power_pct']}%.",
-             'Costs are paid once, at casting. Effects also shrink with the dosage.']
+             'Costs are paid once, at casting. Effects also shrink at reduced power.']
     for item in result['abilities']:
         cost = item['default_mana_cost']
         label = ('Cost: see the detailed abilities or the limits below.' if cost is None else
                  ('Cost: 0 mana.' if cost == 0 else
-                  f"Cost: {cost} mana at the default dosage; {item['full_power_mana_cost']} mana at 100% ({item['max_cost_pct']}% of maximum mana)."))
+                  f"Cost: {cost} mana at the default power; {item['full_power_mana_cost']} mana at 100% ({item['max_cost_pct']}% of maximum mana)."))
         if item.get('free_up_to_power_pct') is not None:
             label = (f"Cost: free up to {item['free_up_to_power_pct']}% power inclusive; "
-                     f"beyond that, cost is proportional to the dosage. At 100%: {item['full_power_mana_cost']} mana "
-                     f"({item['max_cost_pct']}% of maximum mana). At the default dosage: {cost} mana.")
+                     f"beyond that, cost is proportional to the power. At 100%: {item['full_power_mana_cost']} mana "
+                     f"({item['max_cost_pct']}% of maximum mana). At the default power: {cost} mana.")
         lines.extend(['', item['name'] + ' (' + item['form'] + ')', label,
                       item['description'], 'Limits: ' + item['limits']])
         if item['charge']:

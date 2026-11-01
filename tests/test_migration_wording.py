@@ -35,7 +35,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'success nor arbitrary', 'replay it nor make', 'character nor to an NPC', 'past nor a supposition',
              'balances nor an assumed', 'arrival nor grant', 'testimony or an offer stay ', 'postponement provide ',
              'automatically give no knowledge', 'a lot of elapsed time', 'Descriptive_marker',
-             'resume its identifier', 'Deletion of a missing value', 'fact nor ask', 'No absence means', 'Non-lethal blow or exceeding', 'documentary exclusion', 'An engaged arc', 'reserved to a rejected', 'Positions attest', 'finding creates no news', 'treat it as accomplished', 'Burst clocks whose')
+             'resume its identifier', 'Deletion of a missing value', 'fact nor ask', 'No absence means', 'Non-lethal blow or exceeding', 'documentary exclusion', 'An engaged arc', 'reserved to a rejected', 'Positions attest', 'finding creates no news', 'treat it as accomplished', 'Burst clocks whose',
+             'default dosage', 'to the dosage', 'with the dosage')
 
 # Phrases that must not come back in the comments of the code.
 FORBIDDEN_COMMENTS = ('restored big event',)
