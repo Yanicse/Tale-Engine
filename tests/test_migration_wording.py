@@ -46,7 +46,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'must not personally guarantee', 'imposes keeping', 'its result imposes', 'reserved to ', 'its own file', 'attested in the archives', 'when the file is really', 'on the contrary', 'circumstantial', 'followed commitments', 'modalities that', 'non-consented', 'blow amount by', 'notably when', '(notably', 'absence of archive', 'within the seven', 'is obliged', 'serves only for', 'limits serve', 'check every application',
              'serve to prepare', 'serves to navigate', 'waiting formula', 'notably the remainder',
              'three-reply limit', 'nearby manifestation point', 'answer_rank_to_produce', 'manifestation_date',
-             'answers_since_request', 'warning(s)', 'minute(s)', 'result(s)', 'résultat(s)')
+             'answers_since_request', 'distant evolution', 'sourced evolution', 'gap precisely', 'daily point', 'Daily points', 'Old behavior',
+             ']start, end]', 'World: ', 'warning(s)', 'minute(s)', 'result(s)', 'résultat(s)')
 
 # Names of the code (functions, variables, attributes) that must not come back.
 FORBIDDEN_NAMES = ('_routine_reportee',)

@@ -382,7 +382,7 @@ class RoutineTests(unittest.TestCase):
         r.apply(response)
         self.assertEqual(r.status()['status'], 'in_progress')
         work, response = self.long_response(r)
-        self.assertEqual(work['bound'], 3960)  # next daily point: D2 at 6 pm
+        self.assertEqual(work['bound'], 3960)  # next daily checkpoint: D2 at 6 pm
         r.apply(response)
         work, response = self.long_response(r)
         self.assertEqual(work['bound'], 5400)

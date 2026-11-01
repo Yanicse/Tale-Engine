@@ -257,7 +257,7 @@ def campaign_new(args):
     select_campaign(target)
     extras = ', '.join(name for name, on in (('summaries', world['planner']), ('chronicler', world['chronicler']),
                                             ('arcs', world['arcs'])) if on)
-    print(f'Campaign created and selected: {target}\nWorld: {extras}. Play with: novel play')
+    print(f'Campaign created and selected: {target}\nWorld setup: {extras or "none"}. Play with: novel play')
 
 
 EXAMPLE = PACKAGE / 'assets' / 'examples' / 'lantern_bay'

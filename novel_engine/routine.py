@@ -27,7 +27,7 @@ CATEGORIES = ('base_threat', 'harm_to_player_or_relatives', 'key_npc', 'arc_in_c
 DEFAULT_POLICY = {'points_per_step': None, 'period_days': 7, 'pause_period': False,
                   'stop_on': ['critical'], 'alert_days': 3, 'arcs_review_days': 2,
                   'bulletins': True, 'signals': True}
-# Routines without a recorded policy: old behavior, one step per 6 pm point.
+# Routines without a recorded policy: previous behavior, one step per 6 pm checkpoint.
 LEGACY_POLICY = {'points_per_step': 1, 'period_days': None, 'pause_period': False,
                  'stop_on': ['critical'], 'alert_days': 0, 'arcs_review_days': 2,
                  'bulletins': False, 'signals': False}
@@ -41,7 +41,7 @@ def policy_text(policy):
     """Long routine rules attached to the instructions of a step."""
     lines = ['LONG ROUTINE RULES']
     if policy['bulletins']:
-        lines.append(('Short daily bulletin: for each daily point (6 pm) crossed, write in narration a line '
+        lines.append(('Short daily bulletin: for each daily checkpoint (6 pm) crossed, write in narration a line '
                       'starting with its marker, for example "D12: nothing important reaches the player '
                       'character." A calm day fits in one line; a busy day in two or three sentences. A '
                       'day with nothing to report creates no news: invent nothing to fill it.'))
@@ -114,7 +114,7 @@ def normalize_policy(policy=None):
 
 
 def daily_points(start, end):
-    """Daily 6 pm points in ]start, end], with their Dn marker."""
+    """Daily 6 pm checkpoints in (start, end], each with its Dn marker."""
     point = start // DAY * DAY + 18 * 60
     if point <= start:
         point += DAY
@@ -126,9 +126,9 @@ def daily_points(start, end):
 
 
 def turn_limit(prepared, target, max_points=None, period_end=None, fine_until=None):
-    """Bound of a step: the next real deadline, never the plain 6 pm point.
+    """Bound of a step: the next real deadline, never the plain 6 pm checkpoint.
 
-    max_points limits the number of daily points per step (1: old behavior);
+    max_points limits the number of daily checkpoints per step (1: previous behavior);
     fine_until imposes one step per day while an alert is active."""
     start = prepared['state']['world_minute']
     first = daily_points(start, start + DAY)[0]['minute']
