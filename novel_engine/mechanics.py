@@ -195,7 +195,7 @@ def materialize(state,event,config):
                 raise ValueError('Lethal prevention unavailable or expired.')
             _require_charge_phase(charges(rules)[charge], at, rules)
             if type(op['amount']) is not int or not 0<resources['player_hp']<=op['amount']<=resources.get('player_death_refusal_capacity_hp',0):
-                raise ValueError('Non-lethal blow or exceeding the confirmed neutralization capacity.')
+                raise ValueError('The blow is not lethal or exceeds the confirmed neutralization capacity.')
             survival=resources.get('player_prevention_survival_hp')
             if type(survival) is not int or not 0 < survival <= resources['player_hp_max']:
                 raise ValueError('Active death-prevention recovery is missing; activate the ability again.')

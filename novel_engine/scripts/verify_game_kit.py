@@ -49,7 +49,7 @@ def replay_fixture(state: dict, result: dict) -> dict:
                 require(type(change["value"]) is int and type(output[group].get(key)) is int, "Non-numeric increment")
                 output[group][key] += change["value"]
             else:
-                require(key in output[group], "Deletion of a missing value")
+                require(key in output[group], "Cannot delete a value that does not exist")
                 del output[group][key]
         output["applied_event_ids"].append(event["event_id"])
     output["state_version"] = result["state_version_after"]

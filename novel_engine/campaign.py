@@ -138,7 +138,7 @@ class Campaign:
         if pending:
             if pending['text'] == text and (request_id is None or request_id == pending['request_id']):
                 return pending
-            raise ValueError('An action remains to be resolved; resume its identifier before another action')
+            raise ValueError('An action is still pending; resume it before starting another')
         request_id = request_id or uuid.uuid4().hex
         if con.execute('SELECT 1 FROM requests WHERE request_id=?',(request_id,)).fetchone():
             raise ValueError('Request already resolved')
@@ -175,7 +175,7 @@ class Campaign:
             raise ValueError('No pending action')
         row=con.execute('SELECT result FROM requests WHERE request_id=?',(pending['request_id'],)).fetchone()
         if not row or json.loads(row[0])['status'] != 'rejected':
-            raise ValueError('Re-evaluation reserved to a rejected action; otherwise resume its identifier')
+            raise ValueError('Re-evaluation is reserved for a rejected action; otherwise resume the pending action')
         pending['previous_request_ids']=pending.get('previous_request_ids',[])+[pending['request_id']]
         pending['request_id']=uuid.uuid4().hex
         pending['state_version_at_input']=self._state(con)['state_version']
@@ -526,7 +526,7 @@ class Campaign:
                             group[key] += change['value']
                         else:
                             if key not in group:
-                                raise ValueError('Deletion of a missing value')
+                                raise ValueError('Cannot delete a value that does not exist')
                             del group[key]
                     updated['world_minute'] = event['world_minute']
                     if config.get('mechanics'):

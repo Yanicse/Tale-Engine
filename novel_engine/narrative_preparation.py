@@ -70,7 +70,7 @@ def build_instructions(packet, modules, word_target):
     blocks.append((('Durable facts require the matching events. Any acquisition, expense, consumption or '
                     'transfer uses asset_operations; unknown quantities stay null. Any newly accepted '
                     'promise or effective world initiative has a dated next step with a cause; do not treat '
-                    'it as accomplished. The deadlines in the packet must be examined even if the action '
+                    'it as completed. The deadlines in the packet must be examined even if the action '
                     'does not mention them. ')))
     blocks.append((('Do not arbitrarily assign levels, distances or chances that are absent from the '
                     'sources. A voluntary HP expense does not benefit from the prevention of a lethal '
@@ -125,7 +125,7 @@ def situation_sheet(packet):
                            'interrupting_deadlines': [e['entry_id'] for e in agenda.get('events', []) if e.get('interrupt')],
                            'interrupted_goal': agenda.get('interrupted_goal')},
             'private_information': ['world_agenda', 'world_planning', 'documentary_canon'],
-            'instruction': ('Positions attest a location, not a perception or knowledge. The indicated blocks '
+            'instruction': ('Positions establish a location, not a perception or knowledge. The indicated blocks '
                          'contain the exact texts and proofs; unknowns stay unknown.')}
 
 

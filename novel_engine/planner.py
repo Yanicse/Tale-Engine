@@ -421,10 +421,10 @@ class WorldPlanner:
             if item['segments']!=old['segments']:raise ValueError('The number of segments of a clock is fixed.')
 
     def _reopenable(self,known,final,packet):
-        """Burst clocks whose big event no longer has an active deadline: resume allowed.
+        """Clocks that have burst and whose big event no longer has an active deadline: a resume is allowed.
 
-        Case of an event closed as a mere sign without its outcome being established.
-        An already terminal linked arc, a closed clock or a still active deadline forbid it.
+        This covers an event closed as a mere sign, with no established outcome.
+        A linked arc that is already terminal, a closed clock or a still active deadline rule it out.
 """
         arcs={a['clock']:a for a in packet['chronicle'].get('arcs_registry',{}).get('arcs',[]) if a.get('clock')}
         active=set()

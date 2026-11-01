@@ -79,7 +79,7 @@ class ArcRegistry:
         # Every episode has an arc, or an explicitly justified editorial exclusion.
         excluded = plan.get('outside_arcs', {})
         if set(excluded) - nodes or not all(excluded.values()):
-            raise ValueError('Invalid documentary exclusion.')
+            raise ValueError('Invalid editorial exclusion.')
         if nodes - covered - excluded.keys():
             raise ValueError('Episodes without follow-up: ' + ', '.join(sorted(nodes - covered - excluded.keys())))
         return arcs
@@ -212,7 +212,7 @@ class ArcRegistry:
                 if re.search(('date.{0,25}(unknown|uncertain|missing)|lack of '
                               'information|(?:player|character).{0,15}absent'), reason):
                     raise ValueError('An unknown date or the absence of the player character does not block an arc.')
-                # Waiting for the restored big event of the linked clock: neither proof nor ceiling on postponements.
+                # Waiting for the big event of the linked clock to get a new deadline: neither proof nor ceiling on postponements.
                 if old.get('clock') in waiting:
                     pass
                 elif old['obstacle_postponements'] >= MAX_OBSTACLES or not proofs.intersection(u['references']):
@@ -221,7 +221,7 @@ class ArcRegistry:
                 if u['status'] not in ('prevented', 'diverted') or step or not u['world_fact'] or not proofs.intersection(u['references']):
                     raise ValueError('Divergence without a campaign cause or a recorded consequence.')
             if old['status'] == 'in_progress' and u['status'] == 'to_prepare':
-                raise ValueError('An engaged arc does not return to preparing.')
+                raise ValueError('A started arc cannot go back to the preparation stage.')
         for u in updates:
             old = known[u['id']]
             item = {k: v for k, v in old.items() if k not in ('revision', 'reference')}

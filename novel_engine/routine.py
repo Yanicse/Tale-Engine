@@ -43,7 +43,7 @@ def policy_text(policy):
         lines.append(('Short daily bulletin: for each daily point (6 pm) crossed, write in narration a line '
                       'starting with its marker, for example "D12: nothing important reaches the player '
                       'character." A calm day fits in one line; a busy day in two or three sentences. A '
-                      'finding creates no news: invent nothing to fill a day.'))
+                      'day with nothing to report creates no news: invent nothing to fill it.'))
     if policy['signals']:
         lines.append((('Signals: fill routine_signals (list, empty if nothing). Declare each important fact '
                        'with level (info, alert, critical), category, world_minute and reason. Critical: '

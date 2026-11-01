@@ -55,8 +55,8 @@ def project_packet(packet):
     if omitted:
         packet['omitted_entities_index']=omitted
         packet['entity_reminder']=('The omitted identifiers still exist in SQLite. memory_request.query can ask for '
-                                  'object:<id>, project:<id>, relation:<id> or power:<id> for their exact sheet. No '
-                                  'absence means non-existence.')
+                                  'object:<id>, project:<id>, relation:<id> or power:<id> for their exact sheet. '
+                                  'Absence from this packet does not mean non-existence.')
     return packet
 
 
@@ -271,7 +271,7 @@ class NarrativeLoop:
             packet['unknowns'].append(("Log selected locally from the complete save, with the action and the recent exchanges. "
                                         "Older facts stay saved; their absence from the context does not mean they do not exist. "
                                         "The recalled exchanges reproduce the saved texts: a player's intention does not prove "
-                                        "its realization. Do not invent a missing historical fact nor ask the player to restore "
+                                        "its realization. Do not invent a missing historical fact or ask the player to restore "
                                         "the program's archives. Tell an outcome unknown to the player apart from an ambiguous "
                                         "action needing their clarification."))
         if not any(item['role']=='narrator' and item['content']==scene for item in history):

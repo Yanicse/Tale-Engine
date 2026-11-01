@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import tokenize
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,7 +34,11 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'date, nor finishing', 'fact nor invent', 'audience nor expose', 'preparations nor making',
              'success nor arbitrary', 'replay it nor make', 'character nor to an NPC', 'past nor a supposition',
              'balances nor an assumed', 'arrival nor grant', 'testimony or an offer stay ', 'postponement provide ',
-             'automatically give no knowledge', 'a lot of elapsed time', 'Descriptive_marker')
+             'automatically give no knowledge', 'a lot of elapsed time', 'Descriptive_marker',
+             'resume its identifier', 'Deletion of a missing value', 'fact nor ask', 'No absence means', 'Non-lethal blow or exceeding', 'documentary exclusion', 'An engaged arc', 'reserved to a rejected', 'Positions attest', 'finding creates no news', 'treat it as accomplished', 'Burst clocks whose')
+
+# Phrases that must not come back in the comments of the code.
+FORBIDDEN_COMMENTS = ('restored big event',)
 
 
 def code_strings():
@@ -41,6 +46,14 @@ def code_strings():
         for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 yield path.relative_to(ROOT), node.lineno, node.value
+
+
+def code_comments():
+    for path in sorted(PACKAGE.rglob('*.py')):
+        with path.open(encoding='utf-8') as handle:
+            for token in tokenize.generate_tokens(handle.readline):
+                if token.type == tokenize.COMMENT:
+                    yield path.relative_to(ROOT), token.start[0], token.string
 
 
 def documents():
@@ -65,6 +78,11 @@ class MigrationWordingTests(unittest.TestCase):
     def test_code_strings_have_no_migration_leftover(self):
         found = [f'{path}:{line}: {phrase}' for path, line, value in code_strings()
                  for phrase in FORBIDDEN if phrase in value]
+        self.assertEqual(found, [])
+
+    def test_code_comments_have_no_migration_leftover(self):
+        found = [f'{path}:{line}: {phrase}' for path, line, value in code_comments()
+                 for phrase in FORBIDDEN_COMMENTS if phrase in value]
         self.assertEqual(found, [])
 
     def test_code_word_lists_hold_no_french_word_or_duplicate(self):
