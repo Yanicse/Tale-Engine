@@ -1,4 +1,5 @@
 """Reader texts: complete language packs, and a page that only asks for keys that exist."""
+import json
 import re
 import unittest
 from pathlib import Path
@@ -21,7 +22,7 @@ class LanguagePacks(unittest.TestCase):
                                  set(ui_text.PLACEHOLDER.findall(ui_text.EN[key])), (code, key))
 
     def test_the_french_pack_translates_every_text(self):
-        same = {'tab.possessions', 'tab.agenda', 'mode.auto', 'mode.arcane', 'input.aria', 'mana.title', 'header.version'}
+        same = {'tab.possessions', 'tab.agenda', 'mode.auto', 'mode.arcane', 'input.aria', 'mana.title', 'header.version', 'status.intention'}
         untranslated = {key for key, text in ui_text.PACKS['fr'].items() if text == ui_text.EN[key]}
         self.assertEqual(sorted(untranslated - same), [])
 
@@ -73,6 +74,21 @@ class PageUsesKnownKeys(unittest.TestCase):
         # Class and function names of the page, outside the translated texts.
         for name in ('titres', 'paragraphes', 'classer', 'classe', 'or', 'sou', 'lib', 'som'):
             self.assertIsNone(re.search(r"(class=\"|[.'(,]|function )" + name + r"\b(?![.:])", PAGE), name)
+
+    def test_statuses_and_forms_shown_by_the_page_are_translated(self):
+        script = PAGE[PAGE.index('<script>'):PAGE.index('</script>')]
+        for call in ("word('status',e.status)", "word('status',v.status)", "word('status',c.status)",
+                     "word('status',p.status)", "word('form',c.form)"):
+            self.assertIn(call, script)
+        schema = json.loads((Path(__file__).resolve().parents[1] / 'novel_engine/assets/docs/engine/contracts/v0_2/state.schema.json')
+                            .read_text(encoding='utf-8'))
+        projects = schema['properties']['projects']['additionalProperties']['properties']['status']['enum']
+        agenda = ('planned', 'postponed', 'done', 'finished', 'cancelled')
+        creations = ('established', 'testimony', 'intention', 'proposed', 'accepted', 'resolved', 'refused', 'abandoned')
+        for status in set(projects) | set(agenda) | set(creations):
+            self.assertIn('status.' + status, ui_text.EN, status)
+        for form in ('always', 'day', 'night', 'passive', 'unspecified'):
+            self.assertIn('form.' + form, ui_text.EN, form)
 
 
 if __name__ == '__main__':

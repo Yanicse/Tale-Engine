@@ -91,7 +91,7 @@ class DocsTest(unittest.TestCase):
                 self.assertNotIn(phrase, text(root / name), name)
 
     def test_the_documented_defaults_match_the_code(self):
-        self.assertTrue(110 <= len(ui_text.EN) <= 130, 'docs say about 120 page texts')
+        self.assertTrue(130 <= len(ui_text.EN) <= 150, 'docs say about 140 page texts')
         self.assertIn('about 120 keys', text(DOCS / 'prompts-and-languages.md'))
         from novel_engine.narration_codex import DEFAULT_NARRATIVE_TIMEOUT
         self.assertEqual(DEFAULT_NARRATIVE_TIMEOUT, 240)

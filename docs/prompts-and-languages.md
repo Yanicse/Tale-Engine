@@ -10,7 +10,7 @@ There are three separate languages in a campaign.
 
 ## The reading page
 
-Every text of the page is a key of `novel_engine/ui_text.py` (about 120 keys, with `{placeholders}` such as `{name}`).
+Every text of the page is a key of `novel_engine/ui_text.py` (about 140 keys, with `{placeholders}` such as `{name}`).
 English is the reference and `fr` is bundled. A language pack translates; a missing key falls back to English.
 
 To change a few texts for one novel, set `labels` in `theme.json`:

@@ -625,7 +625,7 @@ function possessions(){
     var g3=el('div','grid');
     Object.keys(r.projects||{}).forEach(function(k){
       var v=r.projects[k];
-      g3.appendChild(cardBadge(v.title,v.status,'',[[tr('project.done'),(v.completed||[]).join('; ')],[tr('project.todo'),(v.remaining||[]).join('; ')],[tr('project.check'),(v.unknowns||[]).join('; ')]],'hourglass'));
+      g3.appendChild(cardBadge(v.title,word('status',v.status),'',[[tr('project.done'),(v.completed||[]).join('; ')],[tr('project.todo'),(v.remaining||[]).join('; ')],[tr('project.check'),(v.unknowns||[]).join('; ')]],'hourglass'));
     });
     content.appendChild(g3);
   }).catch(error);
@@ -638,7 +638,7 @@ function agenda(){
     var ch=el('div','chrono');
     r.events.forEach(function(e){
       var c=el('div','card');c.appendChild(el('p','date-evt',e.date));
-      var t=el('div','headRow'),h=el('h3');h.appendChild(gi(pickIcon(ICONS_PLACES,e.title+' '+(e.location||'').replace(/_/g,' '),'hourglass')));h.appendChild(document.createTextNode(e.title));t.appendChild(h);t.appendChild(el('span','badge',e.status));c.appendChild(t);
+      var t=el('div','headRow'),h=el('h3');h.appendChild(gi(pickIcon(ICONS_PLACES,e.title+' '+(e.location||'').replace(/_/g,' '),'hourglass')));h.appendChild(document.createTextNode(e.title));t.appendChild(h);t.appendChild(el('span','badge',word('status',e.status)));c.appendChild(t);
       if(e.location){var pl=el('p','tagline');pl.appendChild(el('b',null,tr('place.label')));pl.appendChild(document.createTextNode(e.location));c.appendChild(pl)}
       ch.appendChild(c);
     });
@@ -664,7 +664,7 @@ function npc(){
       matches.forEach(function(p){
         var c=card(p.name,p.description);c.classList.add('npc-card');
         var av=el('div','avatar',(p.name||'?').charAt(0).toUpperCase());av.style.setProperty('--tint',tint(p.name||''));av.setAttribute('aria-hidden','true');c.insertBefore(av,c.firstChild);
-        if(p.status&&p.status!=='established')c.appendChild(el('p','empty',tr('status.label')+p.status));
+        if(p.status&&p.status!=='established')c.appendChild(el('p','empty',tr('status.label')+word('status',p.status)));
         if(p.excerpts.length){
           var zone=c;
           if(p.description.length){zone=el('details');zone.appendChild(el('summary',null,tr('npc.passages')));c.appendChild(zone)}
@@ -717,7 +717,7 @@ function abilities(){
       var h=el('h3');h.style.margin='0';h.appendChild(gi(pickIcon(ICONS_ABILITIES,c.name,'magic-swirl')));h.appendChild(document.createTextNode(c.name));s.appendChild(h);
       d.appendChild(s);
       var costEl=el('p','cost');costEl.appendChild(el('span','badge',cost));d.appendChild(costEl);
-      if(c.form)d.appendChild(el('span','badge gold',c.form));
+      if(c.form)d.appendChild(el('span','badge gold',word('form',c.form)));
       [c.description,[tr('limits.label'),c.limits]].forEach(function(l){
         if(!l)return;
         if(Array.isArray(l)){if(l[1]){var p=el('p','tagline');p.appendChild(el('b',null,l[0]));p.appendChild(document.createTextNode(l[1]));d.appendChild(p)}}
@@ -751,7 +751,7 @@ function creations(){
   get('/api/creations').then(function(r){
     if(current!=='creations')return;
     clearList(content);var g=el('div','grid');
-    r.creations.forEach(function(c){g.appendChild(cardBadge(c.name,c.status,'',c.traits||[],'quill-ink'))});
+    r.creations.forEach(function(c){g.appendChild(cardBadge(c.name,word('status',c.status),'',c.traits||[],'quill-ink'))});
     content.appendChild(g);
     if(!r.creations.length)content.appendChild(el('p','empty',tr('creations.none')));
   }).catch(function(){clearList(content);content.appendChild(el('p','empty',tr('creations.inactive')))});
@@ -782,6 +782,7 @@ function fillEngines(list,fallback){
   sel.value=usable.indexOf(saved)>=0?saved:(usable.indexOf(fallback)>=0?fallback:(usable[0]||''));
 }
 var LABELS={};
+function word(prefix,value){var key=prefix+'.'+value;return LABELS[key]!==undefined?LABELS[key]:String(value).replace(/_/g,' ')}
 function tr(key,vars){var s=LABELS[key];if(s===undefined)s=key;if(vars)Object.keys(vars).forEach(function(k){s=s.split('{'+k+'}').join(vars[k])});return s}
 // Static markup carries data-t / data-t-aria / data-t-title / data-t-placeholder keys.
 function translateMarkup(){
