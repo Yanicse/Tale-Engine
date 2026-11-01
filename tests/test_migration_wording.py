@@ -43,7 +43,8 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'An old synthesis is required',
              'Common costs and dosage', 'Technical scope', 'All paid costs', 'campaigns/ and corpus/',
              'motif=',
-             'must not personally guarantee', 'imposes keeping', 'its result imposes', 'reserved to ', 'its own file', 'attested in the archives', 'when the file is really', 'on the contrary', 'circumstantial', 'followed commitments', 'modalities that', 'non-consented', 'blow amount by', 'notably when', '(notably', 'absence of archive', 'within the seven', 'is obliged', 'serves only for', 'limits serve', 'check every application')
+             'must not personally guarantee', 'imposes keeping', 'its result imposes', 'reserved to ', 'its own file', 'attested in the archives', 'when the file is really', 'on the contrary', 'circumstantial', 'followed commitments', 'modalities that', 'non-consented', 'blow amount by', 'notably when', '(notably', 'absence of archive', 'within the seven', 'is obliged', 'serves only for', 'limits serve', 'check every application',
+             'serve to prepare', 'serves to navigate', 'waiting formula', 'notably the remainder')
 
 # Phrases that must not come back in the comments of the code.
 FORBIDDEN_COMMENTS = ('restored big event', 'designate a proof', 'its proof', 'An accomplished step', 'neither proof',

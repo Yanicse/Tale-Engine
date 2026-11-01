@@ -30,7 +30,7 @@ An `autonomous` task rests on established causes. A `conditional` task depends o
 
 When the player writes, their action has priority. The engine serializes background and foreground writes; a task computed on an old state cannot overwrite a new state. The narrator receives the events that became perceivable at the appropriate time.
 
-An interruption of the process resumes from the log and the persistent state. A summary serves to navigate; it does not replace the recorded events. The scene already displayed does not change retroactively.
+An interruption of the process resumes from the log and the persistent state. A summary is for navigation; it does not replace the recorded events. The scene already displayed does not change retroactively.
 
 ## Outputs and budget
 
