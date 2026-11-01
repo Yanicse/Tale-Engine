@@ -399,7 +399,7 @@ function updateClock(){
 
 // Particles: embers (Arcane), snow (Frost), fireflies (night), golden dust (day). Local canvas, paused when the tab is hidden.
 var Part={type:'',l:[],w:0,h:0,c:null,x:null,calm:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches};
-var PARAM={ember:{n:38,rgb:'255,150,60',clair:true},snowfall:{n:70,rgb:'225,242,255',clair:true},firefly:{n:28,rgb:'255,222,140',clair:true},dust2:{n:26,rgb:'170,120,45',clair:false}};
+var PARAM={ember:{n:38,rgb:'255,150,60',additive:true},snowfall:{n:70,rgb:'225,242,255',additive:true},firefly:{n:28,rgb:'255,222,140',additive:true},dust2:{n:26,rgb:'170,120,45',additive:false}};
 function newPart(init){
   var P=Part,t=P.type,p={x:Math.random()*P.w,y:Math.random()*P.h,r:.8+Math.random()*1.8,a:Math.random()*6.28,v:.3+Math.random()*.7,o:.3+Math.random()*.6};
   if(!init){if(t==='ember'){p.y=P.h+10}else if(t==='snowfall'){p.y=-10}}
@@ -420,7 +420,7 @@ function animate(){
   var P=Part;requestAnimationFrame(animate);
   if(document.hidden||!P.type)return;
   var x=P.x,pal=PARAM[P.type],t=P.type;
-  x.clearRect(0,0,P.w,P.h);x.globalCompositeOperation=pal.clair?'lighter':'source-over';
+  x.clearRect(0,0,P.w,P.h);x.globalCompositeOperation=pal.additive?'lighter':'source-over';
   P.l.forEach(function(p){
     p.a+=.02;
     if(t==='ember'){p.y-=p.v;p.x+=Math.sin(p.a)*.6;if(p.y<-10)Object.assign(p,newPart(false))}
@@ -507,7 +507,7 @@ function card(title,rowList){
 // Icons from game-icons.net (CC BY 3.0), chosen from words of the name or the description.
 var ICONS_OBJECTS=[['dagger|knife|dirk','daggers'],['axe','battle-axe'],['sword|blade|saber|weapon','broadsword'],['armor|armour|cuirass|breastplate','armor-vest'],['cape|cloak|hood|coat','hood'],['clothes|clothing|robe|outfit|garment','robe'],['ring|band','ring'],['key','key'],['book|grimoire|codex|tome','spell-book'],['letter|message|mail|note','envelope'],['parchment|sketch|map|contract|report|document|plan|scroll','scroll-unfurled'],['potion|vial|flask|elixir','potion-ball'],['lantern|torch|lamp','lantern'],['bag|satchel|purse|backpack','backpack'],['gem|jewel|crystal|pearl','gems'],['crown|diadem','crown'],['mask','domino-mask'],['blood','drop'],['feather|quill|ink','quill-ink']];
 var ICONS_ABILITIES=[['runic blade|runic weapon','rune-sword'],['sun|solar|holy|radiant','sun-priest'],['dawn|dusk|twilight|sunrise|sunset|transformation','sunrise'],['undead|vampir','vampire-dracula'],['fang|bite|blood','fangs'],['bat|wing|flight|fly','bat-wing'],['night','moon-bats'],['moon|lunar','moon-orbit'],['sorcer|rune|spell|magic','rune-stone'],['blade|sword|combat','broadsword'],['war|berserk|fury|rage','horned-helm'],['dominat|mind|gaze|vision','eye-of-horus'],['lightning|thunder|storm','lightning-storm'],['wolf|pack|beast','wolf-head'],['heal|regener|life|vital|hp','heart-beats'],['death|resurrect|revive','half-heart'],['ward|protect|barrier|shield','hand-of-god'],['seal|sealed|lock|forbidden','padlock'],['flame|fire|light|candle','candle-flame'],['judg|balance|justice','scales'],['mist|smoke|fog|form','fog'],['time|duration|day','hourglass'],['teleport|movement','magic-swirl']];
-var ICONS_PLACES=[['combat|battle|assault|war|army|attack','horned-helm'],['fortress|palace|capital|castle|throne|hall','castle'],['turn|watch|lookout|surveillance|alert','stone-tower'],['village|hamlet','village'],['lodging|house|home|dwelling|inn','house'],['gate|entrance|border|frontier|passage','wooden-door'],['camp|bivouac|fire|night','campfire'],['balance|judgment|trial|agreement|negotiation','scales']];
+var ICONS_PLACES=[['combat|battle|assault|war|army|attack','horned-helm'],['fortress|palace|capital|castle|throne|hall','castle'],['tower|watch|lookout|surveillance|alert','stone-tower'],['village|hamlet','village'],['lodging|house|home|dwelling|inn','house'],['gate|entrance|border|frontier|passage','wooden-door'],['camp|bivouac|fire|night','campfire'],['balance|judgment|trial|agreement|negotiation','scales']];
 function stripAccents(t){return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function pickIcon(table,name,fallback,description){
   var texts=[stripAccents(name),stripAccents(description)];  // The name takes precedence over the description ("without armor" does not designate an armor).
@@ -717,7 +717,7 @@ function abilities(){
       var h=el('h3');h.style.margin='0';h.appendChild(gi(pickIcon(ICONS_ABILITIES,c.name,'magic-swirl')));h.appendChild(document.createTextNode(c.name));s.appendChild(h);
       d.appendChild(s);
       var costEl=el('p','cost');costEl.appendChild(el('span','badge',cost));d.appendChild(costEl);
-      if(c.form)d.appendChild(el('span','badge or',c.form));
+      if(c.form)d.appendChild(el('span','badge gold',c.form));
       [c.description,[tr('limits.label'),c.limits]].forEach(function(l){
         if(!l)return;
         if(Array.isArray(l)){if(l[1]){var p=el('p','tagline');p.appendChild(el('b',null,l[0]));p.appendChild(document.createTextNode(l[1]));d.appendChild(p)}}

@@ -1,0 +1,28 @@
+"""The source of the reading page: English names, and every class the script uses has a rule."""
+from pathlib import Path
+import re
+import unittest
+
+PAGE = (Path(__file__).resolve().parents[1] / 'novel_engine' / 'reader_page.html').read_text(encoding='utf-8')
+
+
+class PageSourceTests(unittest.TestCase):
+    def test_every_badge_variant_used_by_the_script_has_a_style_rule(self):
+        variants = set(re.findall(r"'badge ([a-z]+)'", PAGE))
+        variants |= set(re.findall(r"cardBadge\([^\n]*?,'(gold|blood|[a-z]{2})',\[", PAGE))
+        self.assertTrue(variants)
+        for variant in variants:
+            self.assertTrue(('.badge.' + variant + '{') in PAGE, variant)
+
+    def test_the_place_icons_use_tower_for_a_tower(self):
+        row = re.search(r"var ICONS_PLACES=.*", PAGE).group(0)
+        self.assertTrue("'tower|watch" in row)
+        self.assertFalse('turn|' in row)
+
+    def test_the_particle_blend_key_is_english(self):
+        self.assertFalse('clair' in PAGE)
+        self.assertTrue('additive:true' in PAGE)
+
+
+if __name__ == '__main__':
+    unittest.main()
