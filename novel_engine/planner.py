@@ -11,7 +11,7 @@ from .contracts import ASSETS, ROOT, check_json
 from .indexed_memory import MemoryIndex
 from .narration_codex import CodexNarrator
 from .validation import validate
-from .arcs import ArcRegistry, LONG_REVIEW_DELAY, decision_schema
+from .arcs import ArcRegistry, LONG_REVIEW_DELAY, decision_schema, upgrade_response
 
 
 SCHEMA_VERSION = '2.0'
@@ -395,7 +395,7 @@ class WorldPlanner:
                 packet['chronicle']['resume_instruction']=(('These clocks have burst but their big event no longer has an active deadline: if its '
                                                           'outcome is not established, a manifestation type=event dated within the horizon '
                                                           'restores it without modifying the clock; otherwise close the clock or realize the arc. '
-                                                          'For the linked arc, motif=obstacle with the wait for this event as cause: no evidence '
+                                                          'For the linked arc, kind=obstacle with the wait for this event as cause: no evidence '
                                                           'required, postponement not counted.'))
         packet['allowed_references']=sorted(allowed)
         return packet
@@ -521,6 +521,7 @@ class WorldPlanner:
         self.con.execute('UPDATE chronicle_meta SET last_review_minute=?',(state['world_minute'],))
 
     def apply_review(self,review_id,packet,response):
+        response=upgrade_response(response)
         validate(planner_schema(packet),response)
         check_json(response)
         state=json.loads(self.con.execute('SELECT state FROM campaign').fetchone()[0])

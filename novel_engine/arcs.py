@@ -15,6 +15,22 @@ TERMINAL = {'achieved', 'prevented', 'diverted'}
 STATUSES = ['to_prepare', 'in_progress', 'achieved', 'prevented', 'diverted']
 # Saves made before the rename keep their arcs readable.
 OLD_STATUSES = {'a_prepare': 'to_prepare'}
+# Answers and saves made before the rename keep their decisions readable.
+OLD_DECISION_KEYS = {'motif': 'kind'}
+
+
+def upgrade_decision(decision):
+    return {OLD_DECISION_KEYS.get(key, key): value for key, value in decision.items()}
+
+
+def upgrade_response(response):
+    """The same planner answer with the arc decisions under their current key names."""
+    chronicle = response.get('chronicle') if isinstance(response, dict) else None
+    arcs = chronicle.get('arcs') if isinstance(chronicle, dict) else None
+    if not isinstance(arcs, list):
+        return response
+    arcs = [upgrade_decision(arc) if isinstance(arc, dict) else arc for arc in arcs]
+    return {**response, 'chronicle': {**chronicle, 'arcs': arcs}}
 
 
 def decision_schema(refs):
@@ -23,7 +39,7 @@ def decision_schema(refs):
         'expected_revision': {'type': 'integer', 'minimum': 0},
         'status': {'type': 'string', 'enum': STATUSES},
         'step': {'type': 'integer', 'minimum': 0, 'maximum': 20},
-        'motif': {'type': 'string', 'enum': ['progression', 'obstacle', 'dependency', 'divergence']},
+        'kind': {'type': 'string', 'enum': ['progression', 'obstacle', 'dependency', 'divergence']},
         'reason': {'type': 'string', 'minLength': 10, 'maxLength': 600},
         'world_fact': {'type': ['string', 'null'], 'minLength': 10, 'maxLength': 900},
         'next_review': {'type': ['integer', 'null'], 'minimum': 0},
@@ -118,6 +134,8 @@ class ArcRegistry:
                    for r in self.con.execute('SELECT * FROM chronicle_arcs ORDER BY id')]
         for entry in entries:
             entry['status'] = OLD_STATUSES.get(entry['status'], entry['status'])
+            if isinstance(entry.get('last_decision'), dict):
+                entry['last_decision'] = upgrade_decision(entry['last_decision'])
         return entries
 
     def horizon(self, minute):
@@ -184,7 +202,7 @@ class ArcRegistry:
                 raise ValueError('A single arc milestone per revision.')
             if u['step'] > len(old['steps']):
                 raise ValueError('Non-existent arc milestone.')
-            if u['motif'] == 'progression':
+            if u['kind'] == 'progression':
                 if deps or step != 1 or not u['world_fact'] or u['status'] not in ('in_progress', 'achieved'):
                     raise ValueError('Progress without a fact, without a milestone or before its dependencies.')
                 if (u['status'] == 'achieved') != (u['step'] == len(old['steps'])):
@@ -201,11 +219,11 @@ class ArcRegistry:
                                      and json.loads(r['payload']).get('interrupt') for r in rows)
                     if not clock or clock['status'] not in ('burst', 'closed') or not manifested:
                         raise ValueError('Linked arc: wait for the effective resolution of the big event of its clock.')
-            elif u['motif'] == 'dependency':
+            elif u['kind'] == 'dependency':
                 if not deps or step or terminal or u['world_fact'] or u['status'] != old['status']:
                     raise ValueError('Wait without a truly open dependency.')
                 # The root must advance; the acyclic graph prevents a circular wait.
-            elif u['motif'] == 'obstacle':
+            elif u['kind'] == 'obstacle':
                 if step or terminal or u['world_fact'] or u['status'] != old['status']:
                     raise ValueError('Obstacle incompatible with a realization.')
                 reason = ''.join(c for c in unicodedata.normalize('NFKD', u['reason'].casefold()) if not unicodedata.combining(c))
@@ -217,7 +235,7 @@ class ArcRegistry:
                     pass
                 elif old['obstacle_postponements'] >= MAX_OBSTACLES or not proofs.intersection(u['references']):
                     raise ValueError('Obstacle without campaign evidence or postponements exhausted.')
-            elif u['motif'] == 'divergence':
+            elif u['kind'] == 'divergence':
                 if u['status'] not in ('prevented', 'diverted') or step or not u['world_fact'] or not proofs.intersection(u['references']):
                     raise ValueError('Divergence without a campaign cause or a recorded consequence.')
             if old['status'] == 'in_progress' and u['status'] == 'to_prepare':
@@ -226,7 +244,7 @@ class ArcRegistry:
             old = known[u['id']]
             item = {k: v for k, v in old.items() if k not in ('revision', 'reference')}
             item.update({k: u[k] for k in ('status', 'step', 'next_review', 'reason')})
-            item['obstacle_postponements'] = old['obstacle_postponements'] + (u['motif'] == 'obstacle' and old.get('clock') not in waiting) if u['motif'] == 'obstacle' else (0 if u['motif'] == 'progression' else old['obstacle_postponements'])
+            item['obstacle_postponements'] = old['obstacle_postponements'] + (u['kind'] == 'obstacle' and old.get('clock') not in waiting) if u['kind'] == 'obstacle' else (0 if u['kind'] == 'progression' else old['obstacle_postponements'])
             # An overrun window stays an explicit delay, never a removal of the arc.
             item['window_exceeded'] = minute > old['end_minute']
             item['last_decision'] = u
