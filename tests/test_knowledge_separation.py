@@ -113,7 +113,7 @@ class CanonAccessTests(Fixture):
         self.assertFalse(ContextBuilder(self.c).build('player', query='harbor fund')['information'])
         self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), before)
 
-    def test_a_claim_needs_a_temporal_validation_and_acquired_knowledge_to_reach_the_player(self):
+    def test_a_claim_needs_a_temporal_validation_and_learned_knowledge_to_reach_the_player(self):
         state = self.c.state()
         row = CanonRepository(self.canon, 1).search('harbor fund', 1)[0]
         config = configuration()

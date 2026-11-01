@@ -1,4 +1,4 @@
-"""Mana is independent from health and is spent transactionally in pack campaigns."""
+"""Mana is independent of health and is spent transactionally in pack campaigns."""
 from copy import deepcopy
 import json
 from pathlib import Path

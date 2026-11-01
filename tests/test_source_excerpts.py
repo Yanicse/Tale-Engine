@@ -1,4 +1,4 @@
-"""Short proofs complete the summaries, without changing the canon or the game."""
+"""Short source excerpts complete the summaries, without changing the canon or the game."""
 from contextlib import closing
 import hashlib
 from pathlib import Path

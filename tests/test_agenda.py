@@ -688,7 +688,7 @@ class AgendaTests(unittest.TestCase):
         with self.assertRaisesRegex(ModelUnavailable,'next step'):
             self.run_response(self.response([self.event(entry['due_minute'],'agenda:courier')],[self.resolved(entry)]))
 
-    def test_finished_dossier_can_close_with_recorded_outcome(self):
+    def test_finished_verification_entry_can_close_with_recorded_outcome(self):
         entry=self.put(self.entry(kind='verification'))
         result,_,_=self.run_response(self.response([self.event(entry['due_minute'],'agenda:courier')],
                                                  [self.resolved(entry,status='finished')]))

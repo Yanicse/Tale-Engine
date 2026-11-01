@@ -1,4 +1,4 @@
-"""Competing proofs and NPC sheets on fictional data, with no remote call."""
+"""Competing evidence and NPC sheets on fictional data, with no remote call."""
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -65,7 +65,7 @@ class MemoryCompetition(unittest.TestCase):
         self.assertLessEqual(packet['search']['characters'], 70)
         self.assertEqual(packet['search']['diagnostic']['neighbors'][0]['reason'], 'memory_budget')
 
-    def test_private_proof_and_neighbor_absent_from_player_diagnostic(self):
+    def test_private_evidence_and_neighbor_absent_from_player_diagnostic(self):
         self.insert('secret_copper', 'Soline hides the copper contract.', audience=['narrator'])
         self.insert('exchange:3', 'Soline talks about the contract.', 'exchange', 3)
         self.insert('exchange:5', 'A secret about copper.', 'exchange', 5, ['narrator'])

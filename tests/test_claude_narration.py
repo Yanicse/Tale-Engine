@@ -1,4 +1,4 @@
-"""Claude engine: CLI options, prompt splitting, errors and complete journey, with no network."""
+"""Claude engine: CLI options, prompt splitting, errors and an end-to-end run, with no network."""
 from contextlib import redirect_stdout
 import io
 import json

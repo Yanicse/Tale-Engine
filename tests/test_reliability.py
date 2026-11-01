@@ -473,7 +473,7 @@ class PublicTests(MechanicFixture):
         self.assertEqual(result['status'],'recorded',result)
         self.assertEqual(self.c.state()['resources']['player_silver'],19)
 
-    def test_recall_or_intention_cannot_create_acquired_result(self):
+    def test_recall_or_intention_cannot_create_an_established_result(self):
         path='/positions/player';value=self.c.state()['positions']['player']
         self.assertEqual(self.apply_ops([],claims=[self.claim('recall',path,value)])[0]['status'],'recorded')
         before=self.c.state()

@@ -27,7 +27,7 @@ REPORT = ("The examiner at the guild reads Mira's file aloud. The evaluation is 
 CONSTRUCTION = 'Mira inspects the house site. The planks are stacked beside the frame and the land is still soft.'
 # Topics of this played history, added the way memory_updates adds a campaign's own topics.
 CAMPAIGN_TOPICS = (
-    ('guild', 'Guild file', ('guild', 'examiner', 'evaluation', 'exam', 'promotion', 'rank', 'badge'),
+    ('guild', 'Guild topic', ('guild', 'examiner', 'evaluation', 'exam', 'promotion', 'rank', 'badge'),
      ('favorable evaluation', 'address', 'signed report', 'promotion', 'confirmation')),
     ('construction', 'Construction and land', ('construction', 'building', 'site', 'land', 'planks', 'frame', 'house'),
      ('plan', 'land', 'agreement', 'materials', 'supports')))
@@ -155,7 +155,7 @@ class MemoryTests(unittest.TestCase):
         self.assertIn('no confirmation', text)
         self.assertIn('guild', [item['id'] for item in packet['files']])
 
-    def test_short_followups_after_a_blocked_input_keep_the_guild_file(self):
+    def test_short_followups_after_a_blocked_input_keep_the_guild_topic(self):
         for action, previous in (('Yes, please.', REPORT), ('Go on.', REPORT), ('I wait.', REPORT)):
             with self.subTest(action=action):
                 packet = self._packet(action, previous, 'guild_hall_harbor')

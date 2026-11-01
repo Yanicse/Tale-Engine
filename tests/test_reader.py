@@ -36,7 +36,7 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-class LectureTests(unittest.TestCase):
+class ReaderTests(unittest.TestCase):
     @classmethod
     def build(cls, folder, creations=False):
         state, config = initial_state(), configuration()

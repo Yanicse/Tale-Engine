@@ -1,4 +1,4 @@
-"""Contracts and complete journeys, with local CLI transport and real SQLite."""
+"""Contracts and end-to-end runs, with local CLI transport and real SQLite."""
 from contextlib import redirect_stdout
 from copy import deepcopy
 import io

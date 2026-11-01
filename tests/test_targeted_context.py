@@ -474,7 +474,7 @@ class PromptSelectionTests(Fixture):
         prompt = NarrativeLoop(self.c, None).build_prompt(prepared)
         return prepared, prompt, sent(prompt)
 
-    def test_short_sheet_keeps_exact_history_state_and_proofs(self):
+    def test_short_sheet_keeps_exact_history_state_and_evidence(self):
         prepared, prompt, packet = self.prompt_packet()
         self.assertEqual(packet['recent_exchanges'], prepared['resume']['recent_exchanges'])
         for key in ('resources', 'effects', 'positions', 'knowledge', 'commitments'):

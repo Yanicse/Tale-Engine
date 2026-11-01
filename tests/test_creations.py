@@ -1,4 +1,4 @@
-"""Persistent creations: an invented detail is recorded as such; an offer or a testimony is not an acquired fact.
+"""Persistent creations: an invented detail is recorded as such; an offer or a testimony is not an established fact.
 
 Ported from the scenarios of the source project that do not depend on its story: identities and replay, revisions,
 offers that change nothing, private creations, explicit acceptance, rollback, restart, bounded recall.

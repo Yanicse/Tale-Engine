@@ -25,8 +25,34 @@ def words(tree):
         elif isinstance(node, ast.arg):
             yield node.lineno, node.arg
 
+# Words and phrases that tests names and docstrings no longer use: the code says evidence, established and learned.
+OLD_NAMING = {'dossier', 'lecture', 'proof', 'proofs', 'acquired'}
+OLD_PHRASES = ('independent from', 'complete journey', 'guild file')
+
+
+def declared_text(tree):
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.Module)):
+            doc = ast.get_docstring(node)
+            if doc:
+                yield getattr(node, 'lineno', 1), doc
+            if not isinstance(node, ast.Module):
+                yield node.lineno, re.sub(r'(?<=[a-z])(?=[A-Z])|_', ' ', node.name)
+
 
 class TestDataLanguage(unittest.TestCase):
+    def test_test_names_and_docstrings_use_the_wording_of_the_code(self):
+        found = []
+        for path in sorted(TESTS.glob('*.py')):
+            if path.name in FRENCH_ON_PURPOSE:
+                continue
+            for line, text in declared_text(ast.parse(path.read_text(encoding='utf-8'))):
+                lowered = text.lower()
+                for word in OLD_NAMING & set(re.findall(r'[a-z]+', lowered)):
+                    found.append(f'{path.name}:{line}: {word}')
+                found.extend(f'{path.name}:{line}: {phrase}' for phrase in OLD_PHRASES if phrase in lowered)
+        self.assertEqual(found, [])
+
     def test_test_data_has_no_french_word_left(self):
         found = []
         for path in sorted(TESTS.glob('*.py')):
