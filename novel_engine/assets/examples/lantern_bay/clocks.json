@@ -1,7 +1,7 @@
 [
   {
     "id": "harbor_fund",
-    "faction": "Harbor council",
+    "faction": "Corwen Pike",
     "goal": "Hide that the harbor fund is empty until the audit is over.",
     "segments": 4,
     "progression": 1,
@@ -16,7 +16,7 @@
   },
   {
     "id": "lens_sale",
-    "faction": "Maris Thorne",
+    "faction": "Tidewrights",
     "goal": "Sell the stolen lens as soon as the fog lifts.",
     "segments": 5,
     "progression": 1,

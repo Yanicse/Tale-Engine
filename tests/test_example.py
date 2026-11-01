@@ -154,6 +154,16 @@ class ExampleNovelTest(unittest.TestCase):
         self.assertNotIn('on the very day the lantern was stolen', story)
         self.assertIn('the morning after the lantern was stolen', story)
 
+    def test_the_story_the_money_and_the_clocks_agree(self):
+        story = (cli.EXAMPLE / 'story.txt').read_text(encoding='utf-8')
+        self.assertNotIn('at dusk to light the lantern', story)
+        self.assertIn('after nightfall to trim the wick', story)
+        novel = json.loads((cli.EXAMPLE / 'novel.json').read_text(encoding='utf-8'))
+        self.assertEqual({key: value['label'] for key, value in novel['currencies'].items()},
+                         {'gold': 'gold crowns', 'silver': 'silver gulls'})
+        clocks = json.loads((cli.EXAMPLE / 'clocks.json').read_text(encoding='utf-8'))
+        self.assertEqual([clock['faction'] for clock in clocks], ['Corwen Pike', 'Tidewrights'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -30,11 +30,11 @@
   },
   "currencies": {
     "gold": {
-      "label": "gold coins",
+      "label": "gold crowns",
       "initial_balance": 0
     },
     "silver": {
-      "label": "silver coins",
+      "label": "silver gulls",
       "initial_balance": 12
     }
   }
