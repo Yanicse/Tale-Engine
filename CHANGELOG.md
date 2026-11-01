@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Two code lists no longer repeat an item: the paragraph prefix `In envelope 1.2,` in the narrator document filter and `actor` and `title` in
+  the project fields of the planner canon query; `tests/test_migration_wording.py` fails when a literal list of strings repeats one.
 - The common rules, the possession rules and the narrator rules use "evidence", "established" and "completed" instead of "proof", "acquired" and "accomplished", say "Consequences never invent choices or thoughts for the player", "leave it unknown", "construction project" and "a specific quantity", and "marks" instead of "designates". The paragraph signatures of `instructions.py` follow. A campaign already open asks for an explicit restart because the narrator document changed.
 - "acquired", "accomplished", "designate" and "proof" were used for the French acquis, accompli, designer and preuve in the agenda, arc, possession and memory messages, the chronicler, planner and archivist rules and the narrator prompts: they now say "established", "completed", "point to" and "evidence". The `proofs` keys of the packets keep their name. A campaign already open asks for an explicit restart because the instruction texts changed.
 - The documentation no longer uses "the engine" for two things in one sentence ("Tale Engine writes the request" for the manual engine), says "change them with `--model`", "is neither read nor charged again" and "possessions, money and mana costs", and the README states that `novel canon build` defaults to the manual engine.

@@ -89,6 +89,17 @@ class MigrationWordingTests(unittest.TestCase):
                  for phrase in FORBIDDEN_COMMENTS if phrase in value]
         self.assertEqual(found, [])
 
+    def test_no_literal_list_of_strings_repeats_an_item(self):
+        found = []
+        for path in sorted(PACKAGE.rglob('*.py')):
+            for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
+                if isinstance(node, (ast.Tuple, ast.List)) and node.elts and all(
+                        isinstance(item, ast.Constant) and isinstance(item.value, str) for item in node.elts):
+                    values = [item.value for item in node.elts]
+                    found += [f'{path.relative_to(ROOT)}:{node.lineno}: {value}' for value in set(values)
+                              if values.count(value) > 1]
+        self.assertEqual(found, [])
+
     def test_code_word_lists_hold_no_french_word_or_duplicate(self):
         source = (PACKAGE / 'canon_selection.py').read_text(encoding='utf-8') + (PACKAGE / 'planner.py').read_text(encoding='utf-8')
         found = [phrase for phrase in FORBIDDEN if phrase in source]

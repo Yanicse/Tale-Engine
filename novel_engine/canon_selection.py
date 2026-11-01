@@ -159,7 +159,7 @@ class CanonSelector:
         if role not in BUDGETS:raise ValueError('Invalid canonical role.')
         action=(query+' '+action)[:1600]
         scene=scene[-1600:]
-        project_text=' '.join(' '.join(str(p.get(k,'')) for k in ('actor','location','title','actor','place','title','goal'))
+        project_text=' '.join(' '.join(str(p.get(k,'')) for k in ('actor','location','title','place','goal'))
                               for p in projects)[:6000] if role=='planner' else ''
         texts=[action,position,scene,project_text]
         subjects=self.subjects(texts)
