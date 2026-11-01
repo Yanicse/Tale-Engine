@@ -1,4 +1,4 @@
-"""Staging deadlines requested by the player: counted replies and mandatory manifestation."""
+"""Encounters requested by the player: counted replies, and the encounter required by the limit reply."""
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -55,13 +55,13 @@ class SceneFixture(unittest.TestCase):
 class PacketTests(SceneFixture):
     def test_counts_only_played_narrator_replies_after_the_request(self):
         first = self.packet()[0]
-        self.assertEqual((first['answers_since_request'], first['answer_rank_to_produce'],
+        self.assertEqual((first['replies_since_request'], first['reply_number'],
                           first['remaining_before_limit']), (0, 1, 3))
-        self.assertEqual(first['manifestation_date'], 30)
+        self.assertEqual(first['encounter_due_minute'], 30)
         self.assertEqual({key: first[key] for key in DIRECTIVE}, DIRECTIVE)
         self.play(2)
         later = self.packet()[0]
-        self.assertEqual((later['answers_since_request'], later['answer_rank_to_produce'],
+        self.assertEqual((later['replies_since_request'], later['reply_number'],
                           later['remaining_before_limit']), (2, 3, 1))
 
     def test_remaining_replies_never_go_negative(self):
@@ -71,7 +71,7 @@ class PacketTests(SceneFixture):
                 con.execute('INSERT INTO exchanges(message_id,role,content) VALUES (?,?,?)',
                             (f'extra-{number}', 'narrator', 'Another played reply.'))
         late = self.packet()[0]
-        self.assertEqual((late['answers_since_request'], late['remaining_before_limit']), (5, 0))
+        self.assertEqual((late['replies_since_request'], late['remaining_before_limit']), (5, 0))
 
     def test_finished_missing_or_absent_entries_produce_no_directive(self):
         with self.c.transaction() as con:
@@ -100,7 +100,7 @@ class PacketTests(SceneFixture):
 
 class ValidationTests(unittest.TestCase):
     def directive(self, rank, maximum=3):
-        return {**DIRECTIVE, 'max_replies': maximum, 'answer_rank_to_produce': rank}
+        return {**DIRECTIVE, 'max_replies': maximum, 'reply_number': rank}
 
     def proposal(self, audience=('narrator', 'player')):
         return {'events': [{'audience': list(audience)}]}
@@ -119,12 +119,16 @@ class ValidationTests(unittest.TestCase):
         scene_pacing.validate([self.directive(2)], self.proposal(), [self.update('planned', None)])
 
     def test_at_the_limit_the_encounter_must_manifest_to_the_player(self):
-        with self.assertRaisesRegex(ValueError, 'limit requires'):
+        with self.assertRaisesRegex(ValueError, 'replies requires'):
             scene_pacing.validate([self.directive(3)], self.proposal(), [])
-        with self.assertRaisesRegex(ValueError, 'limit requires'):
+        with self.assertRaisesRegex(ValueError, 'replies requires'):
             scene_pacing.validate([self.directive(3)], self.proposal(), [self.update('planned')])
         for status in ('done', 'finished'):
             scene_pacing.validate([self.directive(3)], self.proposal(), [self.update(status)])
+
+    def test_the_message_names_the_configured_limit(self):
+        with self.assertRaisesRegex(ValueError, 'limit of 4 replies requires'):
+            scene_pacing.validate([self.directive(4, maximum=4)], self.proposal(), [])
 
     def test_manifestation_event_must_exist_and_be_perceivable(self):
         for index in (None, 1, -1, True):

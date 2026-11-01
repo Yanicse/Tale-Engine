@@ -44,7 +44,12 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'Common costs and dosage', 'Technical scope', 'All paid costs', 'campaigns/ and corpus/',
              'motif=',
              'must not personally guarantee', 'imposes keeping', 'its result imposes', 'reserved to ', 'its own file', 'attested in the archives', 'when the file is really', 'on the contrary', 'circumstantial', 'followed commitments', 'modalities that', 'non-consented', 'blow amount by', 'notably when', '(notably', 'absence of archive', 'within the seven', 'is obliged', 'serves only for', 'limits serve', 'check every application',
-             'serve to prepare', 'serves to navigate', 'waiting formula', 'notably the remainder')
+             'serve to prepare', 'serves to navigate', 'waiting formula', 'notably the remainder',
+             'three-reply limit', 'nearby manifestation point', 'answer_rank_to_produce', 'manifestation_date',
+             'answers_since_request')
+
+# Names of the code (functions, variables, attributes) that must not come back.
+FORBIDDEN_NAMES = ('_routine_reportee',)
 
 # Phrases that must not come back in the comments of the code.
 FORBIDDEN_COMMENTS = ('restored big event', 'designate a proof', 'its proof', 'An accomplished step', 'neither proof',
@@ -90,6 +95,12 @@ class MigrationWordingTests(unittest.TestCase):
         found = [f'{path}:{line}: {phrase}' for path, line, value in code_strings()
                  for phrase in FORBIDDEN if phrase in value]
         self.assertEqual(found, [])
+
+    def test_code_names_have_no_migration_leftover(self):
+        for path in sorted(PACKAGE.rglob('*.py')):
+            with tokenize.open(path) as handle:
+                names = {token.string for token in tokenize.generate_tokens(handle.readline) if token.type == tokenize.NAME}
+            self.assertEqual(sorted(names & set(FORBIDDEN_NAMES)), [], str(path.relative_to(ROOT)))
 
     def test_code_comments_have_no_migration_leftover(self):
         found = [f'{path}:{line}: {phrase}' for path, line, value in code_comments()

@@ -319,7 +319,7 @@ class Agenda:
             update['due_minute']=old['due_minute']
         return normalized,corrections
 
-    def _routine_reportee(self, identifier):
+    def _is_postponed_follow_up(self, identifier):
         """True for a follow-up already postponed, non-interrupting, outside the chronicle and agreements."""
         if identifier.startswith((CHRONICLE_PREFIX,'accord:')):return False
         row=self.con.execute('SELECT status FROM world_agenda WHERE entry_id=?',(identifier,)).fetchone()
@@ -373,7 +373,7 @@ class Agenda:
             if identifier not in resolved:
                 # A routine step that is already postponed, without interruption, simply stays due:
                 # it will be proposed late at the next turn instead of making this one rejected.
-                if self._routine_reportee(identifier):
+                if self._is_postponed_follow_up(identifier):
                     continue
                 # Long activity: a non-interrupting backstage follow-up stays due and will be proposed late.
                 if self._deferrable_long_activity(identifier):
