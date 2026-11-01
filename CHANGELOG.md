@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Smaller wording fixes: "Invalid topic identifier", "Invalid memo identifier", "Invalid lot identifier" and "Invalid currency or payment sign" replace "Incorrect ...", the schema check says "value differs from the required constant", the planner names `old_synthesis` instead of "An old synthesis", and the page is the "reading page" everywhere (the credits, the page texts module and the documentation titles said "reader page"). The package classifiers and the CI matrix both list Python 3.11, and a test keeps them equal.
 - Two code lists no longer repeat an item: the paragraph prefix `In envelope 1.2,` in the narrator document filter and `actor` and `title` in
   the project fields of the planner canon query; `tests/test_migration_wording.py` fails when a literal list of strings repeats one.
 - The common rules, the possession rules and the narrator rules use "evidence", "established" and "completed" instead of "proof", "acquired" and "accomplished", say "Consequences never invent choices or thoughts for the player", "leave it unknown", "construction project" and "a specific quantity", and "marks" instead of "designates". The paragraph signatures of `instructions.py` follow. A campaign already open asks for an explicit restart because the narrator document changed.

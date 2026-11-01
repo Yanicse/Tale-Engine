@@ -98,7 +98,7 @@ see [Novel packs](docs/novel-packs.md), [Character sheets](docs/character-sheets
 ## Project structure
 
 ```
-novel_engine/         the package: turn loop, canon, campaign, engines, reader page
+novel_engine/         the package: turn loop, canon, campaign, engines, reading page
   prompts/en/         the narrator's instruction texts, one markdown file each
   assets/             agent rules, JSON contracts, the bundled example novel
   scripts/            what `novel play`, `read`, `resume` and `routine` run
@@ -108,7 +108,7 @@ tests/                the test suite (python -m unittest discover -s tests)
 ```
 
 Documentation: [index](docs/index.md), [getting started](docs/getting-started.md), [commands](docs/cli.md),
-[engines](docs/engines.md), [reader page](docs/reader.md), [prompts and languages](docs/prompts-and-languages.md),
+[engines](docs/engines.md), [reading page](docs/reader.md), [prompts and languages](docs/prompts-and-languages.md),
 [architecture](docs/architecture.md), [troubleshooting](docs/troubleshooting.md).
 
 ## FAQ

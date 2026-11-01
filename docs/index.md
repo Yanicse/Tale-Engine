@@ -12,7 +12,7 @@ secrets and the world's clock.
 | [Character sheets](character-sheets.md) | passives, abilities, costs and forbidden resources |
 | [Canon](canon.md) | ingest a book, build the canon, quotes, resuming, cost estimate, legal note |
 | [Engines](engines.md) | Codex CLI, Claude CLI, Anthropic API, or manual copy and paste |
-| [Reader page](reader.md) | the local reading page, themes, icons, languages |
+| [Reading page](reader.md) | the local reading page, themes, icons, languages |
 | [Prompts and languages](prompts-and-languages.md) | translate the page or the narrator's instructions |
 | [Routines](routines.md) | play several fictional days in a row, step by step, with the same validation as a turn |
 | [Architecture](architecture.md) | how a turn works, what is stored, where the safeguards are |

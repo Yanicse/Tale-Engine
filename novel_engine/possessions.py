@@ -64,7 +64,7 @@ def materialize(state, event, config):
         if kind in ('payment', 'purchase', 'sale'):
             wrong_sign = (delta >= 0 if kind == 'purchase' else delta <= 0 if kind == 'sale' else delta == 0)
             if resource not in rules['currencies'] or wrong_sign:
-                raise ValueError('Incorrect currency or payment sign')
+                raise ValueError('Invalid currency or payment sign')
         elif resource is not None or delta != 0:
             raise ValueError('Currency forbidden for this material operation')
         if kind == 'payment' and (inputs or outputs):
@@ -139,7 +139,7 @@ def materialize(state, event, config):
         for output in outputs:
             key = output['item_id']
             if '/' in key:
-                raise ValueError('Incorrect lot identifier')
+                raise ValueError('Invalid lot identifier')
             value = json.loads(output['item_json'])
             check_json(value)
             validate(item_schema, value)

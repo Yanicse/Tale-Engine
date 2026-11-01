@@ -56,6 +56,12 @@ class FrontPage(unittest.TestCase):
         self.assertIn('python-3.10%2B', read('README.md'))
         self.assertIn('## 0.1.0', read('CHANGELOG.md'))
 
+    def test_the_classifiers_list_the_python_versions_the_ci_runs(self):
+        classified = re.findall(r'Programming Language :: Python :: (3\.\d+)', read('pyproject.toml'))
+        tested = re.search(r'python: \[([^\]]*)\]', read('.github/workflows/tests.yml')).group(1)
+        self.assertEqual(classified, re.findall(r'"(3\.\d+)"', tested))
+        self.assertIn('3.11', classified)
+
     def test_the_ci_runs_the_suite_and_an_installed_smoke_test_on_three_systems(self):
         ci = read('.github/workflows/tests.yml')
         for needle in ('windows-latest', 'ubuntu-latest', 'macos-latest', 'unittest discover', 'pip install .',

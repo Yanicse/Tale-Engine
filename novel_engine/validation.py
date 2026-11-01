@@ -36,7 +36,7 @@ def validate(schema: dict, value, path: str = "$") -> None:
     if expected is not None and not any(t in checks and checks[t](value) for t in types):
         raise ValueError(f"{path}: expected type {expected}")
     if "const" in schema and (type(value) is not type(schema["const"]) or value != schema["const"]):
-        raise ValueError(f"{path}: incorrect constant")
+        raise ValueError(f"{path}: value differs from the required constant")
     if "enum" in schema and value not in schema["enum"]:
         raise ValueError(f"{path}: value outside the enumeration")
     if type(value) in (int,float) and value < schema.get("minimum", value):

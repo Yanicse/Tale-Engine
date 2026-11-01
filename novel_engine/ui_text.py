@@ -1,4 +1,4 @@
-"""Texts of the reader page, by language.
+"""Texts of the reading page, by language.
 
 English is the reference: every key exists there. A language pack only translates; a missing key falls
 back to English. A novel pack can still override any key through `labels` in its theme.json.

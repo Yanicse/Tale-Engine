@@ -62,7 +62,7 @@ to both sides of every conversion rate.
 | `labels` | any text of the page by key, see [Prompts and languages](prompts-and-languages.md) |
 | `icons` | `{"objects" \| "abilities" \| "places": [["word\|other word", "icon-name"]]}`, matched on the words of an item's name or description; icon names are the files of `novel_engine/resources/icons` |
 
-See [Reader page](reader.md) for how these are served.
+See [Reading page](reader.md) for how these are served.
 
 ## World files (optional)
 

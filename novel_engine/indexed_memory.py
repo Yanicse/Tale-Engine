@@ -70,7 +70,7 @@ class MemoryIndex:
 
     def topic(self, identifier, title, aliases, facets=(), audience=None):
         if not re.fullmatch(r'[a-z0-9_:.-]{1,80}', identifier):
-            raise ValueError('Incorrect topic identifier')
+            raise ValueError('Invalid topic identifier')
         self.con.execute('INSERT OR IGNORE INTO memory_topics VALUES (?,?,?,?)',
                          (identifier, title, check_json(list(facets)),check_json(audience or ['narrator'])))
         for alias in (identifier, *aliases):
@@ -345,7 +345,7 @@ class MemoryIndex:
                         'SELECT 1 FROM memory_sources WHERE reference=?',(ref,)).fetchone():
                     raise ValueError('Memo source without an exact archive refused')
             if not re.fullmatch(r'[a-z0-9_:.-]{1,80}',update['topic_id']):
-                raise ValueError('Incorrect memo identifier')
+                raise ValueError('Invalid memo identifier')
 
     def apply_updates(self, updates, request_id):
         serialized=check_json(updates)

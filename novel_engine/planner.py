@@ -540,7 +540,7 @@ class WorldPlanner:
                                  f"missing references: {len(source_refs-actual)}; outside the period: {len(actual-source_refs)}.")
             self._summary(exchanges[0]['seq'],exchanges[-1]['seq'],summary,['narrator','player'])
         synthesis=response['old_synthesis'];blocks=packet['summaries_to_consolidate']
-        if bool(blocks)!=bool(synthesis):raise ValueError('An old synthesis is required when six periods are provided.')
+        if bool(blocks)!=bool(synthesis):raise ValueError('old_synthesis is required when six periods are provided.')
         if synthesis:
             if set(synthesis['references'])!={s['reference'] for s in blocks}:
                 raise ValueError('The consolidation must reference all its periods, and only them.')

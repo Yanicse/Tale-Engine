@@ -1,4 +1,4 @@
-# Credits of the reader page resources
+# Credits for the reading page resources
 
 ## Icons (game-icons.net)
 
