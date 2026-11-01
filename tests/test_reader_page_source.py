@@ -23,6 +23,20 @@ class PageSourceTests(unittest.TestCase):
         self.assertFalse('clair' in PAGE)
         self.assertTrue('additive:true' in PAGE)
 
+    def test_code_names_are_english(self):
+        for snippet in ('searchNpc', 'reader-cap-filter', 'filterNode', 'class="rank"', '.rank{', "'piece'", '.piece',
+                        'dust2', 'markShape', "footer.setBusy", "toggle('setBusy'"):
+            self.assertFalse(snippet in PAGE, snippet)
+        self.assertFalse('request=' in PAGE.replace('query=', ''))
+
+    def test_comments_say_what_they_mean(self):
+        for phrase in ('follows its vault', 'does not designate', 'chosen from words of', 'Ideas from research',
+                       'panel relief'):
+            self.assertFalse(phrase in PAGE, phrase)
+
+    def test_the_ability_filter_has_no_dead_condition(self):
+        self.assertFalse("(p==='other'&&" in PAGE)
+
 
 if __name__ == '__main__':
     unittest.main()

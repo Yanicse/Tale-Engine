@@ -52,8 +52,8 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 :root[data-theme="dark"] #grain{opacity:.035;mix-blend-mode:screen}
 
 /* Header: crest, title, sundial */
-.markShape{padding:22px 16px 6px}
-.markShape-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:16px}
+.masthead{padding:22px 16px 6px}
+.masthead-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:16px}
 .emblem{flex:none;width:58px;height:58px;filter:drop-shadow(0 3px 8px var(--shadow))}
 .emblem .ringShape{fill:none;stroke:var(--gold);stroke-width:1.6}
 .emblem .day{fill:var(--gold)}.emblem .night{fill:#251a3a}
@@ -170,11 +170,11 @@ details p{font-family:var(--serif);font-size:18px}
 .scene-text p:last-child{margin-bottom:0}
 
 /* Possessions, purse */
-.piece{display:flex;align-items:center;gap:14px}
-.piece::after{content:none}
+.purse-card{display:flex;align-items:center;gap:14px}
+.purse-card::after{content:none}
 .coin{flex:none;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1b8,var(--gold) 55%,#7a5416);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25),0 2px 6px var(--shadow)}
-.piece .purse-label{font:600 12px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.piece .purse-amount{font:600 26px/1.1 var(--title);color:var(--accent)}
+.purse-card .purse-label{font:600 12px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.purse-card .purse-amount{font:600 26px/1.1 var(--title);color:var(--accent)}
 .project ul{margin:.2em 0 .4em;padding-left:1.1em;font:15px/1.5 var(--sans)}
 
 /* NPC */
@@ -203,13 +203,13 @@ details p{font-family:var(--serif);font-size:18px}
 /* Input */
 footer{position:sticky;bottom:0;z-index:5;padding:10px 16px 12px;background:color-mix(in srgb,var(--background) 86%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 18px -14px var(--shadow)}
 footer::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;opacity:0;background:linear-gradient(90deg,transparent,var(--gold),var(--blood),transparent);background-size:200% 100%}
-footer.setBusy::before{opacity:1;animation:sweep 1.6s linear infinite}
+footer.busy::before{opacity:1;animation:sweep 1.6s linear infinite}
 @keyframes sweep{from{background-position:200% 0}to{background-position:-200% 0}}
 .input{max-width:var(--reader);margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .input textarea{font:19px/1.4 var(--serif);color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 16px;resize:vertical;min-height:3.4em;max-height:40vh;width:100%;box-shadow:inset 0 2px 5px -2px var(--shadow);transition:border-color .15s,box-shadow .15s}
 .input textarea::placeholder{color:var(--muted);font-style:italic}
 .input textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 24%,transparent)}
-.input .rank{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.input .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .input select{font:15px var(--sans);color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 12px}
 .input .status{font:13.5px/1.4 var(--sans);color:var(--muted);flex:1;min-width:10ch}
 .input .status:not(:empty){animation:background .3s}
@@ -223,11 +223,11 @@ footer.setBusy::before{opacity:1;animation:sweep 1.6s linear infinite}
 .fab[hidden]{display:none}
 
 
-/* Ideas from research: reading progress and appearance driven by scrolling (CSS only), panel relief, reader settings. */
+/* Extras: reading progress and appearance driven by scrolling (CSS only), panel depth, reader settings. */
 .gi{display:inline-block;flex:none;width:1.5em;height:1.5em;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat}
 .card .headRow h3{display:flex;align-items:center;gap:.6em}
 .card .headRow h3 .gi{width:1.7em;height:1.7em;color:var(--gold)}
-.piece .gi{width:36px;height:36px;color:var(--gold);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--gold) 45%,transparent))}
+.purse-card .gi{width:36px;height:36px;color:var(--gold);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--gold) 45%,transparent))}
 #progressBar{display:none}
 @supports (animation-timeline:scroll()){
   #progressBar{display:block;position:fixed;left:0;right:0;top:0;height:3px;z-index:20;transform-origin:0 50%;background:linear-gradient(90deg,var(--gold),var(--blood));animation:advances 1ms linear both;animation-timeline:scroll(root block)}
@@ -249,7 +249,7 @@ footer.setBusy::before{opacity:1;animation:sweep 1.6s linear infinite}
 .settings .tileRow button{padding:5px 11px;min-width:40px}
 .settings #size-val{min-width:2.6em;text-align:center;color:var(--text);font-variant-numeric:tabular-nums}
 .settings button[aria-pressed="true"]{background:var(--accent);color:var(--background);border-color:var(--accent)}
-html.zen .markShape{display:none}
+html.zen .masthead{display:none}
 html.zen nav{display:none}
 html.zen .topbar{justify-content:flex-end}
 html.zen main{padding-top:18px}
@@ -282,8 +282,8 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 <svg id="ico-abilities" viewBox="0 0 24 24"><path d="M12 2.8l2.3 6.6 6.9 2.6-6.9 2.6L12 21.2l-2.3-6.6L2.8 12l6.9-2.6z"/></svg>
 <svg id="ico-creations" viewBox="0 0 24 24"><path d="M20.5 3.5c-7.5 0-12.5 4-13.5 11L5 20l5.5-2c7-1 11-6 10-14.5z"/><path d="M9 15.5l7-7"/></svg>
 </div>
-<header class="markShape">
-<div class="markShape-in">
+<header class="masthead">
+<div class="masthead-in">
 <svg class="emblem" viewBox="0 0 48 48" aria-hidden="true">
 <circle class="ringShape" cx="24" cy="24" r="21.5"/>
 <path class="day" d="M24 6a18 18 0 0 0 0 36z"/>
@@ -331,11 +331,11 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 <footer id="footer"><form class="input" id="input">
 <button id="jumpDown" class="fab" type="button" aria-label="Go to the latest exchange" data-t-aria="jump.latest" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
 <textarea id="text" rows="2" placeholder="What does your character do? (Ctrl+Enter to send)" aria-label="Action" data-t-aria="input.aria"></textarea>
-<div class="rank">
+<div class="controls">
 <select id="engine" aria-label="Narrator engine" data-t-aria="engine.aria"></select>
 <button id="micro" type="button" aria-pressed="false" aria-label="Dictate the action" data-t-aria="dictate.aria">&#127908; Dictate</button>
 <button id="send" type="submit" data-t="send">Send</button>
-<span id="waiting" class="rank"></span>
+<span id="waiting" class="controls"></span>
 <span class="status" id="status" role="status"></span>
 </div></form></footer>
 <script>
@@ -343,7 +343,7 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 'use strict';
 var TABS=['story','scene','npc','possessions','agenda','summaries','abilities','creations'];
 var MODES=['auto','day','night','arcane','frost','scifi'],cfg={},LABELS={},PRESET_MODE={classic:'day','dark-fantasy':'night',arcane:'arcane',frost:'frost',scifi:'scifi'};
-var state=null,current='story',newest=0,olderLoaded=false,first=null,request='',mode='auto';
+var state=null,current='story',newest=0,olderLoaded=false,first=null,query='',mode='auto';
 var content=document.getElementById('content');
 
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined&&text!==null)e.textContent=String(text);return e}
@@ -373,7 +373,7 @@ function applyTheme(){
   var b=document.getElementById('theme');b.setAttribute('data-mode',mode);
   document.getElementById('theme-lbl').textContent=tr('mode.'+mode);
   b.title=tr(mode==='auto'?'theme.follows_time':'theme.forced');
-  var type=amb==='arcane'?'ember':amb==='frost'?'snowfall':amb==='scifi'||darkMode?'firefly':'dust2';
+  var type=amb==='arcane'?'ember':amb==='frost'?'snowfall':amb==='scifi'||darkMode?'firefly':'dust';
   particleLayer(type);audioAmbience(type);
 }
 document.getElementById('theme').addEventListener('click',function(){
@@ -382,7 +382,7 @@ document.getElementById('theme').addEventListener('click',function(){
   applyTheme();
 });
 
-// Dial: the star follows its vault (sun from 6 am to 6 pm, moon afterwards).
+// Dial: the star follows its arc (sun from 6 am to 6 pm, moon afterwards).
 function placeCelestial(svg,h){
   var day=h>=6&&h<18,t=day?(h-6)/12:((h-18+24)%24)/12;
   var x=75-61*Math.cos(Math.PI*t),y=44-38*Math.sin(Math.PI*t);
@@ -399,7 +399,7 @@ function updateClock(){
 
 // Particles: embers (Arcane), snow (Frost), fireflies (night), golden dust (day). Local canvas, paused when the tab is hidden.
 var Part={type:'',l:[],w:0,h:0,c:null,x:null,calm:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches};
-var PARAM={ember:{n:38,rgb:'255,150,60',additive:true},snowfall:{n:70,rgb:'225,242,255',additive:true},firefly:{n:28,rgb:'255,222,140',additive:true},dust2:{n:26,rgb:'170,120,45',additive:false}};
+var PARAM={ember:{n:38,rgb:'255,150,60',additive:true},snowfall:{n:70,rgb:'225,242,255',additive:true},firefly:{n:28,rgb:'255,222,140',additive:true},dust:{n:26,rgb:'170,120,45',additive:false}};
 function newPart(init){
   var P=Part,t=P.type,p={x:Math.random()*P.w,y:Math.random()*P.h,r:.8+Math.random()*1.8,a:Math.random()*6.28,v:.3+Math.random()*.7,o:.3+Math.random()*.6};
   if(!init){if(t==='ember'){p.y=P.h+10}else if(t==='snowfall'){p.y=-10}}
@@ -428,7 +428,7 @@ function animate(){
     else if(t==='firefly'){p.x+=Math.cos(p.a*.7)*.35;p.y+=Math.sin(p.a*.5)*.3}
     else{p.x+=Math.cos(p.a*.4)*.15;p.y-=.08;if(p.y<-10)p.y=P.h+10}
     if(p.x<-10)p.x=P.w+10;if(p.x>P.w+10)p.x=-10;
-    var o=p.o*(t==='ember'||t==='firefly'?.55+.45*Math.sin(p.a*3):1)*(t==='dust2'?.5:1),r=p.r*(t==='firefly'?1.6:1);
+    var o=p.o*(t==='ember'||t==='firefly'?.55+.45*Math.sin(p.a*3):1)*(t==='dust'?.5:1),r=p.r*(t==='firefly'?1.6:1);
     var g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,r*4);
     g.addColorStop(0,'rgba('+pal.rgb+','+o.toFixed(2)+')');g.addColorStop(1,'rgba('+pal.rgb+',0)');
     x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,r*4,0,6.283);x.fill();
@@ -436,16 +436,16 @@ function animate(){
 }
 
 // Procedural ambient sound (WebAudio, no file): wind, low drone, crackling for Arcane. Off by default.
-var AudioState={ctx:null,on:false,filterNode:null,master:null,crackles:false,timer:null,noise:null};
-var SOUNDS={ember:{f:260,type:'lowpass',q:.7,crackles:true},snowfall:{f:1100,type:'bandpass',q:2.2,crackles:false},firefly:{f:380,type:'lowpass',q:.7,crackles:false},dust2:{f:850,type:'lowpass',q:.5,crackles:false}};
+var AudioState={ctx:null,on:false,phaseFilter:null,master:null,crackles:false,timer:null,noise:null};
+var SOUNDS={ember:{f:260,type:'lowpass',q:.7,crackles:true},snowfall:{f:1100,type:'bandpass',q:2.2,crackles:false},firefly:{f:380,type:'lowpass',q:.7,crackles:false},dust:{f:850,type:'lowpass',q:.5,crackles:false}};
 function brownNoise(ctx,seconds){
   var n=Math.floor(ctx.sampleRate*seconds),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0),last=0;
   for(var i=0;i<n;i++){last=(last+.02*(Math.random()*2-1))/1.02;d[i]=last*3.5}
   return b;
 }
 function audioAmbience(type){
-  if(!AudioState.on||!AudioState.filterNode)return;var c=SOUNDS[type]||SOUNDS.firefly;
-  AudioState.filterNode.type=c.type;AudioState.filterNode.Q.value=c.q;AudioState.filterNode.frequency.setTargetAtTime(c.f,AudioState.ctx.currentTime,.8);AudioState.crackles=c.crackles;
+  if(!AudioState.on||!AudioState.phaseFilter)return;var c=SOUNDS[type]||SOUNDS.firefly;
+  AudioState.phaseFilter.type=c.type;AudioState.phaseFilter.Q.value=c.q;AudioState.phaseFilter.frequency.setTargetAtTime(c.f,AudioState.ctx.currentTime,.8);AudioState.crackles=c.crackles;
 }
 function crackle(){
   if(!AudioState.on)return;
@@ -464,9 +464,9 @@ function audioToggle(){
     var ctx=AudioState.ctx=new AC();AudioState.master=ctx.createGain();AudioState.master.gain.value=0;AudioState.master.connect(ctx.destination);
     AudioState.noise=brownNoise(ctx,2);
     var windSrc=ctx.createBufferSource();windSrc.buffer=brownNoise(ctx,8);windSrc.loop=true;
-    AudioState.filterNode=ctx.createBiquadFilter();var gainNode=ctx.createGain();gainNode.gain.value=.5;
-    windSrc.connect(AudioState.filterNode);AudioState.filterNode.connect(gainNode);gainNode.connect(AudioState.master);
-    var lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=.07;lg.gain.value=140;lfo.connect(lg);lg.connect(AudioState.filterNode.frequency);lfo.start();
+    AudioState.phaseFilter=ctx.createBiquadFilter();var gainNode=ctx.createGain();gainNode.gain.value=.5;
+    windSrc.connect(AudioState.phaseFilter);AudioState.phaseFilter.connect(gainNode);gainNode.connect(AudioState.master);
+    var lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=.07;lg.gain.value=140;lfo.connect(lg);lg.connect(AudioState.phaseFilter.frequency);lfo.start();
     [[55,.05],[82.4,.03]].forEach(function(o){var os=ctx.createOscillator(),g=ctx.createGain();os.frequency.value=o[0];g.gain.value=o[1];os.connect(g);g.connect(AudioState.master);os.start()});
     windSrc.start();
   }
@@ -504,19 +504,19 @@ function card(title,rowList){
     else c.appendChild(el('p',null,l));
   });return c;
 }
-// Icons from game-icons.net (CC BY 3.0), chosen from words of the name or the description.
+// Icons from game-icons.net (CC BY 3.0), chosen from keywords in the name or the description.
 var ICONS_OBJECTS=[['dagger|knife|dirk','daggers'],['axe','battle-axe'],['sword|blade|saber|weapon','broadsword'],['armor|armour|cuirass|breastplate','armor-vest'],['cape|cloak|hood|coat','hood'],['clothes|clothing|robe|outfit|garment','robe'],['ring|band','ring'],['key','key'],['book|grimoire|codex|tome','spell-book'],['letter|message|mail|note','envelope'],['parchment|sketch|map|contract|report|document|plan|scroll','scroll-unfurled'],['potion|vial|flask|elixir','potion-ball'],['lantern|torch|lamp','lantern'],['bag|satchel|purse|backpack','backpack'],['gem|jewel|crystal|pearl','gems'],['crown|diadem','crown'],['mask','domino-mask'],['blood','drop'],['feather|quill|ink','quill-ink']];
 var ICONS_ABILITIES=[['runic blade|runic weapon','rune-sword'],['sun|solar|holy|radiant','sun-priest'],['dawn|dusk|twilight|sunrise|sunset|transformation','sunrise'],['undead|vampir','vampire-dracula'],['fang|bite|blood','fangs'],['bat|wing|flight|fly','bat-wing'],['night','moon-bats'],['moon|lunar','moon-orbit'],['sorcer|rune|spell|magic','rune-stone'],['blade|sword|combat','broadsword'],['war|berserk|fury|rage','horned-helm'],['dominat|mind|gaze|vision','eye-of-horus'],['lightning|thunder|storm','lightning-storm'],['wolf|pack|beast','wolf-head'],['heal|regener|life|vital|hp','heart-beats'],['death|resurrect|revive','half-heart'],['ward|protect|barrier|shield','hand-of-god'],['seal|sealed|lock|forbidden','padlock'],['flame|fire|light|candle','candle-flame'],['judg|balance|justice','scales'],['mist|smoke|fog|form','fog'],['time|duration|day','hourglass'],['teleport|movement','magic-swirl']];
 var ICONS_PLACES=[['combat|battle|assault|war|army|attack','horned-helm'],['fortress|palace|capital|castle|throne|hall','castle'],['tower|watch|lookout|surveillance|alert','stone-tower'],['village|hamlet','village'],['lodging|house|home|dwelling|inn','house'],['gate|entrance|border|frontier|passage','wooden-door'],['camp|bivouac|fire|night','campfire'],['balance|judgment|trial|agreement|negotiation','scales']];
 function stripAccents(t){return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function pickIcon(table,name,fallback,description){
-  var texts=[stripAccents(name),stripAccents(description)];  // The name takes precedence over the description ("without armor" does not designate an armor).
+  var texts=[stripAccents(name),stripAccents(description)];  // The name takes precedence over the description ("without armor" does not point to an armor).
   for(var j=0;j<texts.length;j++)for(var i=0;i<table.length;i++){if(new RegExp('(^|[^a-z])('+table[i][0]+')').test(texts[j]))return table[i][1]}
   return fallback;
 }
 function gi(name){var s=el('span','gi');s.style.setProperty('--i',"url('/resources/icons/"+name+".svg')");s.setAttribute('aria-hidden','true');return s}
-function cardBadge(title,badge,variant,rowList,iconFor){
-  var c=el('div','card'),t=el('div','headRow'),h=el('h3');if(iconFor)h.appendChild(gi(iconFor));h.appendChild(document.createTextNode(title));t.appendChild(h);
+function cardBadge(title,badge,variant,rowList,iconName){
+  var c=el('div','card'),t=el('div','headRow'),h=el('h3');if(iconName)h.appendChild(gi(iconName));h.appendChild(document.createTextNode(title));t.appendChild(h);
   if(badge)t.appendChild(el('span','badge '+(variant||''),badge));
   c.appendChild(t);
   rowList.forEach(function(l){
@@ -535,11 +535,11 @@ function turn(e){
 
 function initialStory(){
   clearList(content);
-  var f=el('form','search');var field=el('input');field.type='search';field.placeholder=tr('search.story');field.setAttribute('aria-label',tr('search.story'));field.value=request;
+  var f=el('form','search');var field=el('input');field.type='search';field.placeholder=tr('search.story');field.setAttribute('aria-label',tr('search.story'));field.value=query;
   var ok=el('button',null,tr('search.button'));ok.type='submit';f.appendChild(field);f.appendChild(ok);
-  f.addEventListener('submit',function(ev){ev.preventDefault();request=field.value.trim();request?searchNpc():initialStory()});
+  f.addEventListener('submit',function(ev){ev.preventDefault();query=field.value.trim();query?searchStory():initialStory()});
   content.appendChild(f);
-  if(request){searchNpc();return}
+  if(query){searchStory();return}
   var topAnchor=el('div');topAnchor.id='topAnchor';content.appendChild(topAnchor);
   var listEl=el('div');listEl.id='listEl';content.appendChild(listEl);
   var target=/^#exchange-(\d+)$/.exec(location.hash);
@@ -566,12 +566,12 @@ function showMore(topAnchor){
   });topAnchor.appendChild(b);
 }
 
-function searchNpc(){
-  get('/api/search?q='+encodeURIComponent(request)).then(function(r){
-    var zone=el('div');zone.appendChild(el('p','state-list',tr('search.results',{n:r.exchanges.length,q:request})));
+function searchStory(){
+  get('/api/search?q='+encodeURIComponent(query)).then(function(r){
+    var zone=el('div');zone.appendChild(el('p','state-list',tr('search.results',{n:r.exchanges.length,q:query})));
     r.exchanges.forEach(function(e){
       var d=turn(e);var link=el('a',null,tr('open_story'));link.href='#exchange-'+e.seq;
-      link.addEventListener('click',function(){request='';});d.appendChild(link);zone.appendChild(d);
+      link.addEventListener('click',function(){query='';});d.appendChild(link);zone.appendChild(d);
     });
     var old=document.getElementById('results');if(old)old.remove();
     zone.id='results';content.appendChild(zone);
@@ -579,7 +579,7 @@ function searchNpc(){
 }
 
 function newTurns(){
-  if(current!=='story'||request||!state)return;
+  if(current!=='story'||query||!state)return;
   if(state.exchange_count===newest)return;
   var jumpDown=atBottom();var listEl=document.getElementById('listEl');if(!listEl)return;
   var last=listEl.lastChild?Number(listEl.lastChild.id.replace('exchange-','')):0;
@@ -609,7 +609,7 @@ function possessions(){
     content.appendChild(el('h2',null,tr('purse.title')));
     var purse=Object.keys(r.purse||{}),g=el('div','grid');
     purse.forEach(function(k){
-      var c=el('div','card piece');c.appendChild(gi('coins'));
+      var c=el('div','card purse-card');c.appendChild(gi('coins'));
       var b=el('div');b.appendChild(el('div','purse-label',r.purse[k].label||k));b.appendChild(el('div','purse-amount',r.purse[k].balance));c.appendChild(b);g.appendChild(c);
     });
     content.appendChild(g);
@@ -670,7 +670,7 @@ function npc(){
           if(p.description.length){zone=el('details');zone.appendChild(el('summary',null,tr('npc.passages')));c.appendChild(zone)}
           p.excerpts.forEach(function(e){
             paragraphs(zone,e.text);
-            if(e.seq){var a=el('a',null,tr('npc.see'));a.href='#exchange-'+e.seq;a.addEventListener('click',function(){request='';current='story';showTabs();loadTab()});zone.appendChild(a)}
+            if(e.seq){var a=el('a',null,tr('npc.see'));a.href='#exchange-'+e.seq;a.addEventListener('click',function(){query='';current='story';showTabs();loadTab()});zone.appendChild(a)}
           });
         }
         if(!p.description.length&&!p.excerpts.length)c.appendChild(el('p','empty',tr('npc.no_description')));
@@ -707,7 +707,7 @@ function abilities(){
     resourceBar('hp.title',r.hp,r.hp_max);
     var manaRow=resourceBar('mana.title',r.mana||0,r.mana_max||0,'manaRow');
     manaRow.appendChild(el('p','note',tr('power.default',{n:r.default_power_pct})));
-    var filterNode='all';try{filterNode=localStorage.getItem('reader-cap-filter')||'all'}catch(e){}
+    var phaseFilter='all';try{phaseFilter=localStorage.getItem('reader-abilities-filter')||'all'}catch(e){}
     var topbar=el('div','filters'),zone=el('div');
     function phaseOf(c){var f=String(c.form||'').toLowerCase();return f.indexOf('always')>=0?'always':(f.indexOf('night')>=0&&f.indexOf('day')<0?'night':(f.indexOf('day')>=0&&f.indexOf('night')<0?'day':'other'))}
     function card(c){
@@ -733,13 +733,13 @@ function abilities(){
       clearList(zone);
       var t=r.abilities.filter(function(c){return phaseOf(c)==='always'});
       section(tr('abilities.always'),t);
-      var v=r.abilities.filter(function(c){var p=phaseOf(c);return p!=='always'&&(filterNode==='all'||p===filterNode||(p==='other'&&filterNode==='all'))});
-      section(tr(filterNode==='day'?'abilities.day':filterNode==='night'?'abilities.night':'abilities.other'),v);
-      Array.prototype.forEach.call(topbar.children,function(b){b.setAttribute('aria-pressed',b.dataset.f===filterNode?'true':'false');b.style.opacity=b.dataset.f===filterNode?'1':'.6'});
+      var v=r.abilities.filter(function(c){var p=phaseOf(c);return p!=='always'&&(phaseFilter==='all'||p===phaseFilter)});
+      section(tr(phaseFilter==='day'?'abilities.day':phaseFilter==='night'?'abilities.night':'abilities.other'),v);
+      Array.prototype.forEach.call(topbar.children,function(b){b.setAttribute('aria-pressed',b.dataset.f===phaseFilter?'true':'false');b.style.opacity=b.dataset.f===phaseFilter?'1':'.6'});
     }
     [['all',tr('filter.all')],['day',tr('filter.day')],['night',tr('filter.night')]].forEach(function(x){
       var b=el('button',null,x[1]);b.type='button';b.dataset.f=x[0];
-      b.onclick=function(){filterNode=x[0];try{localStorage.setItem('reader-cap-filter',filterNode)}catch(e){}renderItems()};
+      b.onclick=function(){phaseFilter=x[0];try{localStorage.setItem('reader-abilities-filter',phaseFilter)}catch(e){}renderItems()};
       topbar.appendChild(b);
     });
     topbar.style.cssText='display:flex;gap:.5rem;margin:.8rem 0';
@@ -823,7 +823,7 @@ function cycle(firstTime){
 
 var poller=null;
 function status(t){document.getElementById('status').textContent=t||''}
-function setBusy(busy){if(busy)stopDictation();document.getElementById('send').disabled=busy;document.getElementById('text').disabled=busy;document.getElementById('micro').disabled=busy||!Reco;document.getElementById('footer').classList.toggle('setBusy',busy)}
+function setBusy(busy){if(busy)stopDictation();document.getElementById('send').disabled=busy;document.getElementById('text').disabled=busy;document.getElementById('micro').disabled=busy||!Reco;document.getElementById('footer').classList.toggle('busy',busy)}
 // Dictation: the recognized text is only placed in the field, never sent. Sending stays a separate gesture, after review.
 var Reco=window.SpeechRecognition||window.webkitSpeechRecognition,reco=null;
 var MIC_LABEL=String.fromCharCode(0xD83C,0xDFA4)+' Dictate';var LISTENING=false;
@@ -893,7 +893,7 @@ document.getElementById('input').addEventListener('submit',function(ev){ev.preve
 document.getElementById('text').addEventListener('keydown',function(ev){if(ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();send('new')}});
 
 // "Go to the bottom" button: visible in the story when the page was scrolled up.
-function bottomVisible(){document.getElementById('jumpDown').hidden=!(current==='story'&&!request&&!atBottom()&&window.scrollY>200)}
+function bottomVisible(){document.getElementById('jumpDown').hidden=!(current==='story'&&!query&&!atBottom()&&window.scrollY>200)}
 document.getElementById('jumpDown').addEventListener('click',scrollList);
 window.addEventListener('scroll',bottomVisible,{passive:true});
 
