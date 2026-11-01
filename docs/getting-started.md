@@ -39,7 +39,7 @@ To play a turn, type the action in the page and press Ctrl+Enter, or from the te
 novel play --text "I take the oars." --engine manual
 ```
 
-With the manual engine the engine writes `campaigns/lantern-bay/manual/turn.prompt.md`. Send that file to any
+With the manual engine, Tale Engine writes `campaigns/lantern-bay/manual/turn.prompt.md`. Send that file to any
 chat model, save its JSON answer as `turn.response.json` in the same folder, then:
 
 ```bash

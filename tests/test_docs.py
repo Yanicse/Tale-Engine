@@ -75,8 +75,13 @@ class DocsTest(unittest.TestCase):
 
     def test_no_page_uses_a_word_for_word_phrase(self):
         for page in PAGES:
-            for phrase in ('consultation', '`French`-style'):
+            for phrase in ('consultation', '`French`-style', 'With the manual engine the engine', 'the engine reads the answer',
+                           'The engine writes two files', 'change it with `--model`', 'not read, nor charged',
+                           'possessions and'+chr(10)+'   money', 'possessions and money and mana costs'):
                 self.assertNotIn(phrase, text(page), page.name)
+
+    def test_the_readme_names_the_default_engine_of_the_canon_build(self):
+        self.assertIn('`novel canon build`: `manual`', text(DOCS.parent / 'README.md'))
 
     def test_the_documented_defaults_match_the_code(self):
         self.assertTrue(110 <= len(ui_text.EN) <= 130, 'docs say about 120 page texts')

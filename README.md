@@ -90,7 +90,7 @@ see [Novel packs](docs/novel-packs.md), [Character sheets](docs/character-sheets
 | What | How |
 | --- | --- |
 | where files go | `novels/`, `campaigns/` in the current folder, or in `$NOVEL_HOME` |
-| engine | `--engine claude\|codex\|api\|manual`; by default the saved choice, else the first available |
+| engine | `--engine claude\|codex\|api\|manual`; by default the saved choice, else the first available (`novel canon build`: `manual`) |
 | API key | `ANTHROPIC_API_KEY` in the environment, never stored |
 | the page's language and wording | `language` in `novel.json`, `labels` in `theme.json` |
 | the world | `tracked_npcs`, `currency_rates`, `world_rules`, `opening` in `novel.json` |

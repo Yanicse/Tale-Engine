@@ -23,8 +23,8 @@ Everything that matters is in SQLite. The engine is Python's standard library on
    only for the topics the action touches. Each piece of information carries its audience.
 3. **Ask the engine** ([Engines](engines.md)). The narrator returns one JSON envelope: narration, structured events
    (each with causes and an audience), blocking questions, memory requests and updates, agenda commands.
-4. **Validate.** The answer is checked against the schema, the allowed references, and local rules: possessions and
-   money and mana costs are computed by the program, consequences must match the final state, and text coherence is
+4. **Validate.** The answer is checked against the schema, the allowed references, and local rules: possessions, money
+   and mana costs are computed by the program, consequences must match the final state, and text coherence is
    checked.
 5. **Apply and record** in one transaction, keyed by the request identifier, so a repeated request returns the same result.
 6. **Display** only after the save.
