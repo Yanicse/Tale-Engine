@@ -14,7 +14,7 @@ from .contracts import ASSETS, ROOT, check, check_json
 from .memory import select_facts
 from .magic import cost_table
 
-# Ceiling raised from 192 to 256 KiB on 17 October 2026: the useful context reached 98%.
+# Ceiling raised from 192 to 256 KiB because the useful context reached 98%.
 CONTEXT_BUDGET_BYTES=262144
 # Beyond this share of the ceiling, the JSON output flags that a refusal is approaching.
 CONTEXT_ALERT_RATIO=0.85

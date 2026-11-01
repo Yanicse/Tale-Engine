@@ -10,7 +10,7 @@ ASSETS = PACKAGE / 'assets'
 
 
 def _workspace():
-    """Where novels/, campaigns/ and corpus/ live: $NOVEL_HOME, else this checkout when run from
+    """Where novels/ and campaigns/ live: $NOVEL_HOME, else this checkout when run from
     one (a pyproject.toml next to the package), else the current directory for an installed package."""
     configured = os.environ.get('NOVEL_HOME')
     if configured:

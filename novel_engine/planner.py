@@ -222,7 +222,7 @@ class WorldPlanner:
         path=ROOT/self.con.execute('SELECT chronology FROM chronicle_meta').fetchone()[0]
         if not path.resolve().is_relative_to(ROOT.resolve()):raise ValueError('Chronology outside the project.')
         data=json.loads(path.read_text(encoding='utf-8'))
-        # The scenes of volumes 6 and 8 often carry a plain time-of-day title.
+        # The scenes of a chronology often carry a plain time-of-day title.
         # Keeping evidence, markers and partial order avoids turning them into contentless titles.
         return [{'id':n['id'],'phase':n.get('phase'),'title':n['title'],
                  'time_marker':n.get('relative_time'),'date_source':n.get('calendar_date'),

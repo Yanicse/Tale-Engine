@@ -40,11 +40,13 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'Acquired step', 'accomplished off-screen', 'accomplished project', 'accomplished developments', 'accomplished consequence', 'already accomplished', 'acquired by the world', 'as acquired', 'what is acquired', 'into acquired', 'precisely accomplishes', 'without accomplishing', 'when a step is accomplished', 'no proof', 'campaign proof', 'precise proof', 'neither proof', 'of its proof', 'a proof is', 'new proof', 'main proofs', 'local proofs', 'Keeping proofs', 'exact proofs kept', 'the proofs, not', 'designating', 'Never decide their actions, nor',
              'acquired fact', 'acquired steps', 'accomplished step', 'really accomplished', 'a proof of', 'designate', 'proof of knowledge', 'proofs of knowledge', 'invent neither', 'acquired causes', 'keep the unknown.', 'historical proofs', 'building site', 'designates a', 'numbered withdrawal', 'movement is accomplished', 'never acquired', 'step is accomplished', 'the acquired', 'content of the proofs', 'automatic acquired', 'stay acquired', 'really accomplished', 'the proof of', 'acquired result', 'Once the action is accomplished', 'accomplished steps', 'creates no acquired', 'same proofs',
              'Incorrect topic', 'Incorrect memo', 'Incorrect currency', 'Incorrect lot', 'incorrect constant',
-             'An old synthesis is required')
+             'An old synthesis is required',
+             'Common costs and dosage', 'Technical scope', 'All paid costs', 'campaigns/ and corpus/')
 
 # Phrases that must not come back in the comments of the code.
 FORBIDDEN_COMMENTS = ('restored big event', 'designate a proof', 'its proof', 'An accomplished step', 'neither proof',
-                       'main proofs', 'the proofs, not', 'a proof is', 'local proofs', 'Keeping proofs')
+                       'main proofs', 'the proofs, not', 'a proof is', 'local proofs', 'Keeping proofs',
+                       'volumes 6 and 8', 'October 2026', 'of the corpus')
 
 
 def code_strings():

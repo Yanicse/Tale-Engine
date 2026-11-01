@@ -60,7 +60,7 @@ def main():
     subs.add_parser('reevaluate-action')
     p=subs.add_parser('open-scene');p.add_argument('--file',required=True)
     p=subs.add_parser('enter-action');p.add_argument('--text',required=True)
-    p=subs.add_parser('search-canon');p.add_argument('--search',required=True);p.add_argument('--sources',action='store_true')
+    p=subs.add_parser('search-canon');p.add_argument('--search',required=True)
     args=parser.parse_args()
     # Only init and action-demo work on the fictional demo save; every other command reads the active campaign.
     if args.command not in ('init','action-demo') and args.campaign is None:
@@ -108,7 +108,7 @@ def main():
         state=campaign.state()
         repo=CanonRepository(state['versions']['canon_snapshot'],state['versions']['canon_revision'])
         output={'usage':'preparation, no knowledge attributed automatically',
-                'results':repo.search_sources(args.search) if args.sources else repo.search(args.search)}
+                'results':repo.search(args.search)}
     compact=args.compact or args.command=='prepare-turn'
     print(json.dumps(output,ensure_ascii=False,indent=None if compact else 2,
                      separators=(',',':') if compact else None))

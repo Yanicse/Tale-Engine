@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- Leftovers of the original project are gone from the code. A comment no longer says "the scenes of volumes 6 and 8" and two comments no longer carry the date of a measurement. The search in the text of the book is removed: `CanonRepository.search_sources` and the `--sources` option of `search-canon` read a `corpus/library.sqlite` that nothing ever created. The narrator document filter no longer looks for the headings of a character sheet document ("Technical scope", "Common costs and dosage") that no shipped document has.
 - Smaller wording fixes: "Invalid topic identifier", "Invalid memo identifier", "Invalid lot identifier" and "Invalid currency or payment sign" replace "Incorrect ...", the schema check says "value differs from the required constant", the planner names `old_synthesis` instead of "An old synthesis", and the page is the "reading page" everywhere (the credits, the page texts module and the documentation titles said "reader page"). The package classifiers and the CI matrix both list Python 3.11, and a test keeps them equal.
 - Two code lists no longer repeat an item: the paragraph prefix `In envelope 1.2,` in the narrator document filter and `actor` and `title` in
   the project fields of the planner canon query; `tests/test_migration_wording.py` fails when a literal list of strings repeats one.

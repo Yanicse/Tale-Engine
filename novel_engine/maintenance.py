@@ -18,7 +18,7 @@ def parser(description):
 
 def execute(args, operation, apply):
     path = Path(args.campaign).resolve()
-    campaign = Campaign(path)  # Refuse the paths of the corpus and the canon.
+    campaign = Campaign(path)  # Refuse the paths of the sources and the canon.
     if not path.is_file():
         raise ValueError('Existing save expected; no automatic creation.')
     with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as con:

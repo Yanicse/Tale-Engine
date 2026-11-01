@@ -102,20 +102,6 @@ class CanonRepository:
                 output.append(item)
             return output
 
-    def search_sources(self, query, limit=4):
-        """Broadened preparation search; never injected as an established fact."""
-        terms = words(query)
-        if not terms or not 1 <= limit <= 30:
-            return []
-        source = ROOT / 'corpus' / 'library.sqlite'
-        if not source.is_file():
-            raise ValueError('No source corpus indexed: corpus/library.sqlite is missing (optional full-text index of the books).')
-        with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True)) as con:
-            con.row_factory = sqlite3.Row
-            # Provide the source lines, without giving them a canonical status.
-            return [dict(row) for row in con.execute('SELECT * FROM pages_fts WHERE pages_fts MATCH ? LIMIT ?',
-                    (' AND '.join('"'+word+'"' for word in terms),limit))]
-
 
 class ContextBuilder:
     def __init__(self, campaign):

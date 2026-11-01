@@ -133,7 +133,6 @@ def select_documents(documents, modules, packet):
     """Remove only the known off-topic paragraphs; keep any unclassified addition."""
     modules = set(modules)
     result = []
-    mechanics = packet.get('campaign_rules', {}).get('mechanics')
     for document in documents:
         source = document['source']
         selected = []
@@ -149,13 +148,6 @@ def select_documents(documents, modules, packet):
             if source == 'docs/engine/POSSESSIONS.md':
                 if 'possessions' not in modules:
                     skip = heading in ('Inventory', 'Purse and operations', 'Projects')
-            elif source == packet.get('campaign_rules', {}).get('character_sheet'):
-                skip = heading == 'Technical scope'
-                if not modules & {'abilities', 'combat', 'vitality', 'time'}:
-                    skip = heading in ('Common costs and dosage', 'Technical scope')
-                elif mechanics and heading == 'Common costs and dosage':
-                    # Installed rules and computed effects are authoritative; keep the qualitative limits.
-                    skip = paragraph.startswith('|') or paragraph.startswith('All paid costs')
             elif source == 'docs/engine/agents/narrator.md':
                 skip = paragraph.startswith(('For a narrator answering by hand or through a chat assistant,', 'Do not write directly to the campaign.'))
                 if paragraph.startswith(('In envelope 1.2,',)):

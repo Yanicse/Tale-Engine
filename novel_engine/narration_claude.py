@@ -108,7 +108,7 @@ class ClaudeNarrator(CodexNarrator):
             env.pop('ANTHROPIC_BASE_URL', None)
         env.update(PYTHONIOENCODING='utf-8', PYTHONUTF8='1', DISABLE_AUTOUPDATER='1')
         if not self.cache:
-            # Measured on 17 October 2026: the CLI writes the whole prompt to the cache (1.25 times the price)
+            # Measured: the CLI writes the whole prompt to the cache (1.25 times the price)
             # and never rereads the system prompt on the next turn. Without cache: 20% less.
             env['DISABLE_PROMPT_CACHING'] = '1'
         return env

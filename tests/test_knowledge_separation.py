@@ -129,9 +129,12 @@ class CanonAccessTests(Fixture):
         with self.assertRaises(ValueError):
             CanonRepository(self.canon, 77)
 
-    def test_the_book_text_fallback_is_refused_with_a_clear_message_when_no_corpus_exists(self):
-        with self.assertRaisesRegex(ValueError, 'No source corpus indexed'):
-            CanonRepository(self.canon, 1).search_sources('harbor', limit=1)
+    def test_there_is_no_search_in_the_text_of_the_book(self):
+        self.assertFalse(hasattr(CanonRepository, 'search_sources'))
+        for name in ('memory.py', 'scripts/campaign_cli.py'):
+            source = (Path(__file__).resolve().parents[1] / 'novel_engine' / name).read_text(encoding='utf-8')
+            self.assertNotIn('library.sqlite', source, name)
+            self.assertNotIn('--sources', source, name)
 
 
 if __name__ == '__main__':
