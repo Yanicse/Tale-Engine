@@ -212,11 +212,11 @@ class ArcRegistry:
                 if re.search(('date.{0,25}(unknown|uncertain|missing)|lack of '
                               'information|(?:player|character).{0,15}absent'), reason):
                     raise ValueError('An unknown date or the absence of the player character does not block an arc.')
-                # Waiting for the big event of the linked clock to get a new deadline: neither proof nor ceiling on postponements.
+                # Waiting for the big event of the linked clock to get a new deadline: neither evidence nor ceiling on postponements.
                 if old.get('clock') in waiting:
                     pass
                 elif old['obstacle_postponements'] >= MAX_OBSTACLES or not proofs.intersection(u['references']):
-                    raise ValueError('Obstacle without campaign proof or postponements exhausted.')
+                    raise ValueError('Obstacle without campaign evidence or postponements exhausted.')
             elif u['motif'] == 'divergence':
                 if u['status'] not in ('prevented', 'diverted') or step or not u['world_fact'] or not proofs.intersection(u['references']):
                     raise ValueError('Divergence without a campaign cause or a recorded consequence.')

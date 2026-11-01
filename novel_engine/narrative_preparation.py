@@ -1,4 +1,4 @@
-"""Extractive sheet and instructions selected locally; exact proofs kept."""
+"""Extractive sheet and instructions selected locally; exact evidence kept."""
 from copy import deepcopy
 import re
 import hashlib

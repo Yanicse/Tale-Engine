@@ -6,6 +6,6 @@ Prepare a small number of relevant events from identified causes. A faction can 
 
 Produce a proposal matching `contracts/v0_2/proposal.schema.json`, whose `request_id` takes the task identifier. The narration is empty for a secret development. The audience of each event gives the authorized recipients.
 
-For a conditional task, keep the conditions of the future choice. Never present its realization as acquired. For an autonomous task, distinguish a decision made now from its later execution.
+For a conditional task, keep the conditions of the future choice. Never present its realization as established. For an autonomous task, distinguish a decision made now from its later execution.
 
 On cancellation, stop working as soon as possible. A finished computation can be kept as a provisional result, but the engine must check its version, its conditions and its deadline before applying it. No direct write access to the state.

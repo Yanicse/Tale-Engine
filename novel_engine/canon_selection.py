@@ -279,7 +279,7 @@ class CanonSelector:
                     item['public_marker']={'status':note['status'],'limit':note['limit']}
                     if note['status']=='descriptive_marker' and claim['predicate'] in ('composition','direction'):
                         item['usage']='documentary_marker'
-                # The summary of an assertion may omit a decisive detail of its proof.
+                # The summary of an assertion may omit a decisive detail of its evidence.
                 # Provide only a short whole quotation, without loading the volume or truncating a caveat.
                 if has_quotes and source['quote'] and len(source['quote'])<=450:
                     item['source']['excerpt']=source['quote']
@@ -321,7 +321,7 @@ class CanonSelector:
             # Relevance metadata also count toward the documentary ceiling.
             while packet['facts'] and packet['search']['characters']>BUDGETS[role]:
                 packet['facts'].pop();self._size(packet)
-                # The target must not remain announced as satisfied after a proof is removed.
+                # The target must not remain announced as satisfied after its evidence is removed.
                 packet['search']['request_satisfied']=False if query else None
                 packet['search']['diagnostic']='partial_excerpts' if query else 'automatic_selection'
                 self._size(packet)

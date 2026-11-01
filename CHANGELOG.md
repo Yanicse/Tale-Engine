@@ -4,6 +4,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## Unreleased
 
+- "acquired", "accomplished", "designate" and "proof" were used for the French acquis, accompli, designer and preuve in the agenda, arc, possession and memory messages, the chronicler, planner and archivist rules and the narrator prompts: they now say "established", "completed", "point to" and "evidence". The `proofs` keys of the packets keep their name. A campaign already open asks for an explicit restart because the instruction texts changed.
 - The documentation no longer uses "the engine" for two things in one sentence ("Tale Engine writes the request" for the manual engine), says "change them with `--model`", "is neither read nor charged again" and "possessions, money and mana costs", and the README states that `novel canon build` defaults to the manual engine.
 - The ability lookup says "power" where it said "dosage" (a calque), like the character sheets page.
 - Messages and comments read as English: "Re-evaluation is reserved for a rejected action", "An action is still pending; resume it before starting another", "Cannot delete a value that does not exist", "The blow is not lethal or exceeds ...", "A started arc cannot go back to the preparation stage", "Invalid editorial exclusion", "Positions establish a location", the daily bulletin rule of routines, the memory entity reminder, and the "or ask" that followed "Do not invent". `tests/test_migration_wording.py` now also scans the comments of the code.

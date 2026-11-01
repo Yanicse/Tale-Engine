@@ -31,7 +31,7 @@
     {
       "id": "npc_secret",
       "trigger": "An NPC is not in the audience of a secret.",
-      "expected": "The context sent excludes the secret. An empty known_by field is not a proof of ignorance.",
+      "expected": "The context sent excludes the secret. An empty known_by field is not evidence of ignorance.",
       "example_files": []
     },
     {
@@ -85,7 +85,7 @@
     {
       "id": "narration",
       "trigger": "A transaction fails after a narrative proposal.",
-      "expected": "Never show an unrecorded success as acquired.",
+      "expected": "Never show an unrecorded success as established.",
       "example_files": []
     }
   ]

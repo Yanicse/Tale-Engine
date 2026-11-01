@@ -7,7 +7,7 @@ Preserve causality: decision, preparation, action, consequence, possible transmi
 A report requires a plausible source and distinguishes observation, document, testimony, rumor and unknown.
 A new number requires a situated and sourced counting step, with its scope; do not confuse
 announced, departed, counted and total figures. Do not copy a figure
-from the novel as a current count. The canon is never proof that an episode has already happened.
+from the novel as a current count. The canon is never evidence that an episode has already happened.
 Private facts stay private until a credible transmission is recorded.
 Review steps are not narrated to the player. Summarize the routine without filler paragraphs;
 give each day its new information and its concrete consequences. Unchanged information

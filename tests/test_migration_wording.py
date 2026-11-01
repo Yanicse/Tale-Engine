@@ -36,10 +36,12 @@ FORBIDDEN = ('Ponctuation', 'Ressource ', 'Lien narrative', 'en double', 'Versio
              'balances nor an assumed', 'arrival nor grant', 'testimony or an offer stay ', 'postponement provide ',
              'automatically give no knowledge', 'a lot of elapsed time', 'Descriptive_marker',
              'resume its identifier', 'Deletion of a missing value', 'fact nor ask', 'No absence means', 'Non-lethal blow or exceeding', 'documentary exclusion', 'An engaged arc', 'reserved to a rejected', 'Positions attest', 'finding creates no news', 'treat it as accomplished', 'Burst clocks whose',
-             'default dosage', 'to the dosage', 'with the dosage')
+             'default dosage', 'to the dosage', 'with the dosage',
+             'Acquired step', 'accomplished off-screen', 'accomplished project', 'accomplished developments', 'accomplished consequence', 'already accomplished', 'acquired by the world', 'as acquired', 'what is acquired', 'into acquired', 'precisely accomplishes', 'without accomplishing', 'when a step is accomplished', 'no proof', 'campaign proof', 'precise proof', 'neither proof', 'of its proof', 'a proof is', 'new proof', 'main proofs', 'local proofs', 'Keeping proofs', 'exact proofs kept', 'the proofs, not', 'designating', 'Never decide their actions, nor')
 
 # Phrases that must not come back in the comments of the code.
-FORBIDDEN_COMMENTS = ('restored big event',)
+FORBIDDEN_COMMENTS = ('restored big event', 'designate a proof', 'its proof', 'An accomplished step', 'neither proof',
+                       'main proofs', 'the proofs, not', 'a proof is', 'local proofs', 'Keeping proofs')
 
 
 def code_strings():

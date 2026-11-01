@@ -223,7 +223,7 @@ class WorldPlanner:
         if not path.resolve().is_relative_to(ROOT.resolve()):raise ValueError('Chronology outside the project.')
         data=json.loads(path.read_text(encoding='utf-8'))
         # The scenes of volumes 6 and 8 often carry a plain time-of-day title.
-        # Keeping proofs, markers and partial order avoids turning them into contentless titles.
+        # Keeping evidence, markers and partial order avoids turning them into contentless titles.
         return [{'id':n['id'],'phase':n.get('phase'),'title':n['title'],
                  'time_marker':n.get('relative_time'),'date_source':n.get('calendar_date'),
                  'proofs':n.get('evidence',[]),
@@ -260,7 +260,7 @@ class WorldPlanner:
         registry=ArcRegistry(self.con)
         if registry.exists():
             packet['private_world_facts']=registry.facts(query=action+' '+position)
-            packet['arcs_instruction']=(("These off-screen facts are acquired by the world at their date, not known to the player "
+            packet['arcs_instruction']=(("These off-screen facts become established in the world at their date, not known to the player "
                                       "character. A revelation requires a credible local means: report, witness, mail or "
                                       "observation. Do not re-execute the fact or invent that the player character took part "
                                       "in it. Intentions do not prove their success. Respect the agenda's arcs_review_horizon "
@@ -379,7 +379,7 @@ class WorldPlanner:
                                            'fact stays interrupted by the agenda, not by the review.'))
                 packet['chronicle']['arcs_registry']=rp
                 packet['chronicle']['private_world_facts']=registry.facts()
-                # Precise local proofs for obstacles and divergences, with no remote search.
+                # Precise local evidence for obstacles and divergences, with no remote search.
                 evidence=[{'reference':r['event_id'],**json.loads(r['payload'])}
                           for r in self.con.execute('SELECT event_id,payload FROM events ORDER BY rowid DESC LIMIT 12')]
                 packet['chronicle']['campaign_proofs']=evidence
@@ -395,7 +395,7 @@ class WorldPlanner:
                 packet['chronicle']['resume_instruction']=(('These clocks have burst but their big event no longer has an active deadline: if its '
                                                           'outcome is not established, a manifestation type=event dated within the horizon '
                                                           'restores it without modifying the clock; otherwise close the clock or realize the arc. '
-                                                          'For the linked arc, motif=obstacle with the wait for this event as cause: no proof '
+                                                          'For the linked arc, motif=obstacle with the wait for this event as cause: no evidence '
                                                           'required, postponement not counted.'))
         packet['allowed_references']=sorted(allowed)
         return packet
@@ -586,7 +586,7 @@ class WorldPlanner:
                 if leaves and not frontier and all(e['status'] in ('finished','cancelled') for e in leaves):
                     entry=leaves[-1]
             if entry and entry['status'] in ('finished','cancelled'):
-                # An accomplished step is not a closing of the whole project.
+                # A completed step is not a closing of the whole project.
                 item={k:v for k,v in item.items() if k not in ('revision','reference')}
                 item['status']='finished' if entry['status']=='finished' else 'discarded'
                 item['reason']='Closing recorded by the narrator: '+entry['reason']

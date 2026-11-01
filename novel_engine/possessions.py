@@ -205,7 +205,7 @@ def validate_transition(before, after, event, config):
         old = before['projects'][key]
         new = after['projects'][key]
         if set(old['completed']) - set(new['completed']):
-            raise ValueError('Acquired step erased from the project: ' + key)
+            raise ValueError('Completed step erased from the project: ' + key)
     changed_items = {key for key in before['inventory'].keys() | after['inventory'].keys()
                      if before['inventory'].get(key) != after['inventory'].get(key)}
     operated = {item['item_id'] for op in operations for item in op['inputs'] + op['outputs']}

@@ -226,7 +226,7 @@ class MemoryIndex:
         def remember(source, origin):
             selected.setdefault(source['doc_id'], source)
             origins.setdefault(source['doc_id'], set()).add(origin)
-        # A technical request can directly designate a proof provided to the model.
+        # A technical request can directly point to evidence provided to the model.
         for ref in re.findall(r'exchange:\d+|[a-zA-Z0-9_:.-]{8,}',query):
             row=self.con.execute('SELECT * FROM memory_sources WHERE reference=?',(ref,)).fetchone()
             # Try the exact value first, then remove the final punctuation.
@@ -294,7 +294,7 @@ class MemoryIndex:
                               'audience':json.loads(source['audience'])})
             elif source['seq'] not in recent_seqs:
                 exchanges.append({'seq':source['seq'],'role':'narrator','content':text})
-        # Neighbors only use the budget left after the main proofs.
+        # Neighbors only use the budget left after the main evidence.
         added_seqs = set(recent_seqs) | {e['seq'] for e in exchanges}
         neighbors = []
         for source in kept_sources:
@@ -379,7 +379,7 @@ class MemoryIndex:
         row = self.con.execute('SELECT * FROM memory_recovery WHERE request_id=?',(request_id,)).fetchone()
         count = (row['count'] if row else 0) + 1
         packet = self.packet('',previous,position,query=query,budget=TEXT_BUDGET*2,excerpt_chars=6000)
-        # Compare the content of the proofs, not the rewordings of the request.
+        # Compare the content of the evidence, not the rewordings of the request.
         prior = json.loads(row['packet']) if row else {}
         old = {proof['reference']: proof['text'] for proof in prior.get('proofs', [])}
         new = [proof['reference'] for proof in packet['proofs']
@@ -387,7 +387,7 @@ class MemoryIndex:
         packet['search']['new_proofs'] = new
         if not packet['proofs'] or (row and not new):
             status = 'blocked' if row and row['status'] == 'in_game_verification' else 'in_game_verification'
-            reason = (('The search no longer provides new proof. Use /resume to check the unestablished '
+            reason = (('The search no longer finds new evidence. Use /resume to check the unestablished '
                        'details in play, without asking for the same archives again.') if status != 'blocked' else
                       ('The narrator asks again for archives already provided. Action kept; no new automatic '
                        'generation. /reminder can target another archive; /retry allows a new attempt.'))

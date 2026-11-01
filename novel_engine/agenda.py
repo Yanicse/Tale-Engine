@@ -455,7 +455,7 @@ class Agenda:
                                      '. The event '+str(index)+' must show the sign or the event to the player character.')
                 if update['status'] in ('done','finished') and planned['interrupt']:
                     if 'player' not in outcome['audience']:
-                        raise ValueError('Interruption not presented to the player at its deadline. The event '+str(index)+(' is private; outcome_event_index must designate the observable manifestation, without '
+                        raise ValueError('Interruption not presented to the player at its deadline. The event '+str(index)+(' is private; outcome_event_index must point to the observable manifestation, without '
                                                                         'making a secret closing public.'))
                     if when_instant!=max(start_instant,planned['due_minute']*60):
                         raise ValueError(('Interruption not presented to the player at its deadline. The date of its manifestation '
@@ -474,7 +474,7 @@ class Agenda:
                             ('agenda:'+planned['entry_id'] in u['references'] or
                              outcome['event_id'] in u['references'])]
                 if not successors:
-                    raise ValueError((('An accomplished step must have a next step for its actor, or close the matter explicitly with '
+                    raise ValueError((('A completed step must have a next step for its actor, or close the matter explicitly with '
                                        'the status finished. Entry: '))+planned['entry_id']+'; actor: '+planned['actor']+
                                      '; expected link: agenda:'+planned['entry_id']+' or event '+outcome['event_id']+'.')
         if interruptions and end_instant!=min(interruptions):
@@ -482,19 +482,19 @@ class Agenda:
         if interruptions and (continuation is None or continuation['status'] not in ('suspended','finished')):
             raise ValueError(("An interruption must keep the player's goal, suspended or finished. Fill continuation "
                               "with goal (initial goal), remaining (what is left to do), status=suspended and "
-                              "event_index designating the perceivable manifestation at the end of the turn. If this "
-                              "goal is already accomplished, use status=finished and event_index=null. "
+                              "event_index pointing to the perceivable manifestation at the end of the turn. If this "
+                              "goal is already completed, use status=finished and event_index=null. "
                               "continuation=null is not suitable when an interrupting deadline is resolved."))
         if continuation is not None and continuation['status']=='suspended':
             index=continuation['event_index']
             if type(index) is not int or index>=len(events) or 'player' not in events[index]['audience']:
                 raise ValueError(('Interrupted goal without a recorded perceivable event: status=suspended requires an '
-                                  'integer event_index designating an event whose audience includes player; otherwise '
+                                  'integer event_index pointing to an event whose audience includes player; otherwise '
                                   'continuation=null.'))
             if instant(events[index])!=end_instant:
                 raise ValueError('The turn goes past its circumstantial interruption.')
         elif continuation is not None and continuation['event_index'] is not None:
-            raise ValueError('A finished or abandoned goal does not designate an interruption.')
+            raise ValueError('A finished or abandoned goal does not point to an interruption.')
         used=set()
         for roll in rolls:
             if roll['key'] in used:raise ValueError('Roll used several times within the same turn.')
