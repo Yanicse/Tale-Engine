@@ -86,6 +86,9 @@ def validate_character_transition(before, after, config):
     if not rules:
         return
     old, new = before['resources'], after['resources']
+    # With the installed mechanics every free change of a maximum is refused, so a larger maximum can only come
+    # from a raise_max operation; without them the maximums stay frozen.
+    growth = bool(config.get('mechanics'))
     declared = charges(rules)
     periods = {charge['period'] for charge in declared.values()}
     required = ('player_hp', 'player_hp_max', *(('night_id',) if 'night' in periods else ()),
@@ -100,11 +103,17 @@ def validate_character_transition(before, after, config):
         for key in ('player_mana', 'player_mana_max'):
             if type(new.get(key)) is not int or new[key] < 0:
                 raise ValueError('Invalid mandatory mana resource: ' + key)
-        if new['player_mana_max'] != rules.get('mana_max', old.get('player_mana_max')):
+        if growth:
+            if new['player_mana_max'] < old.get('player_mana_max', rules.get('mana_max', 0)):
+                raise ValueError('The maximum mana cannot decrease; it grows only through a raise_max operation.')
+        elif new['player_mana_max'] != rules.get('mana_max', old.get('player_mana_max')):
             raise ValueError('The maximum mana cannot change during a turn.')
         if new['player_mana'] > new['player_mana_max']:
             raise ValueError('Mana exceeds the character maximum.')
-    if new['player_hp_max'] != rules.get('hp_max', old.get('player_hp_max', new['player_hp_max'])):
+    if growth:
+        if new['player_hp_max'] < old.get('player_hp_max', rules.get('hp_max', new['player_hp_max'])):
+            raise ValueError('The confirmed maximum HP of the character cannot decrease; it grows only through a raise_max operation.')
+    elif new['player_hp_max'] != rules.get('hp_max', old.get('player_hp_max', new['player_hp_max'])):
         raise ValueError('The confirmed maximum HP of the character cannot change during a turn.')
     if not 0 <= new['player_hp'] <= new['player_hp_max']:
         raise ValueError("The character's HP exceed its maximum vitality.")

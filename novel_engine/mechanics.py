@@ -41,7 +41,7 @@ def _require_charge_phase(charge, at, rules):
 
 def operation_schema():
     fields={
-        'kind':{'type':'string','enum':['ability','damage','elapsed','heal','restore_mana','combat_start','combat_end','resurrection','prevent_death']},
+        'kind':{'type':'string','enum':['ability','damage','elapsed','heal','restore_mana','combat_start','combat_end','resurrection','prevent_death','raise_max']},
         'at_second':{'type':'integer','minimum':0},
         'ability_id':{'type':['string','null']},
         'output_percent':{'type':['number','null'],'minimum':0,'maximum':100},
@@ -109,7 +109,8 @@ def materialize(state,event,config):
     for op in operations:
         at=op['at_second'];kind=op['kind']
         used={'ability':{'ability_id','output_percent'},'damage':{'amount'},
-              'prevent_death':{'amount'},'heal':{'amount'},'restore_mana':{'amount'}}.get(kind,set())
+              'prevent_death':{'amount'},'heal':{'amount'},'restore_mana':{'amount'},
+              'raise_max':{'ability_id','amount'}}.get(kind,set())
         if any(op[key] is not None for key in ('ability_id','output_percent','amount','start_second') if key not in used):
             raise ValueError('Mechanical field without purpose; use null.')
         if not current<=at<=end:raise ValueError('Operations out of order or outside the interval.')
@@ -168,6 +169,14 @@ def materialize(state,event,config):
             if type(op['amount']) is not int or op['amount'] <= 0:
                 raise ValueError('Positive mana recovery required.')
             resources['player_mana'] = min(resources['player_mana_max'], resources['player_mana'] + op['amount'])
+        elif kind=='raise_max':
+            # A level-up: the NEW maximum is given in `amount`, `ability_id` is 'hp' or 'mana'. Never lowers, never heals.
+            key={'hp':'player_hp_max','mana':'player_mana_max'}.get(op['ability_id'])
+            if key is None or key not in resources:raise ValueError("raise_max needs ability_id 'hp' or 'mana' (of an installed reserve).")
+            if type(op['amount']) is not int or op['amount']<=resources[key]:
+                raise ValueError('The new maximum must be a whole number above the current maximum.')
+            if resources['player_hp']==0:raise ValueError('Growth after a death.')
+            resources[key]=op['amount']
         elif kind=='combat_start':
             if 'player_combat_active' not in resources:raise ValueError('Combat status to be established before the transition; no implicit refill.')
             if resources.get('player_combat_active'):raise ValueError('Combat already active; no refill.')

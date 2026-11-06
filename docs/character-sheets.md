@@ -34,6 +34,13 @@ and supplied to the narrator. Editing a sheet later affects future campaigns.
 Neither reserve recovers from passing time, reopening the page or resuming a chat. `damage`, `heal` and `restore_mana`
 operations apply explicit, sourced changes. Recovery is capped at the maximum, and healing cannot revive a dead character.
 
+## Growing maximums
+
+`hp_max` and `mana_max` are the starting values. A character that levels up in play raises them with a `raise_max`
+operation: `ability_id` is `hp` or `mana` and `amount` is the new maximum, which must be above the current one. It never
+lowers a maximum and never heals or refills: the current value stays where it was, so a story that restores the character
+adds a `heal` or a `restore_mana`. A maximum cannot be changed by a free `changes` entry, and cannot grow after a death.
+
 ## Abilities and costs
 
 `passives` and `abilities` map ids to sheets. Sheets accept `label`, `description`, `limits`, `free` and an optional

@@ -191,7 +191,8 @@
               "combat_start",
               "combat_end",
               "resurrection",
-              "prevent_death"
+              "prevent_death",
+              "raise_max"
             ]
           },
           "at_second": {
