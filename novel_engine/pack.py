@@ -133,7 +133,8 @@ def campaign_config(pack_dir, base):
         spec = declared.get(unit, {})
         resource = 'player_' + unit
         currencies[resource] = {'owner_id': 'player', 'label': spec.get('label') or unit.replace('_', ' ') + ' coins',
-                                'initial_balance': spec.get('initial_balance', 0)}
+                                'initial_balance': spec.get('initial_balance', 0),
+                                **({'exchange_only': True} if spec.get('exchange_only') is True else {})}
         config['resource_owners'][resource] = 'player'
     config['possession_rules'] = {'currencies': currencies, 'currency_rates': rates}
     world = [text(r, 400) for r in novel.get('world_rules') or [] if text(r, 400)]

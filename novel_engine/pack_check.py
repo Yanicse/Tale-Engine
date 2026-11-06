@@ -111,6 +111,8 @@ def check_novel(novel, report):
                 report.error(name, f'currencies.{key}.initial_balance must be a non-negative integer')
             if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
                 report.error(name, f'currencies.{key}.label must be non-empty text')
+            if 'exchange_only' in spec and type(spec['exchange_only']) is not bool:
+                report.error(name, f'currencies.{key}.exchange_only must be true or false')
     rates = novel.get('currency_rates', {})
     if not isinstance(rates, dict):
         report.error(name, "'currency_rates' must be an object such as {\"gold\": {\"silver\": 20}}")
@@ -122,6 +124,11 @@ def check_novel(novel, report):
                 report.error(name, f"currency_rates.{big} must map smaller currencies to positive numbers")
             elif any(not IDENT.fullmatch(key) or key in {'hp', 'hp_max', 'mana', 'mana_max', 'combat_id', 'combat_active'} for key in table):
                 report.error(name, f'currency_rates.{big}: invalid or reserved currency id')
+    if isinstance(currencies, dict) and isinstance(rates, dict):
+        given = {unit for table in rates.values() if isinstance(table, dict) for unit in table}
+        for key, spec in currencies.items():
+            if isinstance(spec, dict) and spec.get('exchange_only') is True and key not in given:
+                report.error(name, f'currencies.{key}.exchange_only: no currency_rates entry gives this currency, so it could never change')
     rules = novel.get('world_rules', [])
     if not isinstance(rules, list) or not all(isinstance(r, str) for r in rules):
         report.error(name, "'world_rules' must be a list of sentences")

@@ -101,5 +101,51 @@ class ExchangeTest(unittest.TestCase):
         self.assertEqual(result['status'], 'recorded', result)
 
 
+class ExchangeOnlyTest(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='.tmp-exchange-only-', dir=Path(__file__).resolve().parents[1])
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+
+    def campaign(self, novel):
+        (self.root / 'novel.json').write_text(json.dumps({'title': 'Test', **novel}), encoding='utf-8')
+        config = campaign_config(self.root, configuration())
+        state = initial_state()
+        state['resources'] = seed_resources({}, config)
+        return Campaign(self.root / 'campaign.sqlite').create(state, config)
+
+    def apply(self, campaign, operations):
+        state = campaign.state()
+        e = event(state, 'The window answers.', [], causes=['current_action'])
+        e['asset_operations'] = operations
+        return campaign.apply(proposal(state, 'Done.', [e]))
+
+    def pack(self):
+        return {'currencies': {'points': {'initial_balance': 5}, 'strength': {'initial_balance': 10, 'exchange_only': True}},
+                'currency_rates': {'points': {'strength': 1}}}
+
+    def test_a_stat_rises_only_by_spending_points(self):
+        c = self.campaign(self.pack())
+        self.assertEqual(self.apply(c, [exchange('player_points', -3, 'player_strength')])['status'], 'recorded')
+        resources = c.state()['resources']
+        self.assertEqual((resources['player_points'], resources['player_strength']), (2, 13))
+        before = c.state()
+        for delta in (4, -1):
+            result = self.apply(c, [{**exchange('player_strength', delta, None), 'kind': 'payment'}])
+            self.assertEqual(result['status'], 'rejected')
+            self.assertIn('changes only through an exchange', result['reason'])
+        self.assertEqual(self.apply(c, [exchange('player_points', -3, 'player_strength')])['status'], 'rejected')
+        self.assertEqual(c.state(), before)
+
+    def test_the_pack_check_explains_a_wrong_flag(self):
+        for novel in ({'currencies': {'strength': {'exchange_only': 'yes'}}},
+                      {'currencies': {'strength': {'exchange_only': True}}}):
+            (self.root / 'novel.json').write_text(json.dumps({'title': 'Test', **novel}), encoding='utf-8')
+            errors = ' '.join(check_pack(self.root).errors)
+            self.assertIn('exchange_only', errors)
+        (self.root / 'novel.json').write_text(json.dumps({'title': 'Test', **self.pack()}), encoding='utf-8')
+        self.assertEqual(check_pack(self.root).errors, [])
+
+
 if __name__ == '__main__':
     unittest.main()

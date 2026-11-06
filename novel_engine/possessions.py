@@ -85,6 +85,8 @@ def materialize(state, event, config):
                 raise ValueError('Invalid currency or payment sign')
         elif resource is not None or delta != 0:
             raise ValueError('Currency forbidden for this material operation')
+        if resource and kind != 'exchange' and rules['currencies'][resource].get('exchange_only'):
+            raise ValueError('This currency changes only through an exchange: ' + resource)
         if kind == 'payment' and (inputs or outputs):
             raise ValueError('Simple payment with objects')
         if kind == 'exchange' and (inputs or outputs):
