@@ -22,7 +22,7 @@ class ExchangeTest(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         root = Path(self.temp.name)
         novel = {'title': 'Test', 'currencies': {'gold': {'initial_balance': 3}, 'silver': {'initial_balance': 5}},
-                 'currency_rates': {'gold': {'silver': 20}}}
+                 'currency_rates': {'gold': {'silver': 20}, 'silver': {'gold': 0.05}}}
         (root / 'novel.json').write_text(json.dumps(novel), encoding='utf-8')
         self.assertEqual(check_pack(root).errors, [])
         config = campaign_config(root, configuration())
@@ -44,6 +44,22 @@ class ExchangeTest(unittest.TestCase):
         result = self.apply([exchange('player_gold', -2, 'player_silver')])
         self.assertEqual(result['status'], 'recorded', result)
         self.assertEqual(self.balances(), (1, 45))
+
+    def test_the_way_back_exists_only_when_the_pack_declares_it(self):
+        root = Path(self.temp.name) / 'oneway'
+        root.mkdir()
+        novel = {'title': 'Test', 'currencies': {'gold': {'initial_balance': 3}, 'silver': {'initial_balance': 40}},
+                 'currency_rates': {'gold': {'silver': 20}}}
+        (root / 'novel.json').write_text(json.dumps(novel), encoding='utf-8')
+        config = campaign_config(root, configuration())
+        state = initial_state()
+        state['resources'] = seed_resources({}, config)
+        other = Campaign(root / 'campaign.sqlite').create(state, config)
+        e = event(other.state(), 'The way back.', [], causes=['current_action'])
+        e['asset_operations'] = [exchange('player_silver', -20, 'player_gold')]
+        result = other.apply(proposal(other.state(), 'Done.', [e]))
+        self.assertEqual(result['status'], 'rejected')
+        self.assertIn('No exchange rate', result['reason'])
 
     def test_silver_becomes_gold_only_in_whole_multiples(self):
         self.assertEqual(self.apply([exchange('player_silver', -5, 'player_gold')])['status'], 'rejected')

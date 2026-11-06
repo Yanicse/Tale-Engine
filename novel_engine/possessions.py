@@ -27,7 +27,7 @@ def operation_schema():
 
 
 def exchange_gain(rules, resource, target, amount):
-    """What `amount` of `resource` gives in `target`, from the pack's currency rates (both directions, whole result)."""
+    """What `amount` of `resource` gives in `target`, from the pack's currency rates (declared direction only, whole result)."""
     currencies = rules['currencies']
     if target not in currencies or target == resource or currencies[target]['owner_id'] != currencies[resource]['owner_id']:
         raise ValueError('No exchange rate between these currencies')
@@ -36,8 +36,6 @@ def exchange_gain(rules, resource, target, amount):
     rates = rules.get('currency_rates') or {}
     if units[1] in rates.get(units[0], {}):
         gain = Fraction(amount) * Fraction(str(rates[units[0]][units[1]]))
-    elif units[0] in rates.get(units[1], {}):
-        gain = Fraction(amount) / Fraction(str(rates[units[1]][units[0]]))
     else:
         raise ValueError('No exchange rate between these currencies')
     if gain.denominator != 1:
