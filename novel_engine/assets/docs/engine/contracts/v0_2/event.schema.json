@@ -92,7 +92,8 @@
               "consume",
               "transfer",
               "gift",
-              "acquire"
+              "acquire",
+              "exchange"
             ]
           },
           "money_resource": {

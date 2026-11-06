@@ -1,5 +1,6 @@
 """Possessions and material operations, computed locally and atomically."""
 from copy import deepcopy
+from fractions import Fraction
 import json
 import re
 import unicodedata
@@ -13,7 +14,7 @@ def operation_schema():
         return {'type': 'object', 'properties': properties, 'required': list(properties),
                 'additionalProperties': False}
     return {'type': 'array', 'maxItems': 32, 'items': obj({
-        'kind': {'type': 'string', 'enum': ['payment', 'purchase', 'sale', 'craft', 'consume', 'transfer', 'gift', 'acquire']},
+        'kind': {'type': 'string', 'enum': ['payment', 'purchase', 'sale', 'craft', 'consume', 'transfer', 'gift', 'acquire', 'exchange']},
         'money_resource': {'type': ['string', 'null']},
         'money_delta': {'type': 'integer'},
         'inputs': {'type': 'array', 'maxItems': 32, 'items': obj({
@@ -23,6 +24,25 @@ def operation_schema():
             'item_id': {'type': 'string', 'minLength': 1},
             'item_json': {'type': 'string', 'minLength': 2}})},
         'destination': {'type': ['string', 'null']}})}
+
+
+def exchange_gain(rules, resource, target, amount):
+    """What `amount` of `resource` gives in `target`, from the pack's currency rates (both directions, whole result)."""
+    currencies = rules['currencies']
+    if target not in currencies or target == resource or currencies[target]['owner_id'] != currencies[resource]['owner_id']:
+        raise ValueError('No exchange rate between these currencies')
+    prefix = currencies[resource]['owner_id'] + '_'
+    units = [name[len(prefix):] if name.startswith(prefix) else name for name in (resource, target)]
+    rates = rules.get('currency_rates') or {}
+    if units[1] in rates.get(units[0], {}):
+        gain = Fraction(amount) * Fraction(str(rates[units[0]][units[1]]))
+    elif units[0] in rates.get(units[1], {}):
+        gain = Fraction(amount) / Fraction(str(rates[units[1]][units[0]]))
+    else:
+        raise ValueError('No exchange rate between these currencies')
+    if gain.denominator != 1:
+        raise ValueError('The exchange must give a whole amount; change a multiple of the rate')
+    return int(gain)
 
 
 def validate_assets(state, config):
@@ -61,14 +81,16 @@ def materialize(state, event, config):
     for op in operations:
         kind, resource, delta = op['kind'], op['money_resource'], op['money_delta']
         inputs, outputs = op['inputs'], op['outputs']
-        if kind in ('payment', 'purchase', 'sale'):
-            wrong_sign = (delta >= 0 if kind == 'purchase' else delta <= 0 if kind == 'sale' else delta == 0)
+        if kind in ('payment', 'purchase', 'sale', 'exchange'):
+            wrong_sign = (delta >= 0 if kind in ('purchase', 'exchange') else delta <= 0 if kind == 'sale' else delta == 0)
             if resource not in rules['currencies'] or wrong_sign:
                 raise ValueError('Invalid currency or payment sign')
         elif resource is not None or delta != 0:
             raise ValueError('Currency forbidden for this material operation')
         if kind == 'payment' and (inputs or outputs):
             raise ValueError('Simple payment with objects')
+        if kind == 'exchange' and (inputs or outputs):
+            raise ValueError('Exchange with objects')
         if kind in ('purchase', 'acquire') and (inputs or not outputs):
             raise ValueError('Acquisition without goods received or with consumption')
         if kind == 'sale' and (not inputs or outputs):
@@ -81,7 +103,7 @@ def materialize(state, event, config):
             raise ValueError('Transfer: a whole lot and a destination are required')
         if kind == 'gift' and not re.fullmatch('on:[^:\\s/]+', op['destination']):
             raise ValueError('Gift: destination on:<new_owner> required')
-        if kind not in ('transfer', 'gift') and op['destination'] is not None:
+        if kind not in ('transfer', 'gift', 'exchange') and op['destination'] is not None:
             raise ValueError('Destination reserved for transfer')
         if len({x['item_id'] for x in inputs}) != len(inputs) or len({x['item_id'] for x in outputs}) != len(outputs):
             raise ValueError('Duplicate lot in an operation')
@@ -93,6 +115,11 @@ def materialize(state, event, config):
             working['resources'][resource] = balance
             generated.append({'operation': 'increment', 'path': '/resources/' + resource, 'value': delta})
             touched.add('/resources/' + resource)
+        if kind == 'exchange':
+            gain = exchange_gain(rules, resource, op['destination'], -delta)
+            working['resources'][op['destination']] += gain
+            generated.append({'operation': 'increment', 'path': '/resources/' + op['destination'], 'value': gain})
+            touched.add('/resources/' + op['destination'])
         for source in inputs:
             key, count = source['item_id'], source['quantity']
             item = working['inventory'].get(key)
@@ -196,6 +223,9 @@ def validate_transition(before, after, event, config):
     for op in operations:
         if op['money_resource']:
             expected[op['money_resource']] += op['money_delta']
+        if op['kind'] == 'exchange':
+            expected[op['destination']] += exchange_gain(config['possession_rules'], op['money_resource'],
+                                                        op['destination'], -op['money_delta'])
     for key in currencies:
         if after['resources'].get(key) != before['resources'].get(key, 0) + expected[key]:
             raise ValueError('Monetary change without an explicit operation: ' + key)

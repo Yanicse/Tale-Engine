@@ -59,7 +59,7 @@ def validate_public(before,after,events,config,source_audience):
             if kind=='arrival' and path!='/positions/player':
                 raise ValueError('Arrival without a player position.')
             if kind in ('acquisition','payment'):
-                required=('purchase','sale','acquire','craft','transfer','gift') if kind=='acquisition' else ('payment','purchase','sale')
+                required=('purchase','sale','acquire','craft','transfer','gift') if kind=='acquisition' else ('payment','purchase','sale','exchange')
                 if not any(op['kind'] in required for op in event.get('asset_operations',[])):
                     raise ValueError('Purchase or payment declared without a material operation.')
                 if kind=='acquisition' and not path.startswith('/inventory/'):
@@ -72,7 +72,8 @@ def validate_public(before,after,events,config,source_audience):
                         raise ValueError('Acquisition without an operation on this player item.')
                 if kind=='payment' and path not in {'/resources/'+k for k in config.get('possession_rules',{}).get('currencies',{})}:
                     raise ValueError('Payment outside the installed money counter.')
-                if kind=='payment' and not any(op['money_resource']==key and op['money_delta']
+                if kind=='payment' and not any((op['money_resource']==key and op['money_delta'])
+                                               or (op['kind']=='exchange' and op['destination']==key)
                                                for op in event.get('asset_operations', [])):
                     raise ValueError('Payment without an operation on this currency.')
             if kind in ('damage','healing','charge','mana'):
