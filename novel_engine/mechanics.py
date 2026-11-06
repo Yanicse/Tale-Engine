@@ -135,7 +135,7 @@ def materialize(state,event,config):
                     raise ValueError('Ability on cooldown: '+key)
                 resources[resource]=at+cooldown['seconds']
             costs = config.get('spell_cost_rules') or {}
-            if key in costs.get('full_power_cost_percent', {}):
+            if key in costs.get('full_power_cost_percent', {}) or key in costs.get('fixed_cost_points', {}):
                 cost = spell_cost(key,resources['player_mana_max'],costs,op['output_percent'])
             elif spec.get('free'):
                 cost = 0

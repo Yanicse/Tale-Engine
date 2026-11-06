@@ -57,6 +57,11 @@ The default power is `costs.default_output_percent`, or 100. `costs.free_output_
 threshold for each listed ability. With 30 maximum mana and a 30% full-power cost, Second wind costs 9 mana at 100%
 power or 1 mana at 10% power. A confirmed zero stays zero. `costs.full_power_cost_percent` must name an existing ability.
 
+A story whose costs are written in points rather than in percent of the maximum uses `costs.fixed_cost_points`: ability
+id -> a positive whole number of mana points. The engine charges exactly that number at every use, whatever the maximum
+mana (even after `raise_max`) and whatever the power, so the narrator never states an amount. An ability has one cost, in
+`full_power_cost_percent` or in `fixed_cost_points`; `full_power_cost_percent` is optional when every paid ability has a fixed cost.
+
 Each use needs one `ability` mechanical operation, including free uses. The engine checks the cost against the current
 mana, computes the deduction and saves it in the same transaction as the consequences. A failed turn spends nothing;
 a replay spends nothing twice. Spending the last mana point is allowed and never hurts the character.

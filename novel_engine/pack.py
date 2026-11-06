@@ -114,10 +114,13 @@ def campaign_config(pack_dir, base):
         # `costs` becomes the cost table of the abilities; the rest are the character rules.
         costs = rules.get('costs')
         config['character_rules'] = {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100), **{k: v for k, v in rules.items() if k != 'costs'}}
-        if isinstance(costs, dict) and isinstance(costs.get('full_power_cost_percent'), dict):
+        if isinstance(costs, dict) and (isinstance(costs.get('full_power_cost_percent'), dict)
+                                        or isinstance(costs.get('fixed_cost_points'), dict)):
             config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 100),
-                                          'full_power_cost_percent': costs['full_power_cost_percent'],
+                                          'full_power_cost_percent': costs.get('full_power_cost_percent', {}),
                                           'free_output_up_to_percent': costs.get('free_output_up_to_percent', {})}
+            if isinstance(costs.get('fixed_cost_points'), dict):
+                config['spell_cost_rules']['fixed_cost_points'] = costs['fixed_cost_points']
     config.setdefault('character_rules', {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100)})
     config['mechanics'] = {'version': 'mana-1.0'}
     rates = novel.get('currency_rates') or {}

@@ -21,7 +21,7 @@ ABILITY_KEYS = {'label', 'phase', 'free', 'description', 'limits', 'cooldown', '
 RESERVED_RESOURCES = {'player_hp', 'player_hp_max', 'player_mana', 'player_mana_max', 'night_id',
                       'player_combat_id', 'player_combat_active', 'player_prevention_until_second',
                       'player_death_refusal_capacity_hp', 'player_prevention_survival_hp'}
-COST_KEYS = {'default_output_percent', 'free_output_up_to_percent', 'full_power_cost_percent'}
+COST_KEYS = {'default_output_percent', 'fixed_cost_points', 'free_output_up_to_percent', 'full_power_cost_percent'}
 IDENT = re.compile(r'^[a-z0-9_]{1,40}$')
 WORLD_RULES_MAX = 30
 
@@ -258,9 +258,21 @@ def check_costs(costs, abilities, report):
     if not is_number(default) or not 0 < default <= 100:
         report.error(name, 'rules.costs.default_output_percent must be a number above 0 and at most 100')
     full = costs.get('full_power_cost_percent')
-    if not isinstance(full, dict) or not full:
+    fixed = costs.get('fixed_cost_points', {})
+    if not isinstance(fixed, dict):
+        report.error(name, 'rules.costs.fixed_cost_points must be an object: ability id -> mana points')
+        fixed = {}
+    if (not isinstance(full, dict) or not full) and not fixed:
         report.error(name, 'rules.costs.full_power_cost_percent is required: ability id -> percent of maximum mana at 100% power')
+    if not isinstance(full, dict):
         full = {}
+    for key, value in fixed.items():
+        if key not in abilities:
+            report.error(name, f"rules.costs.fixed_cost_points.{key}: no such ability in rules.abilities")
+        if type(value) is not int or value <= 0:
+            report.error(name, f'rules.costs.fixed_cost_points.{key} must be a positive whole number of mana points')
+        if key in full:
+            report.error(name, f'rules.costs.{key}: one cost per ability, in full_power_cost_percent or in fixed_cost_points')
     for key, value in full.items():
         if key not in abilities:
             report.error(name, f"rules.costs.full_power_cost_percent.{key}: no such ability in rules.abilities")
@@ -315,10 +327,11 @@ def check_sheet(sheet, report):
         check_costs(rules['costs'], abilities, report)
     costs = rules.get('costs') if isinstance(rules.get('costs'), dict) else {}
     full = costs.get('full_power_cost_percent') if isinstance(costs.get('full_power_cost_percent'), dict) else {}
+    fixed = costs.get('fixed_cost_points') if isinstance(costs.get('fixed_cost_points'), dict) else {}
     for key, spec in abilities.items():
-        if isinstance(spec, dict) and key not in full and spec.get('free') is not True:
+        if isinstance(spec, dict) and key not in full and key not in fixed and spec.get('free') is not True:
             report.error(name, f'rules.abilities.{key}: declare a mana cost or free: true')
-    if sheet.get('mana_max', 100) == 0 and any(is_number(v) and v > 0 for v in full.values()):
+    if sheet.get('mana_max', 100) == 0 and any(is_number(v) and v > 0 for v in [*full.values(), *fixed.values()]):
         report.error(name, 'paid abilities require mana_max above zero')
     check_charge_rules(rules, abilities, report)
 

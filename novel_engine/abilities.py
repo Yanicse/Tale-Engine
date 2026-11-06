@@ -26,8 +26,9 @@ def packet(state, config, recipient='player', query=''):
         phase = info.get('phase', 'passive' if key in character.get('passives', {}) else 'unspecified')
         if query and query.casefold() not in (key + ' ' + name + ' ' + power['description']).casefold():
             continue
-        cost = spell_cost(key, maximum, rules) if key in costs else (0 if info.get('free') else None)
-        full = spell_cost(key, maximum, rules, 100) if key in costs else cost
+        paid = key in costs or key in rules.get('fixed_cost_points', {})
+        cost = spell_cost(key, maximum, rules) if paid else (0 if info.get('free') else None)
+        full = spell_cost(key, maximum, rules, 100) if paid else cost
         item = {'id': key, 'name': name, 'form': phase,
                 'description': power['description'], 'limits': power['limits'],
                 'default_mana_cost': cost, 'full_power_mana_cost': full,

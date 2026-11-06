@@ -5,6 +5,11 @@ from decimal import Decimal,InvalidOperation,ROUND_CEILING
 def spell_cost(spell_id,max_mana,rules,output_percent=None):
     if type(max_mana) is not int or max_mana<0:
         raise ValueError('Maximum mana must be a non-negative integer.')
+    fixed=rules.get('fixed_cost_points',{})
+    if spell_id in fixed:
+        if type(fixed[spell_id]) is not int or fixed[spell_id]<=0:
+            raise ValueError('A fixed cost is a positive whole number of mana points.')
+        return fixed[spell_id]
     costs=rules['full_power_cost_percent']
     if spell_id not in costs:
         raise ValueError('Spell cost not confirmed: '+spell_id)
@@ -34,4 +39,4 @@ def cost_table(max_mana,rules):
     return {'mana_max':max_mana,'default_power_pct':rules['default_output_percent'],
         'mana_cost_per_power_pct':{str(output):{
             spell:spell_cost(spell,max_mana,rules,output)
-            for spell in rules['full_power_cost_percent']} for output in outputs}}
+            for spell in [*rules['full_power_cost_percent'],*rules.get('fixed_cost_points',{})]} for output in outputs}}
