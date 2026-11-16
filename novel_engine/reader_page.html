@@ -379,8 +379,9 @@ function scrollList(){window.scrollTo(0,document.documentElement.scrollHeight)}
 function iconFor(name){var s=document.getElementById('ico-'+name);if(!s)return null;var c=s.cloneNode(true);c.removeAttribute('id');c.setAttribute('class','ico');c.setAttribute('aria-hidden','true');return c}
 function capitalize(n){return n?n.charAt(0).toUpperCase()+n.slice(1):n}
 
-// Fictional hour: world minute modulo 1440. Day from 6 am to 6 pm, night the rest of the time.
-function clockTime(){if(!state||!state.clock)return null;var c=state.clock,m=typeof c.minute_of_day==='number'?c.minute_of_day:c.world_minute;return typeof m==='number'?(m%1440)/60:null}
+// Fictional hour, only when the pack gives the opening hour (the server then sends minute_of_day); otherwise null.
+// Day from 6 am to 6 pm, night the rest of the time.
+function clockTime(){if(!state||!state.clock)return null;var m=state.clock.minute_of_day;return typeof m==='number'?(m%1440)/60:null}
 function phase(h){return tr(h<5?'time.deep_night':h<7?'time.dawn':h<12?'time.morning':h<14?'time.noon':h<17?'time.afternoon':h<19?'time.dusk':h<22?'time.evening':'time.night')}
 function isDark(){
   if(mode==='night'||mode==='arcane'||mode==='frost'||mode==='scifi')return true;if(mode==='day')return false;
@@ -413,10 +414,14 @@ function placeCelestial(svg,h){
   svg.setAttribute('data-phase',day?'day':'night');
 }
 function updateClock(){
-  var h=clockTime();if(h===null)return;
-  placeCelestial(document.getElementById('dial'),h);
+  var h=clockTime(),dial=document.getElementById('dial'),z=document.getElementById('clockTime');
+  if(h===null){
+    // No hour of the day: no dial, only the fictional date.
+    dial.style.display='none';clearList(z);if(state&&state.clock&&state.clock.date)z.appendChild(el('b',null,state.clock.date));return;
+  }
+  dial.style.display='';placeCelestial(dial,h);
   var hh=Math.floor(h),mm=Math.round((h-hh)*60);if(mm===60){hh=(hh+1)%24;mm=0}
-  var z=document.getElementById('clockTime');clearList(z);
+  clearList(z);
   z.appendChild(el('b',null,hh+':'+(mm<10?'0':'')+mm));z.appendChild(document.createTextNode(' · '+phase(h)));
 }
 
@@ -621,6 +626,7 @@ function scene(){
   var dialClone=document.getElementById('dial').cloneNode(true);dialClone.removeAttribute('id');holder.appendChild(dialClone);
   var tx=el('div');tx.appendChild(el('div','date',state.clock.date));
   if(h!==null){placeCelestial(dialClone,h);tx.appendChild(el('div','phase',phase(h)))}
+  else dialClone.style.display='none';
   holder.appendChild(tx);content.appendChild(holder);
   var s=el('div','scene-text');paragraphs(s,state.scene||tr('scene.none'),true);content.appendChild(s);
   if(state.has_pending_action)content.appendChild(cardBadge(tr('pending.title'),tr('pending.badge'),'blood',[tr('pending.text')]));

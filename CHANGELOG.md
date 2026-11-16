@@ -74,6 +74,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The world files are checked before any installation, with one line that names the file and the key: the edges of `chronology.json` (two existing nodes, no cycle), the types of every arc key and of `outside_arcs` in `arcs.json`, an arc `clock` that is not in `clocks.json`, and a clock id used twice. A malformed edge used to pass `novel validate` and stop `novel campaign new` on a traceback.
 - The possessions rules name the project fields that are single texts (`title`, `owner_id`, `location`, `status` and its four values); they said every field except the title is a list, which the state schema refuses.
 - With `novel play --words` at 60 or less the narrator is asked for "about N words" instead of "60 to 40 words"; the placeholder of `instructions.story.md` is now `{word_range}`.
+- Without `opening_minute_of_day` the reading page no longer invents an hour from the time elapsed ("0:00 · Deep night", dark `auto` theme, moving dial): it shows the fictional date alone, hides the dial and lets the `auto` theme follow the system setting.
 
 ### Removed
 

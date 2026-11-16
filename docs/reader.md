@@ -7,8 +7,8 @@ machine, loads no external resource (fonts and icons are bundled) and shows only
 
 Tabs: Story, Scene, NPC, Possessions, Agenda, Summaries, Abilities, and Creations when the campaign uses them. The input
 box sends an action through the same path as `novel play`; the engine selector lists `codex`, `claude`, `api` and
-`manual`. A pending action shows Resume, Retry and Re-evaluate buttons. Settings (Aa) change the text size, the
-immersive mode and the ambient sound; dictation uses the browser's speech recognition where available.
+`manual`. A pending action shows Resume, Retry and Re-evaluate buttons. Settings (Aa) change the text size and the
+immersive mode; the ambient sound has its own button, and dictation uses the browser's speech recognition where available.
 
 The Abilities tab shows separate hit point and mana bars, mana costs, charges and cooldown availability.
 
@@ -17,7 +17,7 @@ The Abilities tab shows separate hit point and mana bars, mana costs, charges an
 The page holds no text or name from any universe. `/api/config` serves, from the campaign:
 
 - `title`, `subtitle`, `input_hint`, `clock`, the character's name;
-- `preset` and `colors`: `auto` follows the fictional hour (day, night) and the others fix a mood; colors override
+- `preset` and `colors`: `auto` follows the fictional hour (day, night) only when the pack gives `opening_minute_of_day`, and otherwise the system light or dark setting, while the others fix a mood; colors override
   the preset's palette;
 - `labels`: every text of the page in the novel's language, with the pack's own overrides ([Prompts and languages](prompts-and-languages.md));
 - `icons`: your word patterns for objects, abilities and places, tried before the built-in ones;

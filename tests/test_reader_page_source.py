@@ -37,6 +37,14 @@ class PageSourceTests(unittest.TestCase):
     def test_the_ability_filter_has_no_dead_condition(self):
         self.assertFalse("(p==='other'&&" in PAGE)
 
+    def test_the_hour_is_never_taken_from_elapsed_time(self):
+        clock = re.search(r"function clockTime\(\)\{.*", PAGE).group(0)
+        self.assertTrue('minute_of_day' in clock)
+        self.assertFalse('world_minute' in clock)
+        update = re.search(r"function updateClock\(\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertTrue('h===null' in update)
+        self.assertTrue("style.display='none'" in update)
+
 
 if __name__ == '__main__':
     unittest.main()
