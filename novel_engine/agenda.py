@@ -2,6 +2,7 @@
 from copy import deepcopy
 import hashlib
 import json
+import re
 import secrets
 
 from .campaign import conditions_hold, pointer, GROUPS
@@ -15,6 +16,8 @@ RESPONSE_LIMIT = 32
 CHRONICLE_PREFIX = 'chronicle:'
 CHRONICLE_REPORTS = 2
 CHRONICLE_REPORT_DELAY = 2 * 1440
+# A scene may run this many minutes past the arcs review before it has to be cut (3 hours).
+ARC_HORIZON_TOLERANCE = 180
 
 
 def manifests(entry):
@@ -360,10 +363,127 @@ class Agenda:
         if identifier.startswith((CHRONICLE_PREFIX,'accord:')):return False
         entry=self.get(identifier)
         if not entry or entry['interrupt'] or entry['kind'] not in ('project','verification','risk'):return False
+        return self._long_activity_turn()
+
+    def _overdue_without_time_passing(self, identifier, state, end):
+        """Non-interrupting entry (outside chronicle and agreements) already late, in a turn that does not advance time."""
+        if identifier.startswith((CHRONICLE_PREFIX,'accord:')) or end>state['world_minute']:return False
+        entry=self.get(identifier)
+        return bool(entry and not entry['interrupt'] and entry['due_minute']<=state['world_minute'])
+
+    def _missed_before_turn(self, identifier, state):
+        """Non-interrupting entry (outside chronicle and agreements) whose deadline had already passed when
+        this turn began. An earlier turn let it slip; refusing every later turn that moves the clock would
+        block the campaign. Interruptions, the chronicle and agreements stay strict."""
+        if identifier.startswith((CHRONICLE_PREFIX,'accord:')):return False
+        entry=self.get(identifier)
+        return bool(entry and not entry['interrupt'] and entry['due_minute']<state['world_minute'])
+
+    def _due_at_review_stop(self, identifier, end):
+        """Non-interrupting backstage entry (outside chronicle and agreements) due exactly where the turn stops."""
+        if identifier.startswith((CHRONICLE_PREFIX,'accord:')):return False
+        entry=self.get(identifier)
+        return bool(entry and not entry['interrupt'] and 'player' not in entry['audience'] and entry['due_minute']==end)
+
+    def _due_when_turn_starts(self, identifier, state):
+        """Non-interrupting backstage entry (outside chronicle and agreements) due exactly at the turn's start."""
+        if identifier.startswith((CHRONICLE_PREFIX,'accord:')):return False
+        entry=self.get(identifier)
+        return bool(entry and not entry['interrupt'] and 'player' not in entry['audience']
+                    and entry['due_minute']==state['world_minute'])
+
+    def _effective_events(self, events, state):
+        row=self.con.execute('SELECT config FROM campaign WHERE id=1').fetchone()
+        if not row:return list(events)
+        from .mechanics import effective_events
+        return effective_events(state,events,json.loads(row[0]))
+
+    def _tracked_npc_step(self, identifier):
+        """Off-screen step of a tracked NPC (npc_step, npc_step2, ...): quiet, no player in the audience.
+
+        Several of them come due on the same minute and the narrator tends to forget some, which refused
+        every turn that moved the clock. They stay due and are proposed late at the next turn instead."""
+        if not re.match(r'npc_step\d*:',identifier):return False
+        entry=self.get(identifier)
+        return bool(entry and not entry['interrupt'] and entry['kind']=='project' and 'player' not in entry['audience'])
+
+    def _long_activity_turn(self):
         row=self.con.execute('SELECT payload FROM session').fetchone()
         pending=(json.loads(row[0]).get('pending_action') if row else None) or {}
         from .planner import long_activity
         return long_activity(pending.get('text',''))
+
+    @staticmethod
+    def normalize_chronicle_manifestations(proposal, updates):
+        """A chronicle sign closed on a purely observable event the narrator left private is shown to the player.
+
+        Only an event with no change, mechanic or consequence is widened: nothing secret can leak through it."""
+        corrections=[]
+        for update in updates:
+            index=update['outcome_event_index']
+            if (update['status'] not in ('done','finished') or not update['entry_id'].startswith(CHRONICLE_PREFIX)
+                    or type(index) is not int or not 0<=index<len(proposal['events'])):
+                continue
+            event=proposal['events'][index]
+            if 'player' in event['audience'] or any(event.get(key) for key in
+                    ('changes','mechanical_operations','public_consequences','asset_operations')):
+                continue
+            event['audience']=[*event['audience'],'player']
+            corrections.append({'entry_id':update['entry_id'],'event_index':index,'audience_added':'player'})
+        return corrections
+
+    def normalize_followup_dates(self, proposal, updates, state):
+        """During a long activity, a new backstage follow-up dated inside the jump moves after its stopping point."""
+        normalized=deepcopy(updates)
+        corrections=[]
+        if not proposal['events'] or not self._long_activity_turn():
+            return normalized,corrections
+        end=self._effective_events(proposal['events'],state)[-1]['world_minute']
+        for update in normalized:
+            if (update['status']!='planned' or update['due_minute']>end or update['interrupt']
+                    or update['kind'] not in ('project','verification','risk') or 'player' in update['audience']
+                    or update['entry_id'].startswith((CHRONICLE_PREFIX,'accord:')) or self.get(update['entry_id'])):
+                continue
+            # Keep the interval the narrator chose, counted from the end of the jump.
+            interval=update['due_minute']-state['world_minute']
+            moved=end+(interval if interval>0 else 1440)
+            corrections.append({'entry_id':update['entry_id'],'due_minute_before':update['due_minute'],
+                                'due_minute_after':moved,'stopping_minute':end})
+            update['due_minute']=moved
+        return normalized,corrections
+
+    def normalize_arc_horizon(self, proposal, updates, state):
+        """A scene that runs a little past the next world arcs review stops at the review instead of being refused.
+
+        The narrator often ends a scene some minutes after the review date it was told to respect, and every
+        retry fails the same way. Only a small overshoot is brought back: a long ellipsis still has to be cut
+        by the player or the narrator. Mutates the events and the updates dated on them, like the other
+        normalizations that work on the proposal."""
+        corrections=[]
+        events=proposal['events']
+        if not events or proposal['blocking_questions']:
+            return corrections
+        from .arcs import ArcRegistry
+        horizon=ArcRegistry(self.con).horizon(state['world_minute'])
+        if horizon is None:
+            return corrections
+        end=self._effective_events(events,state)[-1]['world_minute']
+        if end<=horizon or end-horizon>ARC_HORIZON_TOLERANCE:
+            return corrections
+        moved={}
+        for index,event in enumerate(events):
+            if event['world_minute']>horizon:
+                moved[index]=event['world_minute']
+                corrections.append({'event_index':index,'world_minute_before':event['world_minute'],
+                                    'world_minute_after':horizon,'arc_horizon':horizon})
+                event['world_minute']=horizon
+                event['world_second']=0
+        # If dated mechanical operations still stretch the turn, the validation refuses it as before.
+        for update in updates:
+            index=update.get('outcome_event_index')
+            if index in moved and update['due_minute']==moved[index]:
+                update['due_minute']=horizon
+        return corrections
 
     def validate(self, proposal, updates, continuation, rolls, allowed, state, packet):
         """Refuse a jump beyond a forgotten deadline or an interruption."""
@@ -377,8 +497,11 @@ class Agenda:
         events=proposal['events']
         from .mechanics import instant
         start_instant=instant(state)
-        end_instant=instant(events[-1]) if events else start_instant
-        end=events[-1]['world_minute'] if events else state['world_minute']
+        # The real end of the turn: a mechanical operation dated after its event stretches it at application.
+        effective=self._effective_events(events,state)
+        end_instant=instant(effective[-1]) if events else start_instant
+        end=effective[-1]['world_minute'] if events else state['world_minute']
+        stated_end=events[-1]['world_minute'] if events else state['world_minute']
         if proposal['blocking_questions']:
             if updates or continuation or rolls:
                 raise ValueError('A question to the player forbids agenda changes.')
@@ -405,8 +528,28 @@ class Agenda:
                 if self._is_postponed_follow_up(identifier):
                     continue
                 # Long activity: a non-interrupting backstage follow-up stays due and will be proposed late.
-                if self._deferrable_long_activity(identifier):
+                if self._deferrable_long_activity(identifier) or self._tracked_npc_step(identifier):
                     continue
+                # Already overdue before this turn and the clock does not move: the narrator cannot have
+                # "jumped" over it, so refusing would block every turn forever. It stays due and is proposed again.
+                if self._overdue_without_time_passing(identifier,state,end):
+                    continue
+                # Already missed by an earlier turn: this turn did not jump over it. It stays due and is proposed again.
+                if self._missed_before_turn(identifier,state):
+                    continue
+                # The turn stops exactly at the arcs review and a quiet backstage step comes due on the same
+                # minute: the narrator was told to stop there, not to settle it. It stays due and is proposed again.
+                if arc_horizon is not None and end==arc_horizon and self._due_at_review_stop(identifier,end):
+                    continue
+                # A quiet backstage step that comes due on the very minute this turn starts (the previous turn
+                # stopped there, e.g. at an arcs review) and that the narrator left alone: it stays due.
+                if self._due_when_turn_starts(identifier,state):
+                    continue
+                due_minute=self.get(identifier)['due_minute']
+                if stated_end<due_minute<=end:
+                    raise ValueError('Forgotten deadline: '+identifier+' (due minute '+str(due_minute)
+                        +'; the mechanical operations move the end of the turn from minute '+str(stated_end)
+                        +' to minute '+str(end)+'. Resolve or postpone it, or date the operations before it.)')
                 raise ValueError('Forgotten deadline: '+identifier)
         interruptions=[]
         for update in updates:
@@ -455,7 +598,10 @@ class Agenda:
                 when_instant=instant(outcome)
                 early=self._early_verification_closure(proposal,old,update,outcome,state)
                 if old and old['due_minute']<=end and when_instant!=max(start_instant,old['due_minute']*60) and not early:
-                    raise ValueError('A crossed deadline must be handled at its date, not at the end of the jump.')
+                    expected_minute, expected_second = divmod(max(start_instant, old['due_minute'] * 60), 60)
+                    raise ValueError('A crossed deadline must be handled at its date, not at the end of the jump. '
+                                     f"Entry: {update['entry_id']}. Expected minute {expected_minute}, second "
+                                     f"{expected_second}. Event {index} has minute {when}, second {outcome.get('world_second', 0)}.")
                 if old and when_instant<max(start_instant,old['due_minute']*60) and update['status'] in ('done','finished') and not early:
                     raise ValueError('Future event realized before its deadline: '
                                      + update['entry_id'] + '; resolution minute ' + str(when)
@@ -492,9 +638,14 @@ class Agenda:
                     interruptions.append(when_instant)
                 if old and old['entry_id'].startswith('accord:') and update['status']=='finished':
                     self._evolve(at,outcome)
-                    commitment=at['commitments'].get(old['entry_id'].removeprefix('accord:'))
+                    key=old['entry_id'].removeprefix('accord:')
+                    commitment=at['commitments'].get(key)
                     if commitment and commitment['status']=='open':
-                        raise ValueError('An agreement that is still open must keep a next check.')
+                        raise ValueError('An agreement that is still open must keep a next check. '
+                                         f'Entry: {old["entry_id"]}. '
+                                         f'If the recorded facts settle it, set the full /commitments/{key} object '
+                                         'to kept or broken in the outcome event. If it is still pending, postpone '
+                                         'this check with a reason and a date after the turn ends.')
             planned=old or update
             if update['status']=='done' and planned['kind'] in ('project','verification'):
                 successors=[u for u in updates if u['entry_id']!=planned['entry_id'] and u['actor']==planned['actor']

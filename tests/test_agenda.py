@@ -132,6 +132,20 @@ class AgendaTests(unittest.TestCase):
             late=Agenda(con).get('courier')
             self.assertEqual((late['status'],late['revision'],late['due_minute']),('planned',0,self.now+60))
 
+    def test_long_activity_moves_a_new_backstage_followup_after_the_stop(self):
+        followup=self.entry('next_step',after=100,secret=True,kind='project')
+        self.c.begin_action(self.LONG_ACTIVITY)
+        result,loop,_=self.run_response(self.response([self.event(self.now+300)],[followup]))
+        self.assertEqual(result['status'],'recorded')
+        self.assertEqual(loop.last_metrics['agenda_followup_corrections'][0]['due_minute_after'],self.now+400)
+        with self.c.transaction() as con:
+            self.assertEqual(Agenda(con).get('next_step')['due_minute'],self.now+400)
+
+    def test_long_activity_keeps_refusing_a_public_appointment_inside_the_jump(self):
+        self.c.begin_action(self.LONG_ACTIVITY)
+        with self.assertRaisesRegex(ModelUnavailable,'strictly in the future'):
+            self.run_response(self.response([self.event(self.now+300)],[self.entry('visit',after=100)]))
+
     def test_long_activity_still_stops_for_interruption_or_appointment(self):
         for kwargs in ({'kind':'project','interrupt':True},{'kind':'appointment'}):
             with self.subTest(kwargs=kwargs):
@@ -148,6 +162,92 @@ class AgendaTests(unittest.TestCase):
         self.put(self.entry(kind='project'))
         with self.assertRaisesRegex(ModelUnavailable,'Forgotten deadline'):
             self.run_response(self.response([self.event(self.now+300)]))
+
+    def test_overdue_quiet_entry_does_not_block_a_turn_without_time_passing(self):
+        self.put(self.entry(after=-10,kind='risk'))
+        result,_,_=self.run_response(self.response([]))
+        self.assertEqual(result['status'],'recorded')
+
+    def test_quiet_entry_missed_by_an_earlier_turn_does_not_block_a_turn_that_moves_time(self):
+        self.put(self.entry(after=-10,secret=True,kind='risk'))
+        result,_,_=self.run_response(self.response([self.event(self.now+3)]))
+        self.assertEqual(result['status'],'recorded')
+        with self.c.transaction() as con:
+            late=Agenda(con).get('courier')
+            self.assertEqual((late['revision'],late['due_minute']),(0,self.now-10))
+            self.assertEqual(con.execute("SELECT status FROM world_agenda WHERE entry_id='courier'").fetchone()[0],'planned')
+
+    def test_interruption_missed_by_an_earlier_turn_still_blocks_a_turn_that_moves_time(self):
+        self.put(self.entry(after=-10,interrupt=True,kind='risk'))
+        with self.assertRaisesRegex(ModelUnavailable,'Forgotten deadline'):
+            self.run_response(self.response([self.event(self.now+3)]))
+
+    def mechanical_check(self, operation_minute):
+        """Agenda check of one event dated now+10 whose mechanical operation falls at operation_minute."""
+        with self.c.transaction() as con:
+            config=json.loads(con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0])
+            config['mechanics']={'version':'mana-1.0'}
+            con.execute('UPDATE campaign SET config=? WHERE id=1',(json.dumps(config),))
+            agenda=Agenda(con);state=self.c._state(con)
+            proposal={'request_id':'test','blocking_questions':[],'events':[{
+                'event_id':'test:stretch','world_minute':self.now+10,'world_second':0,
+                'description':'Test.','causes':[self.reference],'conditions':[],'changes':[],
+                'audience':['narrator','player'],
+                'mechanical_operations':[{'kind':'ability','at_second':operation_minute*60,
+                    'ability_id':'test','output_percent':None,'amount':None,'start_second':None,
+                    'source_reference':self.reference}]}]}
+            agenda.validate(proposal,[],None,[],set(),state,agenda.packet(state))
+
+    def test_mechanical_operation_cannot_stretch_the_turn_over_a_deadline(self):
+        self.put(self.entry(after=60,secret=True,kind='risk'))
+        with self.assertRaisesRegex(ValueError,'Forgotten deadline: courier .*from minute '+str(self.now+10)):
+            self.mechanical_check(self.now+300)
+        self.mechanical_check(self.now+5)
+
+    def test_tracked_npc_steps_stay_due_instead_of_rejecting(self):
+        for identifier in ('npc_step4:mira','npc_step:aldric'):
+            self.put(self.entry(identifier,after=1,secret=True,kind='project'))
+        result,_,_=self.run_response(self.response([self.event(self.now+300)]))
+        self.assertEqual(result['status'],'recorded')
+        with self.c.transaction() as con:
+            for identifier in ('npc_step4:mira','npc_step:aldric'):
+                self.assertEqual(Agenda(con).get(identifier)['revision'],0)
+
+    def test_quiet_step_due_where_the_turn_stops_at_the_arcs_review_stays_due(self):
+        self.put(self.entry(after=10,secret=True,kind='project'))
+        with self.assertRaisesRegex(ValueError,'Forgotten deadline'):
+            self.mechanical_check(self.now+5)
+        with patch('novel_engine.arcs.ArcRegistry.horizon',return_value=self.now+10):
+            self.mechanical_check(self.now+5)
+
+    def test_quiet_step_due_on_the_minute_the_turn_starts_stays_due(self):
+        self.put(self.entry(after=0,secret=True,kind='project'))
+        result,_,_=self.run_response(self.response([self.event(self.now+5)]))
+        self.assertEqual(result['status'],'recorded')
+        with self.c.transaction() as con:
+            self.assertEqual(Agenda(con).get('courier')['revision'],0)
+
+    def test_player_visible_step_due_on_the_minute_the_turn_starts_is_still_refused(self):
+        self.put(self.entry(after=0,kind='project'))
+        with self.assertRaisesRegex(ModelUnavailable,'Forgotten deadline'):
+            self.run_response(self.response([self.event(self.now+5)]))
+
+    def chronicle_case(self, **event_changes):
+        entry=self.put({**self.entry('chronicle:sign',after=60,secret=True,kind='risk'),'audience':['narrator']})
+        event={**self.event(entry['due_minute'],'agenda:chronicle:sign'),'audience':['narrator'],'changes':[]}
+        event.update(event_changes)
+        return entry,event
+
+    def test_chronicle_sign_on_a_private_observable_event_is_shown_to_the_player(self):
+        entry,event=self.chronicle_case()
+        result,loop,_=self.run_response(self.response([event],[self.resolved(entry)]))
+        self.assertEqual(result['status'],'recorded')
+        self.assertEqual(loop.last_metrics['agenda_chronicle_corrections'][0]['event_index'],0)
+
+    def test_chronicle_sign_with_a_secret_change_is_still_refused(self):
+        entry,event=self.chronicle_case(changes=self.event(0)['changes'])
+        with self.assertRaisesRegex(ModelUnavailable,'not perceived by the player'):
+            self.run_response(self.response([event],[self.resolved(entry)]))
 
     def test_direct_engine_cannot_bypass_deadline(self):
         self.put(self.entry())
@@ -177,6 +277,20 @@ class AgendaTests(unittest.TestCase):
         entry=self.put(self.entry())
         with self.assertRaisesRegex(ModelUnavailable,'at its date'):
             self.run_response(self.response([self.event(self.now+300,'agenda:courier')],[self.resolved(entry)]))
+
+    def test_crossed_deadline_requires_second_zero_even_in_the_correct_minute(self):
+        entry = self.put(self.entry(after=1))
+        outcome = {**self.event(entry['due_minute'], 'agenda:courier'),
+                   'event_id': 'test:outcome', 'world_second': 15, 'changes': []}
+        proposal = {'request_id': 'test:deadline-second', 'events': [outcome], 'blocking_questions': []}
+        with self.c.transaction() as con:
+            agenda = Agenda(con)
+            state = {**self.c._state(con), 'world_second': 45}
+            args = ([self.resolved(entry)], None, [], {self.reference}, state, agenda.packet(state))
+            with self.assertRaisesRegex(ValueError, r'Entry: courier\. Expected minute 1081, second 0.*second 15'):
+                agenda.validate(proposal, *args)
+            outcome['world_second'] = 0
+            agenda.validate(proposal, *args)
 
     def test_new_future_project_can_reference_its_creation_event(self):
         entry=self.entry(kind='project',interrupt=True)

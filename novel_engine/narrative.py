@@ -588,6 +588,12 @@ class NarrativeLoop:
             if not command_protocol:
                 agenda_updates,date_corrections=Agenda(con).normalize_resolution_dates(proposal,agenda_updates,prepared['state'])
             self.last_metrics['agenda_date_corrections']=date_corrections
+            horizon_corrections=Agenda(con).normalize_arc_horizon(proposal,agenda_updates,prepared['state'])
+            if horizon_corrections:self.last_metrics['agenda_arc_horizon_corrections']=horizon_corrections
+            agenda_updates,followup_corrections=Agenda(con).normalize_followup_dates(proposal,agenda_updates,prepared['state'])
+            self.last_metrics['agenda_followup_corrections']=followup_corrections
+            chronicle_corrections=Agenda(con).normalize_chronicle_manifestations(proposal,agenda_updates)
+            if chronicle_corrections:self.last_metrics['agenda_chronicle_corrections']=chronicle_corrections
             Agenda(con).validate(proposal,agenda_updates,continuation,rolls,
                                  agenda_allowed,prepared['state'],agenda_packet)
             from .scene_pacing import validate as validate_pacing

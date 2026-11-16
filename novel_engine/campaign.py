@@ -487,9 +487,18 @@ class Campaign:
                     allowed.update(selected_references(con,proposal['request_id'],state))
                     allowed.update(event['event_id'] for event in proposal['events'])
                     allowed.add('action:'+proposal['request_id'])
+                    from .arcs import ArcRegistry
+                    has_arcs = ArcRegistry(con).exists()
                     # Targeted check of the original sources for manual applications.
                     for update in changes['updates']:
                         for reference in update['references']:
+                            if reference in allowed:
+                                continue
+                            if has_arcs and reference.startswith('arc_fact:'):
+                                if con.execute('SELECT 1 FROM chronicle_arc_facts WHERE reference=?',
+                                               (reference,)).fetchone():
+                                    allowed.add(reference)
+                                continue
                             if con.execute('SELECT 1 FROM events WHERE event_id=?',(reference,)).fetchone():
                                 allowed.add(reference)
                             elif con.execute("SELECT 1 FROM sqlite_master WHERE name='memory_sources'").fetchone():

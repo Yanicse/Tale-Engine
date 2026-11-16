@@ -91,9 +91,63 @@ def _advance(resources, start, end, rules):
         _reset(resources, rules, 'night')
 
 
+def _absolute_clock(state,event):
+    """Correct relative offsets and absolute timestamps up to a minute early."""
+    operations=event.get('mechanical_operations') or []
+    current=instant(state)
+    if not operations:
+        return event
+    dates=[op.get('at_second') for op in operations]
+    if not all(type(at) is int and at>=0 for at in dates) or dates!=sorted(dates):
+        return event
+    end=instant(event)
+    if dates[0]>=current:
+        if dates[-1]<=end:return event
+        fixed=deepcopy(event)
+    elif dates[0]>60 and current-dates[0]<=60 and end>=current:
+        # Preserve valid absolute dates and keep the early operations in their original order.
+        fixed=deepcopy(event)
+        for op in fixed['mechanical_operations']:
+            op['at_second']=max(op['at_second'],current)
+    elif dates[-1]<current:
+        fixed=deepcopy(event)
+        for op in fixed['mechanical_operations']:
+            op['at_second']+=current
+    else:
+        return event
+    last=fixed['mechanical_operations'][-1]['at_second']
+    if last>end:
+        fixed['world_minute'],fixed['world_second']=divmod(last,60)
+    return fixed
+
+
+def effective_events(state,events,config):
+    """The turn's events with the dates the clock will really reach once applied.
+
+    materialize() stretches an event to cover its last mechanical operation (_absolute_clock).
+    The checks made before application (agenda deadlines, follow-up dates) must see the same
+    end time, or a deadline inside the stretch is jumped without being seen. The clock is
+    carried from one event to the next, as during application."""
+    if (config.get('mechanics') or {}).get('version')!=VERSION:
+        return list(events)
+    clock={'world_minute':state['world_minute'],'world_second':state.get('world_second',0)}
+    result=[]
+    for event in events:
+        try:
+            fixed=_absolute_clock(clock,event)
+        except (KeyError,TypeError):
+            fixed=event
+        result.append(fixed)
+        clock={'world_minute':fixed['world_minute'],'world_second':fixed.get('world_second',0)}
+    return result
+
+
 def materialize(state,event,config):
     operations=event.get('mechanical_operations',[])
     validate(operation_schema(),operations)
+    if (config.get('mechanics') or {}).get('version')==VERSION:
+        event=_absolute_clock(state,event)
+        operations=event.get('mechanical_operations',[])
     mode=config.get('mechanics')
     if not mode:
         if operations:raise ValueError('Deterministic mechanics not installed.')

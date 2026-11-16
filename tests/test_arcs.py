@@ -139,6 +139,34 @@ class ArcTests(unittest.TestCase):
         self.assertEqual(self.c.state()['positions'], before['positions'])
         self.assertEqual(self.c.state()['resources'], before['resources'])
 
+    def test_narrator_can_cite_a_private_arc_fact_when_scheduling_a_deadline(self):
+        self.register()
+        self.planner.transform = self.response
+        self.assertEqual(self.loop.run_turn('Hello.')['status'], 'recorded')
+
+        def schedule_followup(packet, response):
+            fact = packet['world_planning']['private_world_facts'][0]
+            self.assertIn(fact['reference'], packet['allowed_references'])
+            response.update(narrative_schema_version='1.1', memory_request=None,
+                            memory_updates=[], continuation=None, roll_checks=[])
+            response['agenda_updates'] = [{
+                'entry_id': 'road:scouting', 'expected_revision': -1,
+                'title': 'Scout the road', 'actor': 'scout', 'location': 'road',
+                'kind': 'verification', 'due_minute': fact['world_minute'] + 60,
+                'conditions': [], 'references': [fact['reference']], 'audience': ['narrator'],
+                'interrupt': False, 'status': 'planned', 'reason': 'Investigate the gathering.',
+                'outcome_event_index': None,
+            }]
+            return response
+
+        self.narrator.transform = schedule_followup
+        result = self.loop.run_turn('I wait at the gate.')
+        self.assertEqual(result['status'], 'recorded', result['reason'])
+        with self.c.transaction() as con:
+            followup = Agenda(con).get('road:scouting')
+            self.assertEqual(followup['references'], [ArcRegistry(con).facts()[0]['reference']])
+            self.assertEqual(followup['audience'], ['narrator'])
+
     def test_missing_arc_decision_rolls_back_summary_clocks_and_facts(self):
         self.register()
         self.planner.transform = lambda p, r: {**r, 'chronicle': {**r['chronicle'], 'arcs': []}}
@@ -219,6 +247,25 @@ class ArcTests(unittest.TestCase):
         with self.c.transaction() as con:
             self.assertIn('arcs_to_follow', WorldPlanner(con).reasons('Hello.'))
         self.assertIsNone(self.c.world_agenda('player')['arcs_review_horizon'])
+
+    def test_small_overshoot_of_arc_review_is_brought_back(self):
+        self.register()
+        self.planner.transform = self.response
+        self.loop.run_turn('Hello.')
+        state = self.c.state()
+        with self.c.transaction() as con:
+            horizon = ArcRegistry(con).horizon(state['world_minute'])
+            small = proposal(state, 'I talk.', [event(state, 'A short talk.', [], minute=horizon + 15)])
+            corrections = Agenda(con).normalize_arc_horizon(small, [], state)
+            self.assertEqual(small['events'][0]['world_minute'], horizon)
+            self.assertEqual(corrections[0]['world_minute_before'], horizon + 15)
+            # A journey of days is not brought back: it keeps being refused.
+            far = proposal(state, 'I travel.', [event(state, 'Three days.', [], minute=horizon + 4320)])
+            self.assertEqual(Agenda(con).normalize_arc_horizon(far, [], state), [])
+            self.assertEqual(far['events'][0]['world_minute'], horizon + 4320)
+            # Inside the horizon, nothing moves.
+            inside = proposal(state, 'I wait.', [event(state, 'Waiting.', [], minute=horizon)])
+            self.assertEqual(Agenda(con).normalize_arc_horizon(inside, [], state), [])
 
     def test_completion_requires_all_stages_and_is_not_repeated(self):
         self.register()
