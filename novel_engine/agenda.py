@@ -605,6 +605,8 @@ class Agenda:
             outcome=events[index] if type(index) is int and index<len(events) else None
             if type(index) is int and outcome is None:
                 raise ValueError('Resolution event missing.')
+            # Audience, causes and identifier come from the stated event; every date from the stretched one.
+            real=effective[index] if outcome else None
             if update['status'] in ACTIVE and update['due_minute']<=end:
                 raise ValueError('A next deadline must be strictly in the future.')
             if old and update['status']=='planned' and update['due_minute']!=old['due_minute']:
@@ -617,14 +619,14 @@ class Agenda:
                 ref='agenda:'+update['entry_id']
                 if old and ref not in outcome['causes']:
                     raise ValueError('Resolution without a link to its deadline.')
-                when=outcome['world_minute']
-                when_instant=instant(outcome)
-                early=self._early_verification_closure(proposal,old,update,outcome,state)
+                when=real['world_minute']
+                when_instant=instant(real)
+                early=self._early_verification_closure(proposal,old,update,real,state)
                 if old and old['due_minute']<=end and when_instant!=max(start_instant,old['due_minute']*60) and not early:
                     expected_minute, expected_second = divmod(max(start_instant, old['due_minute'] * 60), 60)
                     raise ValueError('A crossed deadline must be handled at its date, not at the end of the jump. '
                                      f"Entry: {update['entry_id']}. Expected minute {expected_minute}, second "
-                                     f"{expected_second}. Event {index} has minute {when}, second {outcome.get('world_second', 0)}.")
+                                     f"{expected_second}. Event {index} has minute {when}, second {real.get('world_second', 0)}.")
                 if old and when_instant<max(start_instant,old['due_minute']*60) and update['status'] in ('done','finished') and not early:
                     raise ValueError('Future event realized before its deadline: '
                                      + update['entry_id'] + '; resolution minute ' + str(when)
@@ -643,7 +645,7 @@ class Agenda:
                                      +'. Separate the observable fact and the private closing of the follow-up.')
                 at=deepcopy(state)
                 for preceding in events[:index]:self._evolve(at,preceding)
-                if any(e['event_id'] in update['references'] and instant(e)>when_instant for e in events):
+                if any(e['event_id'] in update['references'] and instant(x)>when_instant for e,x in zip(events,effective)):
                     raise ValueError('A resolution cannot depend on a future fact within this turn.')
                 if update['status'] in ('done','finished') and not conditions_hold(at,planned['conditions']):
                     raise ValueError('Project conditions not met; cancel or postpone with a cause.')
@@ -696,7 +698,7 @@ class Agenda:
                 raise ValueError(('Interrupted goal without a recorded perceivable event: status=suspended requires an '
                                   'integer event_index pointing to an event whose audience includes player; otherwise '
                                   'continuation=null.'))
-            if instant(events[index])!=end_instant:
+            if instant(effective[index])!=end_instant:
                 raise ValueError('The turn goes past its situational interruption.')
         elif continuation is not None and continuation['event_index'] is not None:
             raise ValueError('A finished or abandoned goal does not point to an interruption.')

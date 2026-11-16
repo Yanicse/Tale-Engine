@@ -204,6 +204,33 @@ class AgendaTests(unittest.TestCase):
             self.mechanical_check(self.now+65)
         self.mechanical_check(self.now+5)
 
+    def stretched_check(self, event_minute, offsets, continuation=None, updates=(), cause=None):
+        """Agenda check of one event whose operations fall offsets seconds after the start of the current minute."""
+        with self.c.transaction() as con:
+            config=json.loads(con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0])
+            config['mechanics']={'version':'mana-1.0'}
+            con.execute('UPDATE campaign SET config=? WHERE id=1',(json.dumps(config),))
+            agenda=Agenda(con);state=self.c._state(con)
+            proposal={'request_id':'test','blocking_questions':[],'events':[{
+                'event_id':'test:stretch','world_minute':self.now+event_minute,'world_second':0,
+                'description':'Test.','causes':[cause or self.reference],'conditions':[],'changes':[],
+                'audience':['narrator','player'],
+                'mechanical_operations':[{'kind':'ability','at_second':self.now*60+offset,
+                    'ability_id':'test','output_percent':None,'amount':None,'start_second':None,
+                    'source_reference':self.reference} for offset in offsets]}]}
+            agenda.validate(proposal,list(updates),continuation,[],{self.reference},state,agenda.packet(state))
+
+    def test_continuation_points_to_the_last_event_even_when_an_operation_stretches_it(self):
+        goal={'goal':'Reach the harbor.','remaining':'The last stretch.','status':'suspended','event_index':0}
+        self.stretched_check(10,[600+30],goal)
+        self.stretched_check(0,[0,30],goal)
+
+    def test_interruption_stretched_past_its_deadline_is_still_refused(self):
+        entry=self.put(self.entry(after=10,interrupt=True,kind='appointment'))
+        goal={'goal':'Reach the harbor.','remaining':'The last stretch.','status':'suspended','event_index':0}
+        with self.assertRaisesRegex(ValueError,'crossed deadline|interruption'):
+            self.stretched_check(10,[600+30],goal,[self.resolved(entry)],cause='agenda:courier')
+
     def test_agenda_check_refuses_a_change_that_cannot_apply_instead_of_crashing(self):
         entry=self.put(self.entry(after=10,secret=True,kind='project'))
         for operation in ('increment','delete'):

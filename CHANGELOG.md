@@ -64,6 +64,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The reading page no longer shows an exchange twice when two refreshes overlap.
 - `turns_without_time` counts only recorded turns: a refused answer or a question to the player kept the clock still and was counted, so two refusals told the narrator that two turns had passed without time moving.
 - The agenda check refuses a turn whose earlier event increments a missing or non-numeric value or deletes a missing one; it used to stop on a `KeyError` instead of recording the refusal.
+- An interrupted goal may point to an event that a mechanical operation stretches: the agenda compared the stated time of that event with the stretched end of the turn and refused it with "The turn goes past its situational interruption". Every date of an outcome or interruption event is now read after the stretch.
 
 ### Removed
 
