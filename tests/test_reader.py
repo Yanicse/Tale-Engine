@@ -2,8 +2,10 @@
 from contextlib import closing
 import hashlib
 import http.client
+import io
 import json
 from pathlib import Path
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -20,7 +22,7 @@ from novel_engine.campaign import Campaign
 from novel_engine.contracts import check_json
 from novel_engine.demo import initial_state, configuration, event, proposal
 from novel_engine.planner import WorldPlanner
-from novel_engine.scripts.read_game import Turns, make_server
+from novel_engine.scripts.read_game import Turns, main, make_server
 
 SECRET = 'SECRET_'
 
@@ -367,6 +369,51 @@ class ReaderTests(unittest.TestCase):
             self.assertEqual(self.post({'text': 'x', 'engine': 'other'})[0], 400)
             self.assertEqual(self.post({'text': 'x', 'mode': 'other'})[0], 400)
             command.assert_not_called()
+
+    def test_malformed_turn_bodies_get_a_400_answer(self):
+        with mock.patch.object(Turns, 'command') as command:
+            for body in ([1, 2], 'hello', 3, None, {'text': 'x', 'mode': [1]}, {'text': 'x', 'mode': None},
+                         {'text': 'x', 'engine': [1]}, {'text': 'x', 'engine': 7}, {'text': 'x', 'engine': {}},
+                         {'text': ['x']}):
+                status, answer = self.post(body)
+                self.assertEqual(status, 400, body)
+                self.assertIn('error', answer)
+            command.assert_not_called()
+        connection = http.client.HTTPConnection('127.0.0.1', self.port, timeout=10)
+        connection.request('POST', '/api/turn', body=b'[' * 15000, headers={'Content-Type': 'application/json'})
+        response = connection.getresponse()
+        self.assertEqual(response.status, 400)
+        connection.close()
+
+    def test_bad_story_parameters_get_a_400_answer(self):
+        for query in ('n=abc', 'n=-3', 'n=1.5', 'before=x', 'before=99999999999999999999', 'before=-1', 'before=1e3'):
+            status, body = self.request('/api/story?' + query)
+            self.assertEqual(status, 400, query)
+            self.assertIn(query.split('=')[0], json.loads(body.decode('utf-8'))['error'])
+        self.assertEqual(self.request('/api/story?n=0')[0], 200)
+        self.assertEqual(self.request('/api/story?n=500&before=3')[0], 200)
+
+    def test_startup_failures_are_one_line_without_traceback(self):
+        missing = str(Path(self.temp.name) / 'nope.sqlite')
+        free = socket.socket()
+        free.bind(('127.0.0.1', 0))
+        busy = free.getsockname()[1]
+        try:
+            for args, text in ((['--port', '99999'], '--port'), (['--port', '-1'], '--port'),
+                               (['--campaign', str(self.campaign.path), '--port', str(busy), '--no-browser'], '--port'),
+                               (['--campaign', missing, '--port', '0', '--no-browser'], '--campaign')):
+                with self.assertRaises(SystemExit) as stop, mock.patch.object(sys, 'stderr', io.StringIO()) as err:
+                    main(args)
+                self.assertTrue(stop.exception.code and chr(10) not in str(stop.exception.code), args)
+                self.assertIn(text, str(stop.exception.code) + err.getvalue())
+        finally:
+            free.close()
+
+    def test_a_missing_save_leaves_no_socket_bound(self):
+        with mock.patch('novel_engine.scripts.read_game.ThreadingHTTPServer') as binder:
+            with self.assertRaises(ValueError):
+                make_server(Path(self.temp.name) / 'nope.sqlite', 0)
+            binder.assert_not_called()
 
     def test_local_resources_are_served_and_confined(self):
         status, body = self.request('/resources/icons/broadsword.svg')

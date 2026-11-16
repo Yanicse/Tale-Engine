@@ -13,7 +13,7 @@ PKG_PARENT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG_PARENT))
 from novel_engine.contracts import ROOT
 from novel_engine.engines import ENGINES, available, default_engine
-from novel_engine.reader import Reader
+from novel_engine.reader import BadParameter, Reader
 from novel_engine.resume import ACTIVE
 
 PAGE = PKG_PARENT / 'novel_engine/reader_page.html'
@@ -45,7 +45,7 @@ class Turns:
         return base + (['--text=' + text] if mode == 'new' else MODES[mode])
 
     def cast(self, text, engine, mode):
-        if engine not in ENGINES or mode not in MODES:
+        if not isinstance(engine, str) or not isinstance(mode, str) or engine not in ENGINES or mode not in MODES:
             raise ValueError('Unknown engine or mode.')
         if mode == 'new' and not text.strip():
             raise ValueError('Empty action.')
@@ -141,6 +141,8 @@ def make_handler(reader, port, turns):
                 if result is None:
                     return self._json({'error': 'Creative format inactive.'}, 404)
                 return self._json(result)
+            except BadParameter as exc:
+                return self._json({'error': str(exc)}, 400)
             except (ValueError, OSError, KeyError) as exc:
                 return self._json({'error': str(exc)}, 500)
             except Exception as exc:  # A locked or migrating database must not stop the server.
@@ -169,11 +171,17 @@ def make_handler(reader, port, turns):
             try:
                 if not raw:
                     raise ValueError('Invalid size.')
-                body = json.loads(raw.decode('utf-8'))
+                try:
+                    body = json.loads(raw.decode('utf-8'))
+                except RecursionError:
+                    raise ValueError('Invalid JSON.') from None
+                if not isinstance(body, dict):
+                    raise ValueError('JSON object expected.')
                 text = body.get('text', '')
                 if not isinstance(text, str):
                     raise ValueError('Invalid text.')
-                if not turns.cast(text, body.get('engine') or default_engine(), body.get('mode', 'new')):
+                engine = body.get('engine')
+                if not turns.cast(text, default_engine() if engine in (None, '') else engine, body.get('mode', 'new')):
                     return self._json({'error': 'A turn is already running.'}, 409)
                 return self._json({'in_progress': True}, 202)
             except (ValueError, UnicodeDecodeError) as exc:
@@ -185,9 +193,10 @@ def make_handler(reader, port, turns):
 
 
 def make_server(path, port=8765):
+    reader = Reader(path)  # Checked before the socket is bound, so a bad save leaves nothing open.
     server = ThreadingHTTPServer(('127.0.0.1', port), lambda *args: None)
     port = server.server_address[1]
-    server.RequestHandlerClass = make_handler(Reader(path), port, Turns(path))
+    server.RequestHandlerClass = make_handler(reader, port, Turns(path))
     return server
 
 
@@ -197,6 +206,8 @@ def main(argv=None):
     parser.add_argument('--port', type=int, default=8765, help='Port on 127.0.0.1 (default: 8765)')
     parser.add_argument('--no-browser', action='store_true', help='Do not open the page in the browser')
     args = parser.parse_args(argv)
+    if not 0 <= args.port <= 65535:
+        raise SystemExit('--port must be between 0 and 65535.')
     if args.campaign:
         path = Path(args.campaign)
     else:
@@ -207,7 +218,12 @@ def main(argv=None):
         path = (ROOT / selected['campaign_path']).resolve()
         if not path.is_relative_to((ROOT / 'campaigns').resolve()):
             parser.error('Active save outside the campaigns/ folder.')
-    server = make_server(path, args.port)
+    try:
+        server = make_server(path, args.port)
+    except ValueError:
+        raise SystemExit(f'No save at {path}: pass an existing campaign.sqlite with --campaign.')
+    except OSError as exc:
+        raise SystemExit(f'Port {args.port} is not available ({exc.strerror or exc}); choose another one with --port.')
     url = f'http://127.0.0.1:{server.server_address[1]}/'
     print('Campaign ' + Path(path).parent.name + ': ' + url + ' (Ctrl+C to stop)', file=sys.stderr)
     if not args.no_browser:

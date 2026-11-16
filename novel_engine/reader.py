@@ -22,6 +22,17 @@ SEARCH_LIMIT = 50
 ROLES = ('player', 'narrator')
 
 
+class BadParameter(ValueError):
+    """A request parameter the caller got wrong (answered with 400, not a server fault)."""
+
+
+def _whole(value, name):
+    """Non-negative whole number that fits a SQLite integer, or BadParameter naming the parameter."""
+    if not re.fullmatch(r'[0-9]{1,18}', str(value)):
+        raise BadParameter(f'Parameter "{name}" must be a whole number.')
+    return int(value)
+
+
 def _clean(value):
     """Remove every canon:* reference (private) from the returned values."""
     if isinstance(value, dict):
@@ -98,7 +109,8 @@ class Reader:
                 'ui_language': language_code(language)}
 
     def story(self, before=None, n=PAGE):
-        n = max(1, min(int(n), 100))
+        n = max(1, min(_whole(n, 'n'), 100))
+        before = None if before is None else _whole(before, 'before')
         with closing(self._connect()) as con:
             if not self._table(con, 'exchanges'):
                 return {'exchanges': [], 'older': False}
@@ -106,7 +118,7 @@ class Reader:
             where = 'role IN (?,?)'
             if before is not None:
                 where += ' AND seq<?'
-                params.append(int(before))
+                params.append(before)
             rows = con.execute(f'SELECT seq,role,content FROM exchanges WHERE {where} ORDER BY seq DESC LIMIT ?',
                                (*params, n + 1)).fetchall()
             older = len(rows) > n
