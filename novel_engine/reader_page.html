@@ -118,7 +118,7 @@ mark{background:var(--highlight);color:inherit;border-radius:2px}
 .turn{margin:0 0 6px;animation:entryBody .5s ease both}
 @keyframes entryBody{from{opacity:0;transform:translateY(6px)}}
 .narration p{margin:0 0 1em;text-wrap:pretty}
-.narration p.dialogue{margin-left:.9em;padding-left:.9em;border-left:2px solid color-mix(in srgb,var(--gold) 70%,transparent)}
+.narration p.dialogue,.scene-text p.dialogue{margin-left:.9em;padding-left:.9em;border-left:2px solid color-mix(in srgb,var(--gold) 70%,transparent)}
 .narration p.story:first-child::first-line{font-variant:small-caps;letter-spacing:.05em}
 .action{position:relative;margin:6px 0 20px 16%;padding:22px 16px 10px;border-radius:14px 14px 4px 14px;border:1px solid var(--line);border-right:3px solid var(--blood);background:var(--player);font:italic 18px/1.5 var(--serif);white-space:pre-wrap;box-shadow:0 6px 16px -12px var(--shadow)}
 .action::before{content:var(--name-player,"Player");position:absolute;top:6px;left:16px;font:700 10.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--blood);font-style:normal}
@@ -260,7 +260,7 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
   .clock{display:none}
   .emblem{width:46px;height:46px}
   .action{margin-left:5%}
-  .narration p.dialogue{margin-left:.2em;padding-left:.7em}
+  .narration p.dialogue,.scene-text p.dialogue{margin-left:.2em;padding-left:.7em}
   .scene-text{padding:22px 20px}
   #theme span{display:none}
   nav button{padding:7px 11px}
@@ -350,14 +350,35 @@ function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=c
 function clearList(n){while(n.firstChild)n.removeChild(n.firstChild)}
 function get(url){return fetch(url,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
 var DIALOGUE=/^\s*[«“"]/;
-function paragraphs(parent,text,classify){String(text).split(/\n+/).forEach(function(l){if(l.trim()){var p=el('p',classify?(DIALOGUE.test(l)?'dialogue':'story'):null,l);parent.appendChild(p)}})}
+function paragraphs(parent,text,classify){
+  var prose=String(text);
+  // A narrator sometimes leaves line breaks and quotes escaped: show them as written prose.
+  if(classify)prose=prose.replace(/\\r\\n|\\n/g,'\n');
+  prose.split(/(?:\r?\n)+/).forEach(function(line){
+    if(!line.trim())return;
+    if(!classify){
+      parent.appendChild(el('p',null,line));
+      return;
+    }
+    line=line.replace(/\\"/g,'"');
+    if(!DIALOGUE.test(line)){
+      // Narration followed by speech in the same paragraph: the speech gets its own dialogue paragraph.
+      var speech=line.match(/[.!?:,](\s+)(?="[^"]+"|“[^”]+”|«[^»]+»)/);
+      if(speech){
+        parent.appendChild(el('p','story',line.slice(0,speech.index+1)));
+        line=line.slice(speech.index+speech[0].length);
+      }
+    }
+    parent.appendChild(el('p',DIALOGUE.test(line)?'dialogue':'story',line));
+  });
+}
 function atBottom(){return window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-40}
 function scrollList(){window.scrollTo(0,document.documentElement.scrollHeight)}
 function iconFor(name){var s=document.getElementById('ico-'+name);if(!s)return null;var c=s.cloneNode(true);c.removeAttribute('id');c.setAttribute('class','ico');c.setAttribute('aria-hidden','true');return c}
 function capitalize(n){return n?n.charAt(0).toUpperCase()+n.slice(1):n}
 
 // Fictional hour: world minute modulo 1440. Day from 6 am to 6 pm, night the rest of the time.
-function clockTime(){return state&&state.clock&&typeof state.clock.world_minute==='number'?(state.clock.world_minute%1440)/60:null}
+function clockTime(){if(!state||!state.clock)return null;var c=state.clock,m=typeof c.minute_of_day==='number'?c.minute_of_day:c.world_minute;return typeof m==='number'?(m%1440)/60:null}
 function phase(h){return tr(h<5?'time.deep_night':h<7?'time.dawn':h<12?'time.morning':h<14?'time.noon':h<17?'time.afternoon':h<19?'time.dusk':h<22?'time.evening':'time.night')}
 function isDark(){
   if(mode==='night'||mode==='arcane'||mode==='frost'||mode==='scifi')return true;if(mode==='day')return false;
@@ -547,7 +568,7 @@ function initialStory(){
     olderLoaded=r.older;first=r.exchanges.length?r.exchanges[0].seq:null;
     showMore(topAnchor);
     r.exchanges.forEach(function(e){listEl.appendChild(turn(e))});
-    newest=state?state.exchange_count:0;
+    newest=state?state.exchange_count:0;listEl.dataset.loaded='1';
     if(location.hash.indexOf('#exchange-')===0){var c=document.getElementById(location.hash.slice(1));if(c){c.scrollIntoView();return}}
     scrollList();
   }).catch(error);
@@ -581,10 +602,11 @@ function searchStory(){
 function newTurns(){
   if(current!=='story'||query||!state)return;
   if(state.exchange_count===newest)return;
-  var jumpDown=atBottom();var listEl=document.getElementById('listEl');if(!listEl)return;
+  var jumpDown=atBottom();var listEl=document.getElementById('listEl');if(!listEl||!listEl.dataset.loaded)return;
   var last=listEl.lastChild?Number(listEl.lastChild.id.replace('exchange-','')):0;
   get('/api/story?n=100').then(function(r){
-    r.exchanges.forEach(function(e){if(e.seq>last){var d=turn(e);reveal(d);listEl.appendChild(d)}});
+    // Two refreshes can overlap: an exchange already on the page is never added again.
+    r.exchanges.forEach(function(e){if(e.seq>last&&!document.getElementById('exchange-'+e.seq)){var d=turn(e);reveal(d);listEl.appendChild(d)}});
     newest=state.exchange_count;if(jumpDown)scrollList();
   }).catch(error);
 }
@@ -598,7 +620,7 @@ function scene(){
   var tx=el('div');tx.appendChild(el('div','date',state.clock.date));
   if(h!==null){placeCelestial(dialClone,h);tx.appendChild(el('div','phase',phase(h)))}
   holder.appendChild(tx);content.appendChild(holder);
-  var s=el('div','scene-text');paragraphs(s,state.scene||tr('scene.none'));content.appendChild(s);
+  var s=el('div','scene-text');paragraphs(s,state.scene||tr('scene.none'),true);content.appendChild(s);
   if(state.has_pending_action)content.appendChild(cardBadge(tr('pending.title'),tr('pending.badge'),'blood',[tr('pending.text')]));
 }
 
@@ -728,13 +750,16 @@ function abilities(){
       k.appendChild(d);
       return k;
     }
-    function section(title,listEl){if(!listEl.length)return;zone.appendChild(el('h3',null,title));var g=el('div','grid');listEl.forEach(function(c){g.appendChild(card(c))});zone.appendChild(g)}
+    // The day/night filter only means something when some ability really belongs to one of the two phases.
+    var hasPhases=r.abilities.some(function(c){var p=phaseOf(c);return p==='day'||p==='night'});
+    if(!hasPhases)phaseFilter='all';
+    function section(title,listEl){if(!listEl.length)return;if(title)zone.appendChild(el('h3',null,title));var g=el('div','grid');listEl.forEach(function(c){g.appendChild(card(c))});zone.appendChild(g)}
     function renderItems(){
       clearList(zone);
       var t=r.abilities.filter(function(c){return phaseOf(c)==='always'});
       section(tr('abilities.always'),t);
       var v=r.abilities.filter(function(c){var p=phaseOf(c);return p!=='always'&&(phaseFilter==='all'||p===phaseFilter)});
-      section(tr(phaseFilter==='day'?'abilities.day':phaseFilter==='night'?'abilities.night':'abilities.other'),v);
+      section(hasPhases?tr(phaseFilter==='day'?'abilities.day':phaseFilter==='night'?'abilities.night':'abilities.other'):(t.length?tr('abilities.other'):''),v);
       Array.prototype.forEach.call(topbar.children,function(b){b.setAttribute('aria-pressed',b.dataset.f===phaseFilter?'true':'false');b.style.opacity=b.dataset.f===phaseFilter?'1':'.6'});
     }
     [['all',tr('filter.all')],['day',tr('filter.day')],['night',tr('filter.night')]].forEach(function(x){
@@ -743,7 +768,8 @@ function abilities(){
       topbar.appendChild(b);
     });
     topbar.style.cssText='display:flex;gap:.5rem;margin:.8rem 0';
-    content.appendChild(topbar);content.appendChild(zone);renderItems();
+    if(hasPhases)content.appendChild(topbar);
+    content.appendChild(zone);renderItems();
   }).catch(error);
 }
 
