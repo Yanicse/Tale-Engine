@@ -8,7 +8,7 @@ import re
 import sqlite3
 import uuid
 
-from .agenda import date
+from .agenda import date, opening_minute
 from .campaign import Campaign
 from .contracts import check_json
 from .narrative import NarrativeLoop, narrative_lock
@@ -78,14 +78,21 @@ def read_state(campaign):
         return json.loads(con.execute('SELECT state FROM campaign WHERE id=1').fetchone()[0])
 
 
+def read_opening(campaign):
+    """Opening minute of the campaign (read-only), or None when its dates stay elapsed offsets."""
+    with closing(sqlite3.connect(campaign.path.resolve().as_uri() + '?mode=ro', uri=True)) as con:
+        return opening_minute(json.loads(con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0]))
+
+
 def preview(campaign, days=7):
     if type(days) is not int or not 1 <= days <= MAX_DAYS:
         raise ValueError('Whole duration from 1 to %d days expected.' % MAX_DAYS)
     state = read_state(campaign)
     start = state['world_minute']
+    opening = read_opening(campaign)
     return {'campaign_id': state['campaign_id'], 'state_version': state['state_version'],
             'start_minute': start, 'end_minute': start + days * DAY,
-            'start': date(start), 'end': date(start + days * DAY), 'days': days}
+            'start': date(start, opening), 'end': date(start + days * DAY, opening), 'days': days}
 
 
 def normalize_policy(policy=None):
@@ -113,25 +120,27 @@ def normalize_policy(policy=None):
     return merged
 
 
-def daily_points(start, end):
-    """Daily 6 pm checkpoints in (start, end], each with its Dn marker."""
-    point = start // DAY * DAY + 18 * 60
+def daily_points(start, end, opening=None):
+    """Daily 6 pm checkpoints (local time when the campaign has an opening minute) in (start, end], each with its Dn marker."""
+    shift = opening or 0
+    point = (start + shift) // DAY * DAY + 18 * 60 - shift
     if point <= start:
         point += DAY
     points = []
     while point <= end:
-        points.append({'marker': 'D%d' % (point // DAY), 'date': date(point), 'minute': point})
+        points.append({'marker': 'D%d' % ((point + shift) // DAY + (opening is not None)),
+                       'date': date(point, opening), 'minute': point})
         point += DAY
     return points
 
 
-def turn_limit(prepared, target, max_points=None, period_end=None, fine_until=None):
+def turn_limit(prepared, target, max_points=None, period_end=None, fine_until=None, opening=None):
     """Bound of a step: the next real deadline, never the plain 6 pm checkpoint.
 
     max_points limits the number of daily checkpoints per step (1: previous behavior);
     fine_until imposes one step per day while an alert is active."""
     start = prepared['state']['world_minute']
-    first = daily_points(start, start + DAY)[0]['minute']
+    first = daily_points(start, start + DAY, opening)[0]['minute']
     agenda = prepared['world_agenda']
     limits = [target]
     if period_end is not None:
@@ -195,8 +204,9 @@ class Routine:
         steps = [s for s in self.data['steps'] if s['phase'] == 'turn' and s.get('period') == period]
         narrations = [read_json(self.folder / s['file'] / 'result.json').get('narration', '')
                       for s in steps]
-        signals = [{**g, 'date': date(g['world_minute'])} for s in steps for g in s.get('signals', [])]
-        return {'period': period + 1, 'end': date(end), 'steps': len(steps),
+        opening = read_opening(self.campaign)
+        signals = [{**g, 'date': date(g['world_minute'], opening)} for s in steps for g in s.get('signals', [])]
+        return {'period': period + 1, 'end': date(end, opening), 'steps': len(steps),
                 'narration': '\n'.join(n for n in narrations if n), 'signals': signals}
 
     def _save(self):
@@ -210,7 +220,8 @@ class Routine:
             raise ValueError('The save of this routine folder is missing; no automatic database creation.')
 
     def _action(self):
-        return (f"Routine of {counted(self.data['days'], 'day')} (folder {self.data['id']}) until {self.data['end']} "
+        end = date(self.data['end_minute'], read_opening(self.campaign))  # Never the string stored at opening.
+        return (f"Routine of {counted(self.data['days'], 'day')} (folder {self.data['id']}) until {end} "
                 f"(minute {self.data['end_minute']}, fixed end). "
                 f"Goal: {self.data['goal']} Topics: {'; '.join(self.data['subjects'])}. "
                 f"Delegation: {self.data['delegation']} Answered by hand or by a chat assistant, no remote call.")
@@ -218,12 +229,13 @@ class Routine:
     def status(self):
         self._reload()
         state = read_state(self.campaign)
+        opening = read_opening(self.campaign)
         return {'status': self.data['status'], 'folder': str(self.folder),
-                'current_date': date(state['world_minute']), 'end': self.data['end'],
+                'current_date': date(state['world_minute'], opening), 'end': date(self.data['end_minute'], opening),
                 'minutes_left': max(0, self.data['end_minute'] - state['world_minute']),
                 'recorded_steps': len(self.data['steps']), 'active': self.data['active'],
                 'closed_periods': len(self.data.get('periods', [])),
-                'alert_until': date(self.data['alert_until']) if self.data.get('alert_until') else None,
+                'alert_until': date(self.data['alert_until'], opening) if self.data.get('alert_until') else None,
                 'external_drift': state['state_version'] != self.data['expected_state_version']}
 
     def _view(self, folder):
@@ -233,7 +245,7 @@ class Routine:
                 'schema': str(folder / 'schema.json'), 'end_minute_step': work.get('bound'),
                 'model': str(folder / 'model_answer.json'),
                 'private_archives': str(folder / 'work.json'),
-                'end_routine': self.data['end'], 'remote_calls': 0}
+                'end_routine': date(self.data['end_minute'], read_opening(self.campaign)), 'remote_calls': 0}
 
     def prepare(self, resume=True):
         with narrative_lock(self.campaign):
@@ -286,13 +298,13 @@ class Routine:
                 policy = self.policy
                 now = prepared['state']['world_minute']
                 bound = turn_limit(prepared, self.data['end_minute'], policy['points_per_step'],
-                                   self._period_end(now), self.data.get('alert_until'))
+                                   self._period_end(now), self.data.get('alert_until'), read_opening(self.campaign))
                 packet['routine'] = {'goal': self.data['goal'], 'subjects': self.data['subjects'],
                     'delegation': self.data['delegation'], 'end_minute': self.data['end_minute'],
                     'bound_turn': bound, 'instruction': 'Go to this bound unless there is a real interruption; no overrun.'}
                 if policy['bulletins']:
                     packet['routine']['daily_points'] = [{k: p[k] for k in ('marker', 'date')}
-                                                              for p in daily_points(now, bound)]
+                                                              for p in daily_points(now, bound, read_opening(self.campaign))]
                 if policy['signals']:
                     packet['routine'].update(signal_levels=list(LEVELS), signal_categories=list(CATEGORIES),
                         stop_on=policy['stop_on'], alert_in_progress=bool(self.data.get('alert_until')
@@ -397,7 +409,7 @@ class Routine:
                     self.data['alert_until'] = max(self.data.get('alert_until') or 0,
                                                     end + self.policy['alert_days'] * DAY)
                 if stops:
-                    extra['routine_stop'] = [{**g, 'date': date(g['world_minute'])} for g in stops]
+                    extra['routine_stop'] = [{**g, 'date': date(g['world_minute'], read_opening(self.campaign))} for g in stops]
                 if result['status'] == 'question' or interrupted or stops:
                     self.data['status'] = 'decision_required'
                 elif end >= self.data['end_minute']:
@@ -442,7 +454,7 @@ class Routine:
             raise ValueError('A stop signal ends the step at its world_minute: no event after it.')
         if policy['bulletins']:
             text = response.get('narration') or ''
-            missing = [p['marker'] for p in daily_points(start, end)
+            missing = [p['marker'] for p in daily_points(start, end, read_opening(self.campaign))
                        if not re.search(r'(?<![0-9A-Za-z])' + p['marker'] + r'(?![0-9])', text)]
             if missing:
                 raise ValueError('Daily bulletin missing from narration: ' + ', '.join(missing) +

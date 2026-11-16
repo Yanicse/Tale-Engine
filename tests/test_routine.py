@@ -74,6 +74,56 @@ class RoutineTests(unittest.TestCase):
         self.assertEqual(self.c.path.read_bytes(), before)
         self.assertIsNone(self.c.resume()['session']['pending_action'])
 
+    def local_campaign(self, name, minute=0, opening=480):
+        state = initial_state()
+        state['world_minute'] = minute
+        config = configuration()
+        if opening is not None:
+            config['reader'] = {'opening_minute_of_day': opening}
+        campaign = Campaign(self.root / (name + '.sqlite')).create(state, config)
+        campaign.open_scene('The guard waits.')
+        return campaign
+
+    def test_opening_minute_makes_routine_dates_local_times(self):
+        campaign = self.local_campaign('local')
+        plan = preview(campaign, 2)
+        self.assertEqual((plan['start'], plan['end']), ('Day 1, 08:00', 'Day 3, 08:00'))
+        routine = Routine.create(self.root / 'local_routine', campaign, days=2, policy=LEGACY_POLICY)
+        status = routine.status()
+        self.assertEqual((status['current_date'], status['end']), ('Day 1, 08:00', 'Day 3, 08:00'))
+        self.assertIn('until Day 3, 08:00 (minute 2880', routine._action())
+        self.assertEqual(Path(routine.prepare()['step']).name, 'step_0000')
+
+    def test_opening_minute_places_the_checkpoint_at_local_six_pm(self):
+        points = daily_points(0, 3000, 480)
+        self.assertEqual([p['minute'] for p in points], [600, 2040])
+        self.assertEqual([p['date'] for p in points], ['Day 1, 18:00', 'Day 2, 18:00'])
+        self.assertEqual([p['marker'] for p in points], ['D1', 'D2'])
+        self.assertEqual(daily_points(600, 2040, 480)[0]['minute'], 2040)
+        self.assertEqual(daily_points(0, 100, 1300), [])
+        self.assertEqual(daily_points(0, 1300, 1300)[0]['minute'], 1220)
+        prepared = {'state': {'world_minute': 0}, 'world_agenda': {'events': [],
+            'arcs_review_horizon': None, 'max_horizon_if_limited': None}}
+        self.assertEqual(turn_limit(prepared, 9999, max_points=1, opening=480), 600)
+
+    def test_checkpoint_without_opening_is_unchanged(self):
+        self.assertEqual(daily_points(0, 1500), [{'marker': 'D0', 'date': 'D0, T0 + 18 h 00', 'minute': 1080}])
+        self.assertEqual(preview(self.c, 1)['start'], 'D0, T0 + 18 h 00')
+
+    def test_routine_saved_with_elapsed_dates_reads_local_after_the_opening_is_set(self):
+        campaign = self.local_campaign('old', opening=None)
+        routine = Routine.create(self.root / 'old_routine', campaign, days=1, policy=LEGACY_POLICY)
+        self.assertEqual(routine.status()['end'], 'D1, T0 + 00 h 00')
+        data = read_json(routine.manifest)
+        self.assertEqual(data['end'], 'D1, T0 + 00 h 00')
+        import sqlite3
+        with sqlite3.connect(campaign.path) as con:
+            config = json.loads(con.execute('SELECT config FROM campaign').fetchone()[0])
+            config['reader'] = {'opening_minute_of_day': 480}
+            con.execute('UPDATE campaign SET config=?', (json.dumps(config),))
+        con.close()
+        self.assertEqual(Routine(self.root / 'old_routine').status()['end'], 'Day 2, 08:00')
+
     def test_command_line_tool_previews_opens_and_reports_status(self):
         import contextlib
         import io
