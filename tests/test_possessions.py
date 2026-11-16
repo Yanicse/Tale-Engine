@@ -345,6 +345,25 @@ class PossessionTests(unittest.TestCase):
         packet = json.loads(narrator.prompt.rsplit('\nCURRENT TURN\n', 1)[1])
         self.assertEqual(packet['memory_recovery']['status'], 'ready')
 
+    def test_project_sentence_matches_the_state_schema(self):
+        import re
+        from novel_engine.contracts import check
+        text = (ROOT / 'novel_engine' / 'assets' / 'docs' / 'engine' / 'POSSESSIONS.md').read_text(encoding='utf-8')
+        paragraph = next(p for p in re.split(r'\n\s*\n', text) if p.startswith('A project contains'))
+        for field in ('title', 'owner_id', 'location', 'status'):
+            self.assertIn('`%s`' % field, paragraph.split('single texts')[0])
+        self.assertNotIn('All of these fields', paragraph)
+        state = self.c.state()
+        state['projects'] = {'house': {
+            'title': 'House', 'owner_id': 'player', 'location': 'site', 'status': 'in_progress',
+            'plan': ['Build the walls.'], 'completed': [], 'remaining': ['Build the walls.'],
+            'agreements': [], 'unknowns': [], 'inventory_ids': [],
+            'references': ['demo:initial_configuration'], 'audience': ['narrator', 'player']}}
+        check('state', state)
+        state['projects']['house']['owner_id'] = ['player']
+        with self.assertRaises(ValueError):
+            check('state', state)
+
 
 if __name__ == '__main__':
     unittest.main()

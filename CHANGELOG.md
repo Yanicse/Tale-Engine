@@ -72,6 +72,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - `novel validate` refuses `rules.costs.full_power_cost_percent` when it is not an object, also next to `fixed_cost_points`; such a table used to pass, reach the campaign and crash `novel play --skills`.
 - `novel validate` reports a `cooldown` or an `effect` on a passive (only abilities honor them), a day or night phase on a passive without `solar_schedule`, a tracked NPC whose `id`, `place` or `goal` is not text, and two tracked NPCs whose ids become the same once cleaned. The warning for a missing title says what the page really shows.
 - The world files are checked before any installation, with one line that names the file and the key: the edges of `chronology.json` (two existing nodes, no cycle), the types of every arc key and of `outside_arcs` in `arcs.json`, an arc `clock` that is not in `clocks.json`, and a clock id used twice. A malformed edge used to pass `novel validate` and stop `novel campaign new` on a traceback.
+- The possessions rules name the project fields that are single texts (`title`, `owner_id`, `location`, `status` and its four values); they said every field except the title is a list, which the state schema refuses.
 
 ### Removed
 

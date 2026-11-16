@@ -42,7 +42,7 @@ Each input contains `item_id` and `quantity`. Each output contains `item_id` and
 
 ## Projects
 
-A project contains `title`, `owner_id`, `location`, `status`, `plan`, `completed`, `remaining`, `agreements`, `unknowns`, `inventory_ids`, `references`, `audience`. All of these fields except `title` are lists of texts. Keep the completed steps, agreements, caveats and unknowns. Update `/projects/identifier` with the complete object after a step is completed. Archive through the status `finished` or `abandoned`, without deleting the history. Materials that were incorporated are consumed in the inventory; the project describes the work done.
+A project contains `title`, `owner_id`, `location`, `status`, `plan`, `completed`, `remaining`, `agreements`, `unknowns`, `inventory_ids`, `references`, `audience`. `title`, `owner_id`, `location` and `status` are single texts (`status` is `in_progress`, `suspended`, `finished` or `abandoned`); all the other fields are lists of texts. Keep the completed steps, agreements, caveats and unknowns. Update `/projects/identifier` with the complete object after a step is completed. Archive through the status `finished` or `abandoned`, without deleting the history. Materials that were incorporated are consumed in the inventory; the project describes the work done.
 
 Add the new steps to `completed` without removing or rewording the completed entries. A count that was really performed can clarify an unknown lot with a sourced change; a movement or a consumption requires an operation. Explicit material announcements are checked in the events and the narration, but these lexical checks are not an exhaustive understanding of every sentence.
 
