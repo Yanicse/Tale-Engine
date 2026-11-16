@@ -525,6 +525,21 @@ class PromptSelectionTests(Fixture):
         selected = select_documents(documents, ['memory'], {'campaign_rules': {}})
         self.assertEqual(selected, documents)
 
+    def test_shipped_documents_lose_their_off_topic_paragraphs(self):
+        assets = ROOT / 'novel_engine' / 'assets'
+        sources = ('docs/engine/agents/narrator.md', 'docs/engine/POSSESSIONS.md')
+        documents = [{'source': source, 'text': (assets / source).read_text(encoding='utf-8')} for source in sources]
+        narrow = '\n'.join(d['text'] for d in select_documents(documents, ['memory'], {'campaign_rules': {}}))
+        wide = '\n'.join(d['text'] for d in select_documents(documents, ['memory', 'possessions', 'world'],
+                                                             {'campaign_rules': {}}))
+        for text in (narrow, wide):
+            self.assertNotIn('For a narrator answering by hand', text)
+            self.assertIn('## Campaign creations', text)
+        for start in ('Possessions, currencies and projects', 'The world also takes initiatives',
+                      '`possession_rules.currencies` defines'):
+            self.assertNotIn(start, narrow)
+            self.assertIn(start, wide)
+
     def test_no_arbitrary_shortening_or_db_configuration_change(self):
         before = self.c.state()
         config = self.c.config()

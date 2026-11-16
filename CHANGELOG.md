@@ -59,6 +59,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - A narrator may cite a private arc fact (`arc_fact:`) it was given when it schedules a deadline in a manual application.
 - Narration that arrives with escaped quotes or line breaks is recorded and shown as prose.
 - A mechanical operation can no longer throw the clock days ahead: an absolute date written a little more than a minute before the turn began was read as an offset and added to the clock, and a date far after its event stretched the turn without limit. Offsets are now recognized only when they fit the event, a correction moves the end of an event by one hour at most, and any other date is refused as outside the interval.
+- The narrator no longer receives rule paragraphs that do not concern the turn: ten paragraphs of the narrator rules and six of the possessions rules had no recorded signature, so they were always sent, among them the procedure for a narrator answering by hand and the possessions and world paragraphs when the action touches neither. Every shipped paragraph is listed again and a test keeps it so.
 - "You spend the day at home" is no longer read as an expense without a monetary operation.
 - The reading page no longer shows an exchange twice when two refreshes overlap.
 

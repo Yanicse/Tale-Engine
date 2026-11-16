@@ -159,6 +159,15 @@ class MigrationWordingTests(unittest.TestCase):
                 with self.subTest(source=source):
                     self.assertEqual(set(signatures) - current, set())
 
+    def test_every_paragraph_of_the_shipped_documents_is_known(self):
+        # An unlisted paragraph is always sent: a forgotten signature silently disables its module filter.
+        for source, signatures in instructions.KNOWN_DOCUMENT_PARAGRAPHS.items():
+            text = (ASSETS / source).read_text(encoding='utf-8')
+            unknown = [p[:60] for p in re.split(r'\n\s*\n', text)
+                       if hashlib.sha256(p.encode('utf-8')).hexdigest() not in signatures]
+            with self.subTest(source=source):
+                self.assertEqual(unknown, [])
+
     def test_interactive_help_lists_every_handled_command(self):
         source = (PACKAGE / 'scripts' / 'play_narrative.py').read_text(encoding='utf-8')
         help_line = next(line for line in source.splitlines() if 'Commands: /quit' in line)
