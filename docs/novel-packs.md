@@ -58,6 +58,7 @@ to both sides of every conversion rate.
 | `preset` | `auto` (follows the fictional hour), `classic`, `dark-fantasy`, `arcane`, `frost`, `scifi` |
 | `title`, `subtitle`, `input_hint` | page title (`{name}` is the character), subtitle, hint in the input box; leave empty for the language default |
 | `clock` | `false` hides the fictional clock |
+| `opening_minute_of_day` | local minute of the day at which the story opens, from 0 to 1439 (`480` is 8:00). With it, the narrator, the planner and the page read dates as a real local time (`Day 2, 15:20`) and the dial follows that hour. Without it, dates stay elapsed time since the opening (`D0, T0 + 17 h 40`) |
 | `colors` | `background`, `text`, `muted`, `line`, `card`, `accent`, `gold`, `blood`, `player`; values `#hex` or `rgb()` / `rgba()` |
 | `labels` | any text of the page by key, see [Prompts and languages](prompts-and-languages.md) |
 | `icons` | `{"objects" \| "abilities" \| "places": [["word\|other word", "icon-name"]]}`, matched on the words of an item's name or description; icon names are the files of `novel_engine/resources/icons` |

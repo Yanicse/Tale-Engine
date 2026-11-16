@@ -21,6 +21,8 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The command reference documents every option of `novel play` (`--campaign`, `--search`, `--planner-effort`, `--planner-delay`, `--codex`, `--claude`). Every `novel` subcommand and option has a help text that says what it does, and `novel --help` lists `.md` among the book formats `novel ingest` accepts.
 - A Windows `claude.cmd` shim, which cannot carry the answer contract, is reported with its remedy.
 - Tests ported: creations, bounded recovery, a twenty-action public session and a two-process lock. New checks guard the wording of the code, prompts, rules, comments, test data, test names, the reading page source and the agreement of nouns with numbers.
+- `opening_minute_of_day` in `theme.json` gives the local time at which the story opens. Dates sent to the narrator, the planner and the reading page then read as a real local time (`Day 2, 15:20`), the dial of the page follows that hour, and the chronicler receives the minute of the next local midnight so that a night event is dated at night. Without the key, dates stay elapsed time since the opening.
+- The narrator's agenda clock carries `turns_without_time`, the number of latest turns that left the clock still, and the transport prompt asks for a final event at the stopping time whenever the story advances.
 
 ### Changed
 
@@ -36,6 +38,13 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - Documentation: the pages no longer use "the engine" for two things in one sentence, say "change them with `--model`", "is neither read nor charged again" and "possessions, money and mana costs", state that `novel canon build` defaults to the manual engine, open the reading page documentation with `novel read`, count about 140 page texts and explain `LANGUAGE_NAMES`, and name `novel play --inventory --json` instead of the internal `play_narrative.py` script. The `corpus/` folder is no longer said to be created, and `campaign_cli` reads the active campaign by default, except `init` and `action-demo`.
 - The bundled story *The Salt Lantern* agrees with itself: the inspector arrives "the morning after the lantern was stolen", the keeper climbs the stairs "after nightfall to trim the wick" (the lantern was already burning when it went dark), the money is labeled "gold crowns" and "silver gulls" like in the text and the canon, and the clocks belong to "Corwen Pike" and "the Tidewrights".
 - The test data is English again (about thirty French words translated, "travelling" is "traveling"), test names and docstrings follow the wording of the code ("evidence", "established", `ReaderTests`), and two code lists no longer repeat an item. The terminal demo test sends the documented `quit` command instead of the French `quitter`.
+- The agenda checks a turn against the time it really ends: a mechanical operation dated after its event stretches the turn, and a deadline inside that stretch is now seen (the refusal names both end minutes). Operation dates given as offsets from the start of the turn, or up to a minute early, are corrected instead of refused.
+- A quiet entry no longer blocks every later turn once it is overdue: a non-interrupting entry missed by an earlier turn, a backstage step due on the minute the turn starts or stops at the arcs review, and the off-screen steps of tracked NPCs stay due and are proposed again. Interruptions, chronicle manifestations and agreements stay strict.
+- A scene that ends up to three hours past the arcs review is brought back to the review instead of being refused; during a long activity a new backstage follow-up dated inside the jump moves after its stopping point; a chronicle sign closed on a purely observable private event is shown to the player. Each repair is reported in the turn metrics.
+- An activity spread over several days ("for five days", "for a week", "until an important event") counts as a long activity, with the usual spellings "till" and "'til".
+- A commitment written as a free-form object is brought to the state schema, and a declarative public consequence (commitment, knowledge, project) follows the final state: dropped when nothing was written, aligned when its value differs.
+- The agenda refusals for a crossed deadline and for an open agreement name the entry and the expected minute and second. The agenda, structure and possessions prompts explain how to settle an agreement, where player knowledge and intentions are written, and what to do with recovered goods that were never registered.
+- The reading page gives speech that follows narration in the same paragraph its own dialogue paragraph, also in the Scene tab, and hides the day/night filter of the abilities when no ability belongs to a phase.
 
 ### Fixed
 
@@ -45,6 +54,10 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - With installed mechanics, the narrator's instructions announce the envelope version 1.3 that the answer schema requires; they still said 1.2 because the switch looked for the French sentence.
 - An object without a figure is refused as a `Null quantity (not counted)` when its precision is not `unknown`; the message said `Zero quantity`, which told the model that an uncounted quantity was zero.
 - The common rules say that a missing knowledge attribution does not mean an NPC does not know a fact (a calque of "ignorer"), and that reopening or resuming never refills a charge or ends a cooldown. The possessions rules say "buying what is still missing within the available funds" instead of "buying the balance".
+- A narrator may cite a private arc fact (`arc_fact:`) it was given when it schedules a deadline in a manual application.
+- Narration that arrives with escaped quotes or line breaks is recorded and shown as prose.
+- "You spend the day at home" is no longer read as an expense without a monetary operation.
+- The reading page no longer shows an exchange twice when two refreshes overlap.
 
 ### Removed
 
