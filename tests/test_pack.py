@@ -54,7 +54,7 @@ class PackCampaignTest(unittest.TestCase):
             folder = tmp / 'packtest'
             novel = json.loads((folder / 'novel.json').read_text(encoding='utf-8'))
             novel.update(language='fr', tracked_npcs=[{'name': 'Captain Vale', 'goal': 'find the map'}],
-                         world_rules=['Magic costs a day of rest.'], currency_rates={'gold': {'silver': 100}})
+                         world_rules=['Magic costs a day of rest.'], quiet_news={'interval_minutes': 480}, currency_rates={'gold': {'silver': 100}})
             (folder / 'novel.json').write_text(json.dumps(novel), encoding='utf-8')
             theme = json.loads((folder / 'theme.json').read_text(encoding='utf-8'))
             theme.update(title='The Vale Logs', subtitle='Frontier', labels={'send': 'Envoyer'}, clock=False)
@@ -83,6 +83,7 @@ class PackCampaignTest(unittest.TestCase):
                 agenda = campaign.world_agenda('narrator')
                 self.assertIn('npc_step:captain_vale', [e['entry_id'] for e in agenda['events']])
                 self.assertEqual(campaign.config()['world_rules'], ['Magic costs a day of rest.'])
+                self.assertEqual(campaign.config()['quiet_news'], {'interval_minutes': 480, 'urgent_every': 3})
             finally:
                 if before is None:
                     active.unlink(missing_ok=True)

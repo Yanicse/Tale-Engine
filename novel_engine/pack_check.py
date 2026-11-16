@@ -11,7 +11,7 @@ from pathlib import Path
 from .pack import COLOR_KEYS, COLOR_VALUE, ICON_CATEGORIES, ICON_DIR, ICON_NAME, ICON_PATTERN, PRESETS, TEXT_LIMIT
 from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 
-NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening'}
+NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening', 'quiet_news'}
 THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock', 'opening_minute_of_day'}
 SHEET_KEYS = {'name', 'hp_max', 'mana_max', 'description', 'rules'}
 RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'costs', 'charges', 'solar_schedule',
@@ -138,6 +138,23 @@ def check_novel(novel, report):
         for number, rule in enumerate(rules):
             if len(rule) > 400:
                 report.warn(name, f'world_rules[{number}] is longer than 400 characters and is cut')
+    news = novel.get('quiet_news')
+    if news is not None:
+        if not isinstance(news, dict):
+            report.error(name, "'quiet_news' must be an object")
+        else:
+            unknown_keys(news, {'interval_minutes', 'urgent_every', 'instruction'}, name + ': quiet_news', report)
+            interval = news.get('interval_minutes')
+            if type(interval) is not int or not 30 <= interval <= 43200:
+                report.error(name, 'quiet_news.interval_minutes must be a whole number of minutes from 30 to 43200')
+            every = news.get('urgent_every', 3)
+            if type(every) is not int or not 0 <= every <= 100:
+                report.error(name, 'quiet_news.urgent_every must be a whole number from 0 (never urgent) to 100')
+            instruction = news.get('instruction', '')
+            if not isinstance(instruction, str):
+                report.error(name, 'quiet_news.instruction must be text')
+            elif len(instruction) > 400:
+                report.warn(name, 'quiet_news.instruction is longer than 400 characters and is cut')
     opening = novel.get('opening')
     if opening is not None:
         if not isinstance(opening, dict) or not all(isinstance(opening.get(k), str) and opening[k].strip()

@@ -1,7 +1,7 @@
 """Novel pack: the files that make one novel playable, and their validation.
 
 novels/<slug>/
-  novel.json      title, language, tracked_npcs, currency_rates, world_rules
+  novel.json      title, language, tracked_npcs, currency_rates, world_rules, quiet_news
   character.json  the player's protagonist (name, hp_max, description, rules)
   theme.json      reader presentation: preset, colors, labels, icons, texts
   canon.sqlite    generated, ignored by git
@@ -142,6 +142,9 @@ def campaign_config(pack_dir, base):
     world = [text(r, 400) for r in novel.get('world_rules') or [] if text(r, 400)]
     if world:
         config['world_rules'] = world[:30]
+    from .scene_pacing import clean_quiet_news
+    if news := clean_quiet_news(novel.get('quiet_news')):
+        config['quiet_news'] = news
     return config
 
 

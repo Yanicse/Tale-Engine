@@ -318,7 +318,11 @@ class Campaign:
             if agenda.exists() and result['status']=='recorded':
                 agenda.apply(proposal['request_id'],changes['updates'],changes['continuation'],
                              changes['roll_checks'],result['world_minute_after'])
-                agenda.sync_commitments(self._state(con))
+                current = self._state(con)
+                agenda.sync_commitments(current)
+                if not background and not was_recorded and config.get('quiet_news'):
+                    from .scene_pacing import record_quiet_news
+                    record_quiet_news(agenda, config, reminder_before, current, result, changes)
             if not background:
                 planner.record_turn(proposal,result,before)
             if result['status']=='recorded':

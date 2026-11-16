@@ -10,9 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from novel_engine import scene_pacing
-from novel_engine.agenda import Agenda
+from novel_engine.agenda import Agenda, QUIET_NEWS_PREFIX
 from novel_engine.campaign import Campaign
-from novel_engine.demo import initial_state, configuration
+from novel_engine.demo import initial_state, configuration, event, proposal
 from novel_engine.narrative import NarrativeLoop
 from test_planner import FakeNarrator
 
@@ -141,6 +141,105 @@ class ValidationTests(unittest.TestCase):
         other = {**self.directive(3), 'entry_id': 'other'}
         with self.assertRaises(ValueError):
             scene_pacing.validate([self.directive(1), other], self.proposal(), [self.update('done')])
+
+
+class QuietNewsTests(SceneFixture):
+    INTERVAL = 360
+
+    def setUp(self):
+        super().setUp()
+        with self.c.transaction() as con:
+            config = json.loads(con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0])
+            config['quiet_news'] = {'interval_minutes': self.INTERVAL, 'urgent_every': 3,
+                                    'instruction': 'Prefer news from the harbor.'}
+            con.execute('UPDATE campaign SET config=? WHERE id=1', (json.dumps(config),))
+            con.execute('DELETE FROM world_agenda WHERE entry_id=?', (ENTRY['entry_id'],))
+        self.now = self.c.state()['world_minute']
+
+    def agenda(self):
+        return self.c.world_agenda('narrator')['events']
+
+    def play_at(self, minute, entry=None, moves=(), status='finished', audience=None):
+        state = self.c.state()
+        cause = ['agenda:' + entry['entry_id']] if entry else None
+        fact = event(state, 'A moment in the story.', list(moves), minute=minute, causes=cause, audience=audience)
+        updates = []
+        continuation = None
+        if entry:
+            updates.append({k: v for k, v in entry.items() if k not in ('revision', 'reference', 'date')})
+            updates[0].update(status=status, expected_revision=entry['revision'], outcome_event_index=0)
+            if entry['interrupt']:
+                continuation = {'goal': 'Continue the evening', 'remaining': 'Make a choice',
+                                'status': 'suspended', 'event_index': 0}
+        turn = proposal(state, 'A moment in the story.', [fact])
+        return self.c.apply(turn, agenda_changes={'updates': updates, 'continuation': continuation, 'roll_checks': []})
+
+    def first_news(self):
+        self.assertEqual(self.play_at(self.now + 2)['status'], 'recorded')
+        return self.agenda()[0]
+
+    def test_news_is_scheduled_on_the_fictional_clock_and_stays_private(self):
+        first = self.first_news()
+        self.assertEqual((first['entry_id'], first['due_minute'], first['interrupt']),
+                         (QUIET_NEWS_PREFIX + '1', self.now + 2 + self.INTERVAL, False))
+        self.assertIn('Prefer news from the harbor.', first['reason'])
+        self.assertEqual(self.c.world_agenda()['events'], [])
+        guidance = self.c.world_agenda('narrator')['pacing_guidance']
+        self.assertEqual(guidance['pack_instruction'], 'Prefer news from the harbor.')
+        self.assertNotIn('pacing_guidance', self.c.world_agenda())
+        for step in (3, 4, 5):
+            self.assertEqual(self.play_at(self.now + step)['status'], 'recorded')
+        self.assertEqual(self.agenda(), [first])
+
+    def test_news_must_be_shown_to_the_player_and_cannot_be_moved(self):
+        first = self.first_news()
+        due = first['due_minute']
+        self.assertIn('show the news', self.play_at(due + 1)['reason'])
+        self.assertIn('not perceived', self.play_at(due, first, audience=['narrator'])['reason'])
+        self.assertIn('Keep this pacing deadline', self.play_at(due, first, status='cancelled')['reason'])
+        created = {**{k: v for k, v in first.items() if k not in ('revision', 'reference', 'date')},
+                   'entry_id': QUIET_NEWS_PREFIX + '9', 'expected_revision': -1, 'due_minute': due + 5,
+                   'status': 'planned', 'outcome_event_index': None}
+        turn = proposal(self.c.state(), 'A moment in the story.', [])
+        refused = self.c.apply(turn, agenda_changes={'updates': [created], 'continuation': None, 'roll_checks': []})
+        self.assertIn('created by the pacing scheduler', refused['reason'])
+
+    def test_every_third_delivered_news_asks_for_a_choice(self):
+        self.first_news()
+        for urgent in (False, False, True, False, False, True):
+            entry = self.agenda()[0]
+            self.assertEqual(entry['interrupt'], urgent)
+            self.assertEqual(self.play_at(entry['due_minute'], entry)['status'], 'recorded')
+
+    def test_a_fight_resets_the_news_deadline_until_it_ends(self):
+        first = self.first_news()
+        path = '/resources/player_combat_active'
+        fight = self.play_at(first['due_minute'], moves=[{'operation': 'set', 'path': path, 'value': 1}])
+        self.assertEqual(fight['status'], 'recorded', fight)
+        self.assertEqual(self.agenda(), [])
+        end = first['due_minute'] + 10
+        self.assertEqual(self.play_at(end, moves=[{'operation': 'set', 'path': path, 'value': 0}])['status'], 'recorded')
+        second = self.agenda()[0]
+        self.assertEqual((second['entry_id'], second['due_minute']), (QUIET_NEWS_PREFIX + '2', end + self.INTERVAL))
+
+    def test_nothing_is_scheduled_without_the_pack_option(self):
+        with self.c.transaction() as con:
+            config = json.loads(con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0])
+            del config['quiet_news']
+            con.execute('UPDATE campaign SET config=? WHERE id=1', (json.dumps(config),))
+        self.assertEqual(self.play_at(self.now + 2)['status'], 'recorded')
+        self.assertEqual(self.agenda(), [])
+        self.assertNotIn('pacing_guidance', self.c.world_agenda('narrator'))
+
+
+class QuietNewsOptionTests(unittest.TestCase):
+    def test_option_is_reduced_to_valid_values(self):
+        clean = scene_pacing.clean_quiet_news
+        self.assertEqual(clean({'interval_minutes': 360}), {'interval_minutes': 360, 'urgent_every': 3})
+        self.assertEqual(clean({'interval_minutes': 720, 'urgent_every': 0, 'instruction': '  Harbor  first. '}),
+                         {'interval_minutes': 720, 'urgent_every': 0, 'instruction': 'Harbor first.'})
+        for bad in (None, [], {}, {'interval_minutes': 5}, {'interval_minutes': '360'}, {'interval_minutes': True}):
+            self.assertIsNone(clean(bad))
 
 
 if __name__ == '__main__':

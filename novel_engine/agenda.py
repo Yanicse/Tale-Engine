@@ -14,6 +14,7 @@ PACKET_LIMIT = 16
 PACKET_CHARS = 16000
 RESPONSE_LIMIT = 32
 CHRONICLE_PREFIX = 'chronicle:'
+QUIET_NEWS_PREFIX = 'pacing:quiet_news:'
 CHRONICLE_REPORTS = 2
 CHRONICLE_REPORT_DELAY = 2 * 1440
 # A scene may run this many minutes past the arcs review before it has to be cut (3 hours).
@@ -21,8 +22,8 @@ ARC_HORIZON_TOLERANCE = 180
 
 
 def manifests(entry):
-    """An interruption or a manifestation of the chronicle must be perceived by the player."""
-    return bool(entry['interrupt'] or entry['entry_id'].startswith(CHRONICLE_PREFIX))
+    """An interruption, a manifestation of the chronicle or quiet news must be perceived by the player."""
+    return bool(entry['interrupt'] or entry['entry_id'].startswith((CHRONICLE_PREFIX, QUIET_NEWS_PREFIX)))
 
 
 def opening_minute(config):
@@ -243,6 +244,8 @@ class Agenda:
                          'date and the deadline dates are real local times; world_minute counts the minutes elapsed since the opening')}
         if recipient=='narrator':
             clock['turns_without_time']=self.turns_without_time(state['world_minute'])
+        from .scene_pacing import quiet_guidance
+        guidance=quiet_guidance(self.con) if recipient=='narrator' else None
         return {'clock':clock,
                 'events':entries,'context_limit':PACKET_LIMIT,'character_budget':PACKET_CHARS,
                 'chronicle_constraints':self.chronicle_constraints(entries) if recipient=='narrator' else {},
@@ -250,7 +253,8 @@ class Agenda:
                 'arcs_review_horizon':arc_horizon,
                 'technical_diagnostic':self.selection_diagnostic,
                 'interrupted_goal':continuation if recipient=='narrator' else None,
-                'd100_rolls':self.rolls(root) if root and recipient=='narrator' else {}}
+                'd100_rolls':self.rolls(root) if root and recipient=='narrator' else {},
+                **({'pacing_guidance':guidance} if guidance else {})}
 
     def _evolve(self, state, event):
         if not conditions_hold(state,event['conditions']):
@@ -523,6 +527,12 @@ class Agenda:
             if identifier not in known:
                 raise ValueError('Time jump too long for the provided agenda; stop before the unloaded deadlines.')
             if identifier not in resolved:
+                if identifier.startswith(QUIET_NEWS_PREFIX):
+                    from .scene_pacing import quiet_news_overtaken
+                    # A fight or another interruption takes over: the scheduler resets the entry after the turn.
+                    if quiet_news_overtaken(state,effective,updates,known[identifier]['due_minute'],continuation):
+                        continue
+                    raise ValueError('Forgotten deadline: '+identifier+'; show the news reaching the player.')
                 # A routine step that is already postponed, without interruption, simply stays due:
                 # it will be proposed late at the next turn instead of making this one rejected.
                 if self._is_postponed_follow_up(identifier):
@@ -563,6 +573,13 @@ class Agenda:
                 raise ValueError('Future event missing from the authorized context.')
             if old and old['status'] not in ACTIVE:
                 raise ValueError('Future event already finished.')
+            quiet_news=update['entry_id'].startswith(QUIET_NEWS_PREFIX)
+            if quiet_news:
+                if old is None:
+                    raise ValueError('Quiet news entries are created by the pacing scheduler.')
+                if update['status'] in ('planned','postponed','cancelled'):
+                    raise ValueError('Keep this pacing deadline. Show it as due, or leave it alone if a fight '
+                                     'or another urgent event has already taken over.')
             if update['entry_id'].startswith(CHRONICLE_PREFIX):
                 self._check_chronicle(old,update)
             for condition in update['conditions']:
@@ -624,9 +641,11 @@ class Agenda:
                     raise ValueError('A resolution cannot depend on a future fact within this turn.')
                 if update['status'] in ('done','finished') and not conditions_hold(at,planned['conditions']):
                     raise ValueError('Project conditions not met; cancel or postpone with a cause.')
-                if (update['status'] in ('done','finished') and planned['entry_id'].startswith(CHRONICLE_PREFIX)
+                if (update['status'] in ('done','finished')
+                        and planned['entry_id'].startswith((CHRONICLE_PREFIX,QUIET_NEWS_PREFIX))
                         and 'player' not in outcome['audience']):
-                    raise ValueError('Chronicle manifestation not perceived by the player: '+update['entry_id']+
+                    label='Quiet news' if quiet_news else 'Chronicle manifestation'
+                    raise ValueError(label+' not perceived by the player: '+update['entry_id']+
                                      '. The event '+str(index)+' must show the sign or the event to the player character.')
                 if update['status'] in ('done','finished') and planned['interrupt']:
                     if 'player' not in outcome['audience']:

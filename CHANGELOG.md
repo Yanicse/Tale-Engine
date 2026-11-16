@@ -23,6 +23,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - Tests ported: creations, bounded recovery, a twenty-action public session and a two-process lock. New checks guard the wording of the code, prompts, rules, comments, test data, test names, the reading page source and the agreement of nouns with numbers.
 - `opening_minute_of_day` in `theme.json` gives the local time at which the story opens. Dates sent to the narrator, the planner and the reading page then read as a real local time (`Day 2, 15:20`), the dial of the page follows that hour, and the chronicler receives the minute of the next local midnight so that a night event is dated at night. Without the key, dates stay elapsed time since the opening.
 - The narrator's agenda clock carries `turns_without_time`, the number of latest turns that left the clock still, and the transport prompt asks for a final event at the stopping time whenever the story advances.
+- `quiet_news` in `novel.json` schedules recurring news during quiet stretches of the story: one private agenda entry every `interval_minutes` of fictional time, which the narrator must show reaching the player character; every `urgent_every`-th one interrupts and asks for a choice, and a fight resets the pending entry. The pack may add its own `instruction`. Without the key nothing is scheduled.
 
 ### Changed
 
@@ -45,6 +46,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - A commitment written as a free-form object is brought to the state schema, and a declarative public consequence (commitment, knowledge, project) follows the final state: dropped when nothing was written, aligned when its value differs.
 - The agenda refusals for a crossed deadline and for an open agreement name the entry and the expected minute and second. The agenda, structure and possessions prompts explain how to settle an agreement, where player knowledge and intentions are written, and what to do with recovered goods that were never registered.
 - The reading page gives speech that follows narration in the same paragraph its own dialogue paragraph, also in the Scene tab, and hides the day/night filter of the abilities when no ability belongs to a phase.
+- The fictional clock of the reading page sits above the input box, with a smaller dial, and its date stays visible on a narrow screen.
 
 ### Fixed
 
