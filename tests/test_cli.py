@@ -16,6 +16,7 @@ from unittest import mock
 from novel_engine import canon_build, cli, ingest, pack
 from novel_engine.campaign import Campaign
 from novel_engine.contracts import ROOT
+from home import isolated_home
 from novel_engine.demo import configuration, initial_state
 from novel_engine.memory import CanonRepository
 
@@ -34,11 +35,8 @@ RESPONSE = {'entities': [{'id': 'mira', 'kind': 'character', 'name': 'Mira', 'al
 
 class CliTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix='.tmp-cli-', dir=ROOT))
-        patch = mock.patch.object(cli, 'NOVELS', self.tmp)
-        patch.start()
-        self.addCleanup(patch.stop)
-        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.home = isolated_home(self)
+        self.tmp = self.home / 'novels'
 
     def run_cli(self, *argv):
         return cli.main(list(argv))
@@ -145,21 +143,10 @@ class CliTest(unittest.TestCase):
         (pack / 'work' / (batch['id'] + '.response.json')).write_text(json.dumps(RESPONSE), encoding='utf-8')
         canon_build.build(pack, 'manual', log=lambda *_: None)
         self.run_cli('character', 'new', 'clitest', '--name', 'Ana', '--hp', '50')
-        active = resume.ACTIVE
-        before = active.read_text(encoding='utf-8') if active.is_file() else None
-        campaigns = ROOT / 'campaigns' / 'clitest'
-        existed = campaigns.exists()
-        try:
-            self.run_cli('campaign', 'new', 'clitest')
-            selected, campaign = resume.active_campaign()
-            self.assertEqual(campaign.config()['player_name'], 'Ana')
-        finally:
-            if before is None:
-                active.unlink(missing_ok=True)
-            else:
-                active.write_text(before, encoding='utf-8')
-            if not existed:
-                shutil.rmtree(campaigns, True)
+        self.run_cli('campaign', 'new', 'clitest')
+        selected, campaign = resume.active_campaign()
+        self.assertEqual(campaign.config()['player_name'], 'Ana')
+        self.assertTrue(campaign.path.is_relative_to(self.home / 'campaigns'))
 
     def fails(self, *argv):
         with self.assertRaises(SystemExit) as stop:

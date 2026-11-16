@@ -27,6 +27,8 @@ The suite takes a couple of minutes and needs no account, no network and no mode
   (`tests/test_ui_text.py` checks it), then use it in the page with `tr('key')` or `data-t`.
 - **No books, no canon, no saves in git.** Never commit `*.sqlite`, book files, `text/` or `work/` of a pack. The
   bundled example is an original story: keep example data original too.
+- **Tests never touch your campaigns.** A test that needs `novels/` or `campaigns/` takes a throwaway home with
+  `isolated_home` (`tests/home.py`); `tests/test_home.py` refuses a test that names the real folders.
 - **Use `novel validate` and the example** (`novel example --slug scratch`) to try a change end to end.
 
 ## Checks that run for you

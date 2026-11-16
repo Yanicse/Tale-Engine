@@ -1,37 +1,24 @@
 """The bundled example novel installs end to end, with no account and no model."""
 import json
-import shutil
 import sqlite3
-import tempfile
 import unittest
 from contextlib import closing
-from pathlib import Path
 from unittest import mock
 
 from novel_engine import cli, resume
-from novel_engine.contracts import ROOT
 from novel_engine.memory import CanonRepository
 from novel_engine.reader import Reader
+from home import isolated_home
 
 ANSWER = json.loads((cli.EXAMPLE / 'canon_answer.json').read_text(encoding='utf-8'))
 
 
 class ExampleNovelTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix='.tmp-example-', dir=ROOT))
-        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.home = isolated_home(self)
+        self.tmp = self.home / 'novels'
         self.slug = 'exampletest'
-        self.target = ROOT / 'campaigns' / self.slug
-        self.addCleanup(shutil.rmtree, self.target, True)
-        self.active = resume.ACTIVE
-        self.before = self.active.read_text(encoding='utf-8') if self.active.is_file() else None
-        self.addCleanup(self.restore_active)
-
-    def restore_active(self):
-        if self.before is None:
-            self.active.unlink(missing_ok=True)
-        else:
-            self.active.write_text(self.before, encoding='utf-8')
+        self.target = self.home / 'campaigns' / self.slug
 
     def install(self):
         with mock.patch.object(cli, 'NOVELS', self.tmp):

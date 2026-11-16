@@ -7,22 +7,20 @@ from contextlib import redirect_stdout
 import io
 import json
 from pathlib import Path
-import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from novel_engine import cli, resume
+from novel_engine import cli
 from novel_engine.adapters import ModelUnavailable
 from novel_engine.agenda import Agenda
 from novel_engine.campaign import Campaign
-from novel_engine.contracts import ROOT as HOME
 from novel_engine.narrative import NarrativeLoop, narrative_lock
 from novel_engine.scripts.play_narrative import main
+from home import isolated_home
 from test_loop_audit import LocalNarrator, LocalPlanner
 
 WORKER = ROOT / 'tests' / 'process_worker.py'
@@ -32,25 +30,15 @@ class SessionFixture(unittest.TestCase):
     slug = 'publicsequence'
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix='.tmp-session-', dir=HOME))
-        self.addCleanup(shutil.rmtree, self.tmp, True)
-        self.target = HOME / 'campaigns' / self.slug
-        self.addCleanup(shutil.rmtree, self.target, True)
-        self.active = resume.ACTIVE
-        self.before = self.active.read_text(encoding='utf-8') if self.active.is_file() else None
-        self.addCleanup(self.restore_active)
+        self.home = isolated_home(self)
+        self.tmp = self.home / 'novels'
+        self.target = self.home / 'campaigns' / self.slug
         with mock.patch.object(cli, 'NOVELS', self.tmp), redirect_stdout(io.StringIO()):
             cli.main(['example', '--slug', self.slug])
         self.path = self.target / 'campaign.sqlite'
         self.c = Campaign(self.path)
         self.control = self.tmp / 'control.txt'
         LocalNarrator.control = LocalPlanner.control = self.control
-
-    def restore_active(self):
-        if self.before is None:
-            self.active.unlink(missing_ok=True)
-        else:
-            self.active.write_text(self.before, encoding='utf-8')
 
     def cli(self, *args, expect=0):
         output = io.StringIO()

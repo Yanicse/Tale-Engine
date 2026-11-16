@@ -15,6 +15,7 @@ from novel_engine.campaign import Campaign
 from novel_engine.contracts import ROOT as HOME
 from novel_engine.demo import action, configuration, event, initial_state, proposal
 from novel_engine.memory import CanonRepository, ContextBuilder
+from home import isolated_home
 
 SCHEMAS = ROOT / 'novel_engine' / 'assets' / 'docs' / 'engine' / 'contracts'
 
@@ -22,25 +23,19 @@ SCHEMAS = ROOT / 'novel_engine' / 'assets' / 'docs' / 'engine' / 'contracts'
 class Fixture(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp(prefix='.tmp-knowledge-', dir=HOME))
+        # The example is installed in a throwaway home; only its canon is kept, copied under the real one.
         cls.slug = 'knowledgetest'
-        before = HOME / 'campaigns' / 'active.json'
-        saved = before.read_text(encoding='utf-8') if before.is_file() else None
-        with mock.patch.object(cli, 'NOVELS', cls.tmp):
+        home = isolated_home(cls)
+        with mock.patch.object(cli, 'NOVELS', home / 'novels'):
             import contextlib
             import io
             with contextlib.redirect_stdout(io.StringIO()):
                 cli.main(['example', '--slug', cls.slug])
-        shutil.rmtree(HOME / 'campaigns' / cls.slug, True)
-        if saved is None:
-            before.unlink(missing_ok=True)
-        else:
-            before.write_text(saved, encoding='utf-8')
-        cls.canon = cls.tmp / cls.slug / 'canon.sqlite'
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp, True)
+        cls.tmp = Path(tempfile.mkdtemp(prefix='.tmp-knowledge-', dir=HOME))
+        cls.canon = cls.tmp / 'canon.sqlite'
+        shutil.copyfile(home / 'novels' / cls.slug / 'canon.sqlite', cls.canon)
+        cls.doClassCleanups()
+        cls.addClassCleanup(shutil.rmtree, cls.tmp, True)
 
     def setUp(self):
         base = HOME / '.tmp-tests'

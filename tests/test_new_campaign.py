@@ -5,38 +5,26 @@ import io
 import json
 import shutil
 import sqlite3
-import tempfile
 import unittest
-from pathlib import Path
 from unittest import mock
 
-from novel_engine import cli, resume, world_setup
+from novel_engine import cli, world_setup
 from novel_engine.arcs import ArcRegistry
-from novel_engine.contracts import ROOT
 from novel_engine.pack_check import check_pack
 from novel_engine.planner import WorldPlanner
+from home import isolated_home
 
 
 class Fixture(unittest.TestCase):
     slug = 'newcampaigntest'
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix='.tmp-newcampaign-', dir=ROOT))
-        self.addCleanup(shutil.rmtree, self.tmp, True)
-        self.target = ROOT / 'campaigns' / self.slug
-        self.addCleanup(shutil.rmtree, self.target, True)
-        self.active = resume.ACTIVE
-        self.before = self.active.read_text(encoding='utf-8') if self.active.is_file() else None
-        self.addCleanup(self.restore_active)
+        self.home = isolated_home(self)
+        self.tmp = self.home / 'novels'
+        self.target = self.home / 'campaigns' / self.slug
         patch = mock.patch.object(cli, 'NOVELS', self.tmp)
         patch.start()
         self.addCleanup(patch.stop)
-
-    def restore_active(self):
-        if self.before is None:
-            self.active.unlink(missing_ok=True)
-        else:
-            self.active.write_text(self.before, encoding='utf-8')
 
     def quiet(self, *argv):
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):

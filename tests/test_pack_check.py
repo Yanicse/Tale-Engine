@@ -11,6 +11,7 @@ from unittest import mock
 from novel_engine import cli, pack
 from novel_engine.character import ability_context
 from novel_engine.contracts import ROOT
+from home import isolated_home
 from novel_engine.pack_check import check_pack
 
 
@@ -226,11 +227,12 @@ class CommandsTest(PackFiles):
         self.assertIn('ERROR   theme.json', output)
 
     def test_campaign_new_refuses_a_pack_with_errors(self):
+        home = isolated_home(self)
         write(self.dir, 'theme.json', {'preset': 'neon'})
         (self.dir / 'canon.sqlite').write_bytes(b'')
         code, output = self.run_cli('campaign', 'new', 'demo')
         self.assertIn('Fix the errors above first', str(code))
-        self.assertFalse((ROOT / 'campaigns' / 'demo').exists())
+        self.assertEqual(list((home / 'campaigns').iterdir()), [])
 
     def test_the_assistant_builds_rules_from_ability_specs(self):
         self.assertEqual(cli.parse_ability('Tide Sense:Tide sense:0'), ('tide_sense', 'Tide sense', 0))
