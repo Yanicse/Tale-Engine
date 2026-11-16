@@ -55,6 +55,18 @@ class PageSourceTests(unittest.TestCase):
         self.assertTrue('.settings .sidePanel{left:12px;right:12px;min-width:0}' in narrow)
         self.assertTrue('white-space:normal' in narrow)
 
+    def test_a_failed_first_load_is_retried_and_every_tab_is_refreshed(self):
+        cycle = re.search(r"function cycle\(\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertFalse('firstTime' in PAGE)
+        self.assertTrue('if(!ready){ready=true;showTabs();loadTab();return}' in cycle)
+        self.assertTrue('loadConfig()' in cycle)
+        self.assertTrue('initialStory()' in cycle)
+        self.assertTrue('refreshTab()' in cycle)
+        self.assertFalse("current==='npc'" in cycle)
+        refresh = re.search(r"function refreshTab\(\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertTrue('fieldBusy()' in refresh)
+        self.assertTrue('window.scrollTo(0,y)' in refresh)
+
 
 if __name__ == '__main__':
     unittest.main()

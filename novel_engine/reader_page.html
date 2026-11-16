@@ -577,14 +577,15 @@ function initialStory(){
   var topAnchor=el('div');topAnchor.id='topAnchor';content.appendChild(topAnchor);
   var listEl=el('div');listEl.id='listEl';content.appendChild(listEl);
   var target=/^#exchange-(\d+)$/.exec(location.hash);
+  storyLoading=true;
   get('/api/story?n=20'+(target?'&before='+(Number(target[1])+1):'')).then(function(r){
-    olderLoaded=r.older;first=r.exchanges.length?r.exchanges[0].seq:null;
+    storyLoading=false;olderLoaded=r.older;first=r.exchanges.length?r.exchanges[0].seq:null;
     showMore(topAnchor);
     r.exchanges.forEach(function(e){listEl.appendChild(turn(e))});
     newest=state?state.exchange_count:0;listEl.dataset.loaded='1';
     if(location.hash.indexOf('#exchange-')===0){var c=document.getElementById(location.hash.slice(1));if(c){c.scrollIntoView();return}}
     scrollList();
-  }).catch(error);
+  }).catch(function(e){storyLoading=false;error(e)});
 }
 
 function showMore(topAnchor){
@@ -639,7 +640,7 @@ function scene(){
 }
 
 function possessions(){
-  get('/api/possessions').then(function(r){
+  return get('/api/possessions').then(function(r){
     if(current!=='possessions')return;
     clearList(content);
     content.appendChild(el('h2',null,tr('purse.title')));
@@ -668,7 +669,7 @@ function possessions(){
 }
 
 function agenda(){
-  get('/api/agenda').then(function(r){
+  return get('/api/agenda').then(function(r){
     if(current!=='agenda')return;
     clearList(content);content.appendChild(el('p','state-list',tr('clock.label')+r.clock.date));
     var ch=el('div','chrono');
@@ -686,7 +687,7 @@ function agenda(){
 var npcSearch='';
 function tint(name){var h=0;for(var i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))%360;return h}
 function npc(){
-  get('/api/npc').then(function(r){
+  return get('/api/npc').then(function(r){
     if(current!=='npc')return;
     clearList(content);
     content.appendChild(el('h2',null,tr('npc.title')));
@@ -719,7 +720,7 @@ function npc(){
 }
 
 function summaries(){
-  get('/api/summaries').then(function(r){
+  return get('/api/summaries').then(function(r){
     if(current!=='summaries')return;
     clearList(content);
     r.summaries.slice().reverse().forEach(function(s){var c=el('div','card');c.appendChild(el('h3',null,s.reference));paragraphs(c,s.text||'');content.appendChild(c)});
@@ -728,7 +729,7 @@ function summaries(){
 }
 
 function abilities(){
-  get('/api/abilities').then(function(r){
+  return get('/api/abilities').then(function(r){
     if(current!=='abilities')return;
     clearList(content);
     function resourceBar(key,current,maximum,extraClass){
@@ -788,7 +789,7 @@ function abilities(){
 }
 
 function creations(){
-  get('/api/creations').then(function(r){
+  return get('/api/creations').then(function(r){
     if(current!=='creations')return;
     clearList(content);var g=el('div','grid');
     r.creations.forEach(function(c){g.appendChild(cardBadge(c.name,word('status',c.status),'',c.traits||[],'quill-ink'))});
@@ -801,8 +802,9 @@ function error(e){var z=document.getElementById('state');clearList(z);z.classNam
 
 function loadTab(){
   content.className='c-'+current;
-  ({story:initialStory,scene:scene,npc:npc,possessions:possessions,agenda:agenda,summaries:summaries,abilities:abilities,creations:creations})[current]();
+  var shown=({story:initialStory,scene:scene,npc:npc,possessions:possessions,agenda:agenda,summaries:summaries,abilities:abilities,creations:creations})[current]();
   bottomVisible();
+  return shown;
 }
 
 function applyTitles(name){
@@ -851,14 +853,27 @@ function renderHeader(){
   if(state.has_pending_action)z.appendChild(el('span','chip waiting',tr('header.pending')));
 }
 
-function cycle(firstTime){
-  get('/api/state').then(function(e){
+// ready: the tabs have been drawn once. cfgLoaded: /api/config was read. Both are retried at each poll until they succeed.
+var ready=false,cfgLoaded=false,cfgTried=false,tabStale=false,storyLoading=false;
+// A search or filter field of the shown tab that has the focus or holds text must not be thrown away by a refresh.
+function fieldBusy(){var f=content.querySelector('input');return !!(f&&(f.value||document.activeElement===f))}
+function refreshTab(){
+  if(current==='story')return;
+  if(fieldBusy()){tabStale=true;return}
+  tabStale=false;
+  var y=window.scrollY,shown=loadTab();
+  if(shown&&shown.then)shown.then(function(){window.scrollTo(0,y)});
+}
+function cycle(){
+  var retry=cfgLoaded?Promise.resolve():loadConfig().then(function(){if(cfgLoaded)ready=false});
+  retry.then(function(){return get('/api/state')}).then(function(e){
     var before=state;state=e;renderHeader();waitingButtons();updateClock();applyTheme();
-    if(firstTime){showTabs();loadTab();return}
+    if(!ready){ready=true;showTabs();loadTab();return}
     if(before&&before.creations_tab!==e.creations_tab)showTabs();
-    newTurns();
-    if(current==='scene'&&before&&(before.state_version!==e.state_version||before.has_pending_action!==e.has_pending_action))scene();
-    if(current==='npc'&&before&&before.state_version!==e.state_version)npc();
+    var listEl=document.getElementById('listEl');
+    if(current==='story'&&!query&&!storyLoading&&!(listEl&&listEl.dataset.loaded)&&!fieldBusy())initialStory();
+    else newTurns();
+    if(before&&(before.state_version!==e.state_version||before.has_pending_action!==e.has_pending_action)||tabStale)refreshTab();
   }).catch(error);
 }
 
@@ -916,7 +931,7 @@ function followTurn(){
       if(st==='recorded'||st==='question'||st==='resume'){status(tr('turn.recorded'));document.getElementById('text').value=''}
       else status(tr('turn.not_recorded',{status:st})+(t.result.reason?': '+t.result.reason:''));
     }
-    cycle(false);
+    cycle();
   }).catch(error);
 }
 function send(mode){
@@ -965,10 +980,15 @@ document.getElementById('zen').addEventListener('click',function(){prefs.zen=!pr
 try{var saved=JSON.parse(localStorage.getItem('reader-settings')||'null');if(saved){prefs.size=SIZES.indexOf(saved.size)>=0?saved.size:null;prefs.zen=!!saved.zen}}catch(e){}
 applySettings();
 
-get('/api/config').catch(function(){return {}}).then(function(c){
-  applyConfig(c);mode=readMode();applyTheme();followTurn();cycle(true);
-});
-setInterval(function(){cycle(false)},5000);
+function loadConfig(){
+  // A failed read still applies the empty configuration once, so the page works; later retries only apply a real answer.
+  return get('/api/config').then(function(c){cfgLoaded=true;return c}).catch(function(){return null}).then(function(c){
+    if(c||!cfgTried){applyConfig(c);mode=readMode();applyTheme()}
+    cfgTried=true;
+  });
+}
+loadConfig().then(function(){followTurn();cycle()});
+setInterval(cycle,5000);
 })();
 </script>
 </body>

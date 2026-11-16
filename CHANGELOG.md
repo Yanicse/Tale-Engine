@@ -76,6 +76,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - With `novel play --words` at 60 or less the narrator is asked for "about N words" instead of "60 to 40 words"; the placeholder of `instructions.story.md` is now `{word_range}`.
 - Without `opening_minute_of_day` the reading page no longer invents an hour from the time elapsed ("0:00 · Deep night", dark `auto` theme, moving dial): it shows the fictional date alone, hides the dial and lets the `auto` theme follow the system setting.
 - The reading page draws its vignette again (the gradient used the unknown keyword `ellipsis`) and keeps the settings panel inside a narrow screen.
+- The reading page recovers by itself when its first request fails (it stayed blank until a reload) and refreshes the tab that is open after a turn, whichever it is, without disturbing a search or a filter in use.
 
 ### Removed
 
