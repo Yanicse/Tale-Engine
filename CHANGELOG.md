@@ -62,6 +62,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The narrator no longer receives rule paragraphs that do not concern the turn: ten paragraphs of the narrator rules and six of the possessions rules had no recorded signature, so they were always sent, among them the procedure for a narrator answering by hand and the possessions and world paragraphs when the action touches neither. Every shipped paragraph is listed again and a test keeps it so.
 - "You spend the day at home" is no longer read as an expense without a monetary operation.
 - The reading page no longer shows an exchange twice when two refreshes overlap.
+- `turns_without_time` counts only recorded turns: a refused answer or a question to the player kept the clock still and was counted, so two refusals told the narrator that two turns had passed without time moving.
 
 ### Removed
 

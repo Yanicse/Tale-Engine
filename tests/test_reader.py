@@ -263,9 +263,12 @@ class ReaderTests(unittest.TestCase):
             config['reader'] = {'opening_minute_of_day': 1300}
             campaign = Campaign(Path(folder) / 'campaign.sqlite').create(state, config)
             with campaign.transaction() as con:
-                for n, minute in enumerate((900, 1060, 1060, 1060)):
+                # Refused answers and questions keep the minute but are not turns that left the clock still.
+                for n, (minute, status) in enumerate(((900, 'recorded'), (1060, 'recorded'), (1060, 'recorded'),
+                                                      (1060, 'rejected'), (1060, 'recorded'), (1060, 'question'),
+                                                      (1060, 'rejected'))):
                     con.execute('INSERT INTO requests VALUES (?,?,?)',
-                                (f'r{n}', 'x', json.dumps({'world_minute_after': minute})))
+                                (f'r{n}', 'x', json.dumps({'status': status, 'world_minute_after': minute})))
                 agenda = Agenda(con)
                 agenda.initialize()
                 agenda._put({'entry_id': 'sign', 'audience': ['narrator'], 'status': 'planned', 'interrupt': False,

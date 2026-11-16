@@ -159,7 +159,9 @@ class Agenda:
         """Latest recorded turns that left the clock on this minute, not counting the turn that reached it."""
         turns=0
         for (raw,) in self.con.execute('SELECT result FROM requests ORDER BY rowid DESC LIMIT 12'):
-            if json.loads(raw).get('world_minute_after')!=minute:
+            result=json.loads(raw)
+            if result.get('status')!='recorded':continue
+            if result.get('world_minute_after')!=minute:
                 break
             turns+=1
         return max(0,turns-1)
