@@ -67,6 +67,23 @@ class PageSourceTests(unittest.TestCase):
         self.assertTrue('fieldBusy()' in refresh)
         self.assertTrue('window.scrollTo(0,y)' in refresh)
 
+    def test_search_results_replace_the_list_and_links_open_an_explicit_slice(self):
+        search = re.search(r"function searchStory\(\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertTrue("d.removeAttribute('id')" in search)
+        self.assertTrue("'listEl'" in search)
+        self.assertTrue('openExchange(e.seq)' in search)
+        self.assertTrue('ev.preventDefault();openExchange(e.seq)' in PAGE.split('function npc()')[1])
+        opener = re.search(r"function openExchange\(seq\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertTrue("location.hash='exchange-'+seq" in opener)
+        self.assertTrue('loadTab(seq)' in opener)
+        self.assertTrue('function initialStory(seq)' in PAGE)
+
+    def test_an_older_slice_never_receives_the_latest_exchanges(self):
+        new_turns = re.search(r"function newTurns\(\)\{.*?[\r\n]\}", PAGE, re.S).group(0)
+        self.assertTrue('!tail' in new_turns)
+        self.assertTrue('tail=!target' in PAGE)
+        self.assertTrue('if(tail){scrollList();return}' in PAGE)
+
 
 if __name__ == '__main__':
     unittest.main()

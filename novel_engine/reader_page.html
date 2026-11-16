@@ -351,7 +351,7 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 'use strict';
 var TABS=['story','scene','npc','possessions','agenda','summaries','abilities','creations'];
 var MODES=['auto','day','night','arcane','frost','scifi'],cfg={},LABELS={},PRESET_MODE={classic:'day','dark-fantasy':'night',arcane:'arcane',frost:'frost',scifi:'scifi'};
-var state=null,current='story',newest=0,olderLoaded=false,first=null,query='',mode='auto';
+var state=null,current='story',newest=0,tail=true,olderLoaded=false,first=null,query='',mode='auto';
 var content=document.getElementById('content');
 
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined&&text!==null)e.textContent=String(text);return e}
@@ -567,7 +567,8 @@ function turn(e){
   return d;
 }
 
-function initialStory(){
+// seq: the exchange to open on; without it the hash decides, and without a hash the latest exchanges are shown.
+function initialStory(seq){
   clearList(content);
   var f=el('form','search');var field=el('input');field.type='search';field.placeholder=tr('search.story');field.setAttribute('aria-label',tr('search.story'));field.value=query;
   var ok=el('button',null,tr('search.button'));ok.type='submit';f.appendChild(field);f.appendChild(ok);
@@ -576,14 +577,15 @@ function initialStory(){
   if(query){searchStory();return}
   var topAnchor=el('div');topAnchor.id='topAnchor';content.appendChild(topAnchor);
   var listEl=el('div');listEl.id='listEl';content.appendChild(listEl);
-  var target=/^#exchange-(\d+)$/.exec(location.hash);
-  storyLoading=true;
-  get('/api/story?n=20'+(target?'&before='+(Number(target[1])+1):'')).then(function(r){
+  var fromHash=/^#exchange-(\d+)$/.exec(location.hash),target=Number(seq)||(fromHash?Number(fromHash[1]):0);
+  // The slice of a jump ends at its exchange: the list is not the tail until the latest exchanges are loaded.
+  tail=!target;storyLoading=true;
+  get('/api/story?n=20'+(target?'&before='+(target+1):'')).then(function(r){
     storyLoading=false;olderLoaded=r.older;first=r.exchanges.length?r.exchanges[0].seq:null;
     showMore(topAnchor);
     r.exchanges.forEach(function(e){listEl.appendChild(turn(e))});
     newest=state?state.exchange_count:0;listEl.dataset.loaded='1';
-    if(location.hash.indexOf('#exchange-')===0){var c=document.getElementById(location.hash.slice(1));if(c){c.scrollIntoView();return}}
+    if(target){var c=document.getElementById('exchange-'+target);if(c){c.scrollIntoView();return}}
     scrollList();
   }).catch(function(e){storyLoading=false;error(e)});
 }
@@ -601,12 +603,23 @@ function showMore(topAnchor){
   });topAnchor.appendChild(b);
 }
 
+// Opens the story on one exchange: the hash is set first and the slice around it is loaded explicitly.
+function openExchange(seq){
+  query='';current='story';location.hash='exchange-'+seq;
+  showTabs();loadTab(seq);
+}
+
 function searchStory(){
-  get('/api/search?q='+encodeURIComponent(query)).then(function(r){
-    var zone=el('div');zone.appendChild(el('p','state-list',tr('search.results',{n:r.exchanges.length,q:query})));
+  var asked=query;
+  get('/api/search?q='+encodeURIComponent(asked)).then(function(r){
+    if(asked!==query)return;
+    // The results take the place of the story list; clearing the search brings the list back.
+    ['topAnchor','listEl'].forEach(function(id){var n=document.getElementById(id);if(n)n.remove()});
+    var zone=el('div');zone.appendChild(el('p','state-list',tr('search.results',{n:r.exchanges.length,q:asked})));
     r.exchanges.forEach(function(e){
-      var d=turn(e);var link=el('a',null,tr('open_story'));link.href='#exchange-'+e.seq;
-      link.addEventListener('click',function(){query='';});d.appendChild(link);zone.appendChild(d);
+      // The id belongs to the exchange of the story list, never to its copy in the results.
+      var d=turn(e);d.removeAttribute('id');var link=el('a',null,tr('open_story'));link.href='#exchange-'+e.seq;
+      link.addEventListener('click',function(ev){ev.preventDefault();openExchange(e.seq)});d.appendChild(link);zone.appendChild(d);
     });
     var old=document.getElementById('results');if(old)old.remove();
     zone.id='results';content.appendChild(zone);
@@ -614,7 +627,8 @@ function searchStory(){
 }
 
 function newTurns(){
-  if(current!=='story'||query||!state)return;
+  // An older slice never receives the latest exchanges after a gap: the jump button reloads the tail.
+  if(current!=='story'||query||!state||!tail)return;
   if(state.exchange_count===newest)return;
   var jumpDown=atBottom();var listEl=document.getElementById('listEl');if(!listEl||!listEl.dataset.loaded)return;
   var last=listEl.lastChild?Number(listEl.lastChild.id.replace('exchange-','')):0;
@@ -707,7 +721,7 @@ function npc(){
           if(p.description.length){zone=el('details');zone.appendChild(el('summary',null,tr('npc.passages')));c.appendChild(zone)}
           p.excerpts.forEach(function(e){
             paragraphs(zone,e.text);
-            if(e.seq){var a=el('a',null,tr('npc.see'));a.href='#exchange-'+e.seq;a.addEventListener('click',function(){query='';current='story';showTabs();loadTab()});zone.appendChild(a)}
+            if(e.seq){var a=el('a',null,tr('npc.see'));a.href='#exchange-'+e.seq;a.addEventListener('click',function(ev){ev.preventDefault();openExchange(e.seq)});zone.appendChild(a)}
           });
         }
         if(!p.description.length&&!p.excerpts.length)c.appendChild(el('p','empty',tr('npc.no_description')));
@@ -800,9 +814,9 @@ function creations(){
 
 function error(e){var z=document.getElementById('state');clearList(z);z.className='state error';z.textContent=tr('read.failed')+(e&&e.message?e.message:e);}
 
-function loadTab(){
+function loadTab(seq){
   content.className='c-'+current;
-  var shown=({story:initialStory,scene:scene,npc:npc,possessions:possessions,agenda:agenda,summaries:summaries,abilities:abilities,creations:creations})[current]();
+  var shown=({story:initialStory,scene:scene,npc:npc,possessions:possessions,agenda:agenda,summaries:summaries,abilities:abilities,creations:creations})[current](seq);
   bottomVisible();
   return shown;
 }
@@ -949,8 +963,11 @@ document.getElementById('input').addEventListener('submit',function(ev){ev.preve
 document.getElementById('text').addEventListener('keydown',function(ev){if(ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();send('new')}});
 
 // "Go to the bottom" button: visible in the story when the page was scrolled up.
-function bottomVisible(){document.getElementById('jumpDown').hidden=!(current==='story'&&!query&&!atBottom()&&window.scrollY>200)}
-document.getElementById('jumpDown').addEventListener('click',scrollList);
+function bottomVisible(){document.getElementById('jumpDown').hidden=!(current==='story'&&!query&&(!tail||!atBottom()&&window.scrollY>200))}
+document.getElementById('jumpDown').addEventListener('click',function(){
+  if(tail){scrollList();return}
+  history.replaceState(null,'',location.pathname+location.search);loadTab();
+});
 window.addEventListener('scroll',bottomVisible,{passive:true});
 
 // Paper grain drawn locally on a canvas (the security policy forbids data: images).
