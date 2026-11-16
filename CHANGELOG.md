@@ -24,6 +24,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - `opening_minute_of_day` in `theme.json` gives the local time at which the story opens. Dates sent to the narrator, the planner and the reading page then read as a real local time (`Day 2, 15:20`), the dial of the page follows that hour, and the chronicler receives the minute of the next local midnight so that a night event is dated at night. Without the key, dates stay elapsed time since the opening.
 - The narrator's agenda clock carries `turns_without_time`, the number of latest turns that left the clock still, and the transport prompt asks for a final event at the stopping time whenever the story advances.
 - `quiet_news` in `novel.json` schedules recurring news during quiet stretches of the story: one private agenda entry every `interval_minutes` of fictional time, which the narrator must show reaching the player character; every `urgent_every`-th one interrupts and asks for a choice, and a fight resets the pending entry. The pack may add its own `instruction`. Without the key nothing is scheduled.
+- `novel configure --quiet-news on|off` switches the quiet news of an existing campaign: `on` takes the policy from `quiet_news` in the pack, `off` removes it and cancels the pending entry. Like the other switches it previews first and backs the save up before `--apply`.
 
 ### Changed
 

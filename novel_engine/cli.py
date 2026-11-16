@@ -326,8 +326,12 @@ def unblock(args):
 def configure(args):
     from .campaign_tools import configure as run
     flag = {'on': True, 'off': False, None: None}
-    print(json.dumps(run(target_campaign(args), args.apply, flag[args.creations], flag[args.bounded_recovery],
-                         flag[args.canon_selection]), indent=2, ensure_ascii=False))
+    try:
+        report = run(target_campaign(args), args.apply, flag[args.creations], flag[args.bounded_recovery],
+                     flag[args.canon_selection], flag[args.quiet_news], NOVELS)
+    except ValueError as error:
+        raise SystemExit(str(error))
+    print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -446,13 +450,15 @@ def dispatch(argv):
     p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
     p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
     p.set_defaults(func=unblock)
-    p = subs.add_parser('configure', help='switch the creations format, the bounded automatic recovery or the canon selection')
+    p = subs.add_parser('configure', help='switch the creations format, the bounded automatic recovery, the canon selection or the quiet news')
     p.add_argument('--campaign', help='path of a campaign.sqlite (the active campaign by default)')
     p.add_argument('--creations', choices=('on', 'off'), help='persistent register of invented NPCs, places and quests')
     p.add_argument('--bounded-recovery', choices=('on', 'off'),
                    help='one automatic correction after a technical failure, within the action budget')
     p.add_argument('--canon-selection', choices=('on', 'off'),
                    help='give the narrator the sourced canon claims that match each turn (on for new campaigns)')
+    p.add_argument('--quiet-news', choices=('on', 'off'),
+                   help='schedule recurring news during quiet stretches, from the pack option quiet_news; off cancels the pending one')
     p.add_argument('--apply', action='store_true', help='apply it (preview otherwise); the save is backed up first')
     p.set_defaults(func=configure)
     for name, summary in SCRIPT_HELP.items():
