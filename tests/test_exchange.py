@@ -137,6 +137,20 @@ class ExchangeOnlyTest(unittest.TestCase):
         self.assertEqual(self.apply(c, [exchange('player_points', -3, 'player_strength')])['status'], 'rejected')
         self.assertEqual(c.state(), before)
 
+    def test_an_exchange_only_currency_can_be_given_when_a_rate_allows_it(self):
+        pack = self.pack()
+        c = self.campaign({**pack, 'currency_rates': {'points': {'strength': 1}, 'strength': {'points': 1}}})
+        self.assertEqual(self.apply(c, [exchange('player_strength', -2, 'player_points')])['status'], 'recorded')
+        resources = c.state()['resources']
+        self.assertEqual((resources['player_points'], resources['player_strength']), (7, 8))
+        payment = {**exchange('player_strength', -1, None), 'kind': 'payment'}
+        self.assertEqual(self.apply(c, [payment])['status'], 'rejected')
+        (self.root / 'campaign.sqlite').unlink()
+        c = self.campaign(pack)
+        result = self.apply(c, [exchange('player_strength', -2, 'player_points')])
+        self.assertEqual(result['status'], 'rejected')
+        self.assertIn('No exchange rate', result['reason'])
+
     def test_the_pack_check_explains_a_wrong_flag(self):
         for novel in ({'currencies': {'strength': {'exchange_only': 'yes'}}},
                       {'currencies': {'strength': {'exchange_only': True}}}):
