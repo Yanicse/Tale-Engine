@@ -45,6 +45,16 @@ class PageSourceTests(unittest.TestCase):
         self.assertTrue('h===null' in update)
         self.assertTrue("style.display='none'" in update)
 
+    def test_the_vignette_uses_a_real_css_shape_keyword(self):
+        self.assertFalse('ellipsis at' in PAGE)
+        self.assertEqual(PAGE.count('radial-gradient(ellipse at'), 2)
+
+    def test_the_settings_panel_fits_a_narrow_viewport(self):
+        narrow = re.search(r"@media \(max-width:480px\)\{(.*?)\n\}", PAGE, re.S).group(1)
+        self.assertTrue('.settings{position:static}' in narrow)
+        self.assertTrue('.settings .sidePanel{left:12px;right:12px;min-width:0}' in narrow)
+        self.assertTrue('white-space:normal' in narrow)
+
 
 if __name__ == '__main__':
     unittest.main()

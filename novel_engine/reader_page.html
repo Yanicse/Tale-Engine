@@ -46,8 +46,8 @@ html::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;op
 :root[data-theme="dark"]::before{opacity:.75}
 @keyframes twinkle{from{opacity:.45}to{opacity:.85}}
 #particleLayer{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
-body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipsis at 50% 45%,transparent 55%,rgba(40,20,0,.16) 100%)}
-:root[data-theme="dark"] body::after{background:radial-gradient(ellipsis at 50% 45%,transparent 50%,rgba(0,0,0,.5) 100%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(40,20,0,.16) 100%)}
+:root[data-theme="dark"] body::after{background:radial-gradient(ellipse at 50% 45%,transparent 50%,rgba(0,0,0,.5) 100%)}
 #grain{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.05;mix-blend-mode:multiply;image-rendering:pixelated}
 :root[data-theme="dark"] #grain{opacity:.035;mix-blend-mode:screen}
 
@@ -265,6 +265,12 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
   .scene-text{padding:22px 20px}
   #theme span{display:none}
   nav button{padding:7px 11px}
+}
+@media (max-width:480px){
+  /* On a narrow screen the settings panel spans the viewport under the bar instead of hanging from the button. */
+  .settings{position:static}
+  .settings .sidePanel{left:12px;right:12px;min-width:0}
+  .settings .tileRow{white-space:normal;flex-wrap:wrap}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
