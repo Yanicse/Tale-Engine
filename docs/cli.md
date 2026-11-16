@@ -5,8 +5,8 @@ Run `novel --help`, or `novel <command> --help`, for the live text.
 | Command | What it does |
 | --- | --- |
 | `novel doctor` | checks Python, SQLite FTS5, Claude CLI, Codex CLI, API key and pypdf; exit code 1 if a requirement fails |
-| `novel init <slug> [--title T] [--language L] [--preset P]` | creates `novels/<slug>/` with `novel.json` and `theme.json` |
-| `novel ingest <file> --novel <slug> [--volume N]` | extracts the text of a `.txt`, `.md`, `.epub` or `.pdf` book into `text/vNN.jsonl` |
+| `novel init <slug> [--title T] [--language L] [--preset P]` | creates `novels/<slug>/` with `novel.json` and `theme.json`; the slug is one word of 1 to 64 letters, digits, `-` or `_`, never a path (the same holds for the novel name of every other command) |
+| `novel ingest <file> --novel <slug> [--volume N]` | extracts the text of a `.txt`, `.md`, `.epub` or `.pdf` book into `text/vNN.jsonl`; `N` is 1 or more |
 | `novel canon plan <slug> [--budget N]` | prints the batches and the estimated tokens still to send; sends nothing |
 | `novel canon build <slug> [--engine E] [--model M] [--budget N] [--limit N] [--yes]` | builds or resumes the canon; `--engine` is `manual` (default), `claude`, `codex` or `api`; remote engines need `--yes` |
 | `novel canon search <slug> <words>` | looks up the built canon, locally: each claim with the volume, page and quote that source it; no model, no account |

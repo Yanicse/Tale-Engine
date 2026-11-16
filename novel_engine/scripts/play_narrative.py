@@ -11,7 +11,7 @@ from novel_engine.campaign import Campaign
 from novel_engine.engines import ENGINES, create, default_engine
 from novel_engine.narration_codex import DEFAULT_NARRATIVE_TIMEOUT
 from novel_engine.narrative import NarrativeLoop
-from novel_engine.resume import active_campaign
+from novel_engine.resume import ActiveCampaignError, active_campaign
 
 
 def choose_engine(preference=None):
@@ -84,7 +84,10 @@ def main(argv=None):
             parser.error('Existing save expected; no automatic initialization.')
         campaign=Campaign(path)
     else:
-        _,campaign=active_campaign()
+        try:
+            _,campaign=active_campaign()
+        except ActiveCampaignError as error:
+            raise SystemExit(str(error))
         if campaign is None:
             parser.error('No active campaign.')
     def display_memories(result):

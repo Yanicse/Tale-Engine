@@ -28,8 +28,11 @@ LABEL_LIMIT = 200
 
 
 def read(path, required=False):
+    if Path(path).is_dir():
+        raise ValueError(f'{Path(path).name}: is a folder, a JSON file is expected.')
     try:
-        data = json.loads(Path(path).read_text(encoding='utf-8'))
+        # utf-8-sig also accepts the byte order mark that some Windows editors write.
+        data = json.loads(Path(path).read_text(encoding='utf-8-sig'))
     except FileNotFoundError:
         if required:
             raise ValueError(f'{Path(path).name} is missing.')

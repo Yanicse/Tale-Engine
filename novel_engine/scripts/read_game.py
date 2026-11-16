@@ -14,7 +14,7 @@ sys.path.insert(0, str(PKG_PARENT))
 from novel_engine.contracts import ROOT
 from novel_engine.engines import ENGINES, available, default_engine
 from novel_engine.reader import BadParameter, Reader
-from novel_engine.resume import ACTIVE
+from novel_engine.resume import ActiveCampaignError, read_selection
 
 PAGE = PKG_PARENT / 'novel_engine/reader_page.html'
 RESOURCES = PKG_PARENT / 'novel_engine/resources'
@@ -212,7 +212,10 @@ def main(argv=None):
         path = Path(args.campaign)
     else:
         # Direct reading of the selection: active_campaign() would open a write transaction.
-        selected = json.loads(Path(ACTIVE).read_text(encoding='utf-8'))
+        try:
+            selected = read_selection()
+        except ActiveCampaignError as error:
+            raise SystemExit(str(error))
         if selected['campaign_path'] is None:
             parser.error('No active campaign.')
         path = (ROOT / selected['campaign_path']).resolve()

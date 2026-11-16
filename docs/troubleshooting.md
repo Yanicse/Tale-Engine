@@ -7,6 +7,12 @@ Start with `novel doctor` and `novel validate`.
 | `[FAIL] SQLite FTS5` | your Python's SQLite lacks full-text search; install a standard Python build |
 | `No novel pack "x"` | run `novel init x`, and check you are in the folder that holds `novels/` (or set `NOVEL_HOME`) |
 | `No canon yet: run novel canon build first` | build the canon before `novel campaign new` |
+| `Invalid name "..."` | a novel name is one word of 1 to 64 letters, digits, `-` or `_` (for example `lantern-bay`), never a path |
+| `No usable active campaign (...)` | `campaigns/active.json` is missing, unreadable or names a save that is gone. Run `novel campaign new <novel>`, or select an existing save with `novel resume --enable campaigns/<slug>/campaign.sqlite` |
+| `<file>: not a usable campaign save (...)` | the save is empty, cut short or damaged. Copy a backup from the `saves` folder next to it over it (every `novel unblock --apply` and `novel configure --apply` makes one), or create a new campaign |
+| `<file>: no campaign save at this path` | the path given with `--campaign` is not a file; pass an existing `campaign.sqlite` |
+| `<file>: not a valid .epub (...)` / `<file>: is a folder` / `<file>: no such file` | `novel ingest` needs a real book file; re-export the `.epub` or give the right path. A volume number is 1 or more |
+| `<file>: is a folder, a JSON file is expected` | `novel.json`, `character.json` or `theme.json` of the pack is a folder; replace it with the file |
 | `Fix the errors above first` | `novel campaign new` found errors in the pack; `novel validate x` lists them |
 | `Campaign already exists` | delete the campaign folder yourself if you want a new one; the tool never overwrites a save |
 | `Claude CLI not found` / `Codex CLI not found` | install it, or give the path with `--claude` / `--codex`; or use `--engine manual` |

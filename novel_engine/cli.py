@@ -13,6 +13,7 @@ from .pack import PRESETS
 from .wording import counted
 
 NOVELS = ROOT / 'novels'
+SLUG = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}')
 NOVEL_JSON = {'title': '', 'language': 'en', 'tracked_npcs': [], 'currency_rates': {}, 'world_rules': []}
 THEME_JSON = {'preset': 'auto', 'title': '', 'subtitle': '',
               'input_hint': '', 'clock': True, 'colors': {}, 'labels': {}, 'icons': {}}
@@ -23,7 +24,18 @@ SCRIPT_HELP = {'play': 'play turns', 'resume': 'show the active campaign and its
                'diagnose': 'show how the context of one attempt was selected'}
 
 
+def check_slug(slug):
+    """The folder name of a pack or a campaign: one plain word, never a path."""
+    if not SLUG.fullmatch(slug):
+        raise SystemExit(f'Invalid name "{slug}": use 1 to 64 letters, digits, "-" or "_", starting with a letter '
+                         'or a digit (for example lantern-bay).')
+    return slug
+
+
 def pack(slug):
+    # A pack that already exists keeps its name, whatever it is; only a path is refused here.
+    if slug in ('', '.', '..') or any(mark in slug for mark in ('/', '\\', ':')):
+        raise SystemExit(f'Invalid name "{slug}": give the name of a novel pack, not a path.')
     path = NOVELS / slug
     if not path.is_dir():
         raise SystemExit(f'No novel pack "{slug}": run `novel init {slug}` first.')
@@ -67,7 +79,7 @@ def doctor(_):
 
 
 def init(args):
-    path = NOVELS / args.slug
+    path = NOVELS / check_slug(args.slug)
     path.mkdir(parents=True, exist_ok=True)
     for folder in ('sources', 'text', 'work'):
         (path / folder).mkdir(exist_ok=True)
@@ -204,10 +216,10 @@ def report_pack(path, quiet_ok=False):
 
 
 def validate(args):
-    names = [args.novel] if args.novel else sorted(p.name for p in NOVELS.iterdir() if p.is_dir()) if NOVELS.is_dir() else []
-    if not names:
+    paths = [pack(args.novel)] if args.novel else sorted(p for p in NOVELS.iterdir() if p.is_dir()) if NOVELS.is_dir() else []
+    if not paths:
         raise SystemExit('No novel pack to validate: run `novel init <name>` or `novel example`.')
-    return 0 if all([report_pack(pack(name)) for name in names]) else 1
+    return 0 if all([report_pack(path) for path in paths]) else 1
 
 
 def campaign_new(args):
@@ -268,7 +280,7 @@ def example(args):
     """Install the bundled example novel: pack, text, canon built from prepared answers, campaign. No account needed."""
     from . import canon_build
     from .ingest import ingest
-    path = NOVELS / args.slug
+    path = NOVELS / check_slug(args.slug)
     if path.exists():
         raise SystemExit(f'{path} already exists: choose another name with --slug.')
     for folder in ('sources', 'text', 'work'):
@@ -293,11 +305,13 @@ def target_campaign(args):
     from .campaign import Campaign
     from .resume import active_campaign
     if args.campaign:
+        if not Path(args.campaign).is_file():
+            raise SystemExit(f'{args.campaign}: no campaign save at this path; pass an existing campaign.sqlite.')
         return Campaign(Path(args.campaign).resolve())
     try:
         campaign = active_campaign()[1]
-    except (OSError, ValueError, KeyError) as error:
-        raise SystemExit(f'No usable active campaign ({error}): pass --campaign <path to campaign.sqlite>.')
+    except ValueError as error:
+        raise SystemExit(str(error))
     if campaign is None:
         raise SystemExit('No campaign is selected: create one with `novel campaign new <novel>`.')
     return campaign
@@ -332,8 +346,42 @@ def passthrough(name):
     return lambda args: run_script(name, args.rest)
 
 
+def saved_file(argv):
+    """The campaign save a command was working on, as far as its arguments or the selection tell."""
+    for index, word in enumerate(argv):
+        for flag in ('--campaign', '--enable'):
+            if word == flag and index + 1 < len(argv):
+                return argv[index + 1]
+            if word.startswith(flag + '='):
+                return word.split('=', 1)[1]
+    if argv[:1] == ['diagnose'] and len(argv) > 1:
+        return argv[1]
+    from .resume import read_selection
+    try:
+        return read_selection()['campaign_path'] or 'the campaign save'
+    except ValueError:
+        return 'the campaign save'
+
+
 def main(argv=None):
+    """Run a command; a user mistake ends in one line and a non-zero exit code, not in a traceback."""
     argv = sys.argv[1:] if argv is None else list(argv)
+    try:
+        return dispatch(argv)
+    except (ValueError, sqlite3.Error) as error:
+        from .resume import ActiveCampaignError
+        if isinstance(error, ActiveCampaignError):
+            raise SystemExit(str(error))
+        if isinstance(error, sqlite3.Error):
+            name = saved_file(argv)
+            if 'locked' in str(error):
+                raise SystemExit(f'{name}: the save is in use by another process ({error}); try again in a moment.')
+            raise SystemExit(f'{name}: not a usable campaign save ({error}); restore a copy from the saves folder '
+                             'next to it, or create a new campaign.')
+        raise
+
+
+def dispatch(argv):
     # A redirected output on Windows uses the ANSI code page, which cannot print every book's characters.
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, 'reconfigure'):

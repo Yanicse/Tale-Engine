@@ -1,7 +1,10 @@
 from contextlib import closing
+import contextlib
 import io
 import json
+import os
 import sqlite3
+import subprocess
 import shutil
 import sys
 import tempfile
@@ -10,8 +13,10 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from novel_engine import canon_build, cli, ingest
+from novel_engine import canon_build, cli, ingest, pack
+from novel_engine.campaign import Campaign
 from novel_engine.contracts import ROOT
+from novel_engine.demo import configuration, initial_state
 from novel_engine.memory import CanonRepository
 
 QUOTE = 'Mira sails from the harbor at dawn'
@@ -156,9 +161,64 @@ class CliTest(unittest.TestCase):
             if not existed:
                 shutil.rmtree(campaigns, True)
 
+    def fails(self, *argv):
+        with self.assertRaises(SystemExit) as stop:
+            self.run_cli(*argv)
+        self.assertIsInstance(stop.exception.code, str)
+        self.assertNotIn('\n', stop.exception.code)
+        return stop.exception.code
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_ingest_reports_a_missing_file_a_folder_and_a_bad_volume(self):
+        self.run_cli('init', 'demo')
+        self.assertIn('no such file', self.fails('ingest', str(self.tmp / 'absent.txt'), '--novel', 'demo'))
+        self.assertIn('is a folder', self.fails('ingest', str(self.tmp), '--novel', 'demo'))
+        for volume in ('0', '-1'):
+            self.assertIn('--volume must be 1 or more', self.fails('ingest', str(self.make_book()), '--novel', 'demo',
+                                                                   '--volume', volume))
+        self.assertEqual(list((self.tmp / 'demo' / 'text').iterdir()), [])
+
+    def test_ingest_reports_a_damaged_epub(self):
+        broken = self.tmp / 'broken.epub'
+        broken.write_text('not a zip archive', encoding='utf-8')
+        self.run_cli('init', 'demo')
+        self.assertIn('not a zip archive', self.fails('ingest', str(broken), '--novel', 'demo'))
+        bare = self.tmp / 'bare.epub'
+        with zipfile.ZipFile(bare, 'w') as archive:
+            archive.writestr('mimetype', 'application/epub+zip')
+        self.assertIn('META-INF/container.xml', self.fails('ingest', str(bare), '--novel', 'demo'))
+
+    def test_a_novel_name_must_be_one_plain_word(self):
+        for name in ('', '..', 'a/b', '../x', 'x:y', '_x', 'a b'):
+            with self.subTest(name=name):
+                self.assertIn('lantern-bay', self.fails('init', name))
+        self.assertEqual(list(self.tmp.iterdir()), [])
+        self.assertIn('Invalid name', self.fails('validate', '../x'))
+        self.run_cli('init', 'lantern-bay_2')
+        self.assertTrue((self.tmp / 'lantern-bay_2' / 'novel.json').is_file())
+
+    def test_a_pack_file_that_is_a_folder_is_reported_by_validate(self):
+        self.run_cli('init', 'demo')
+        for name in ('novel.json', 'theme.json'):
+            (self.tmp / 'demo' / name).unlink()
+            (self.tmp / 'demo' / name).mkdir()
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(self.run_cli('validate', 'demo'), 1)
+        self.assertIn('ERROR   novel.json: is a folder, a JSON file is expected', out.getvalue())
+        self.assertIn('ERROR   theme.json: is a folder, a JSON file is expected', out.getvalue())
+        with self.assertRaisesRegex(ValueError, 'is a folder'):
+            pack.read(self.tmp / 'demo' / 'novel.json')
+
+    def test_a_pack_file_saved_with_a_byte_order_mark_is_read_by_validation_and_creation(self):
+        self.run_cli('init', 'demo')
+        for name in ('novel.json', 'theme.json'):
+            path = self.tmp / 'demo' / name
+            path.write_bytes(b'\xef\xbb\xbf' + path.read_bytes())
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(self.run_cli('validate', 'demo'), 0)
+        self.assertNotIn('not valid JSON', out.getvalue())
+        self.assertEqual(pack.read(self.tmp / 'demo' / 'novel.json')['title'], 'demo')
 
 
 class CanonBuildTest(unittest.TestCase):
@@ -236,3 +296,73 @@ class CanonBuildTest(unittest.TestCase):
         self.assertEqual((groups['fox'], groups['mira_2']), ('mira', 'mira'))
         # Same name merges whatever the kind; the place shares the character's name 'The Fox'.
         self.assertEqual(groups['fox_place'], 'mira')
+
+
+class MistakeTest(unittest.TestCase):
+    """A user mistake ends in one line and a non-zero exit code, never in a traceback."""
+
+    def setUp(self):
+        self.home = Path(tempfile.mkdtemp(prefix='novel-home-'))
+        self.addCleanup(shutil.rmtree, self.home, True)
+        (self.home / 'campaigns').mkdir()
+        self.env = {**os.environ, 'NOVEL_HOME': str(self.home), 'PYTHONIOENCODING': 'utf-8'}
+        self.active = self.home / 'campaigns' / 'active.json'
+        self.save = self.home / 'campaigns' / 'demo' / 'campaign.sqlite'
+
+    def novel(self, *argv):
+        return subprocess.run([sys.executable, '-m', 'novel_engine.cli', *argv], cwd=ROOT, env=self.env,
+                              capture_output=True, text=True, encoding='utf-8', timeout=60)
+
+    def assert_one_line(self, done, *words):
+        message = done.stderr.strip()
+        self.assertNotEqual(done.returncode, 0, done.stdout)
+        self.assertNotIn('Traceback', message)
+        self.assertEqual(len(message.splitlines()), 1, message)
+        for word in words:
+            self.assertIn(word, message)
+
+    def make_save(self):
+        self.save.parent.mkdir()
+        Campaign(self.save).create(initial_state(), configuration())
+        self.active.write_text(json.dumps({'campaign_path': 'campaigns/demo/campaign.sqlite', 'kind': 'demo'}),
+                               encoding='utf-8')
+
+    def test_a_missing_or_unusable_selection_is_reported_by_every_command(self):
+        commands = (('resume',), ('play', '--agenda'), ('configure', '--creations', 'on'), ('unblock',))
+        selections = {'missing': None, 'broken JSON': '{', 'empty': '', 'byte order mark': '\ufeff{}',
+                      'list': '[]', 'null': 'null', 'no campaign key': '{"kind": "demo"}',
+                      'save missing': '{"campaign_path": "campaigns/none/campaign.sqlite", "kind": "engine"}'}
+        for label, content in selections.items():
+            if content is not None:
+                self.active.write_text(content, encoding='utf-8')
+            for command in commands:
+                with self.subTest(selection=label, command=command[0]):
+                    self.assert_one_line(self.novel(*command), 'No usable active campaign', 'novel campaign new')
+
+    def test_the_selection_can_be_a_folder_and_the_reader_reports_it_too(self):
+        self.assert_one_line(self.novel('read', '--no-browser'), 'No usable active campaign')
+        self.active.mkdir()
+        self.assert_one_line(self.novel('resume'), 'No usable active campaign')
+        self.assert_one_line(self.novel('read', '--no-browser'), 'No usable active campaign')
+
+    def test_a_damaged_save_is_named_and_reported(self):
+        self.make_save()
+        original = self.save.read_bytes()
+        damage = {'empty': b'', 'garbage': b'this is not a database' * 200, 'truncated': original[:len(original) // 2]}
+        commands = (('resume',), ('play', '--agenda'), ('configure', '--creations', 'on'), ('unblock',))
+        for label, content in damage.items():
+            self.save.write_bytes(content)
+            for command in commands:
+                with self.subTest(damage=label, command=command[0]):
+                    self.assert_one_line(self.novel(*command), 'campaigns/demo/campaign.sqlite',
+                                         'not a usable campaign save')
+
+    def test_a_save_that_does_not_exist_is_reported(self):
+        gone = str(self.home / 'nope.sqlite')
+        self.assert_one_line(self.novel('unblock', '--campaign', gone), 'nope.sqlite', 'no campaign save')
+        self.assert_one_line(self.novel('configure', '--campaign', gone, '--creations', 'on', '--apply'),
+                             'nope.sqlite', 'no campaign save')
+
+
+if __name__ == '__main__':
+    unittest.main()

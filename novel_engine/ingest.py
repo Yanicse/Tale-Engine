@@ -84,7 +84,13 @@ def extract_pages(path):
     if suffix == '.pdf':
         return read_pdf_pages(path)
     if suffix == '.epub':
-        return paginate(read_epub(path))
+        try:
+            return paginate(read_epub(path))
+        except zipfile.BadZipFile:
+            raise SystemExit(f'{path.name}: not a valid .epub (it is not a zip archive).')
+        except (KeyError, AttributeError) as error:
+            detail = error.args[0] if isinstance(error, KeyError) else 'container.xml names no package file'
+            raise SystemExit(f'{path.name}: not a valid .epub ({detail}).')
     if suffix in ('.txt', '.md'):
         return paginate(path.read_text(encoding='utf-8', errors='replace'))
     raise SystemExit('Unsupported format (use .txt, .md, .epub or .pdf): ' + path.name)
@@ -92,6 +98,13 @@ def extract_pages(path):
 
 def ingest(novel, source, volume=None):
     """Write text/vNN.jsonl in the novel pack; returns (volume, pages)."""
+    if volume is not None and volume < 1:
+        raise SystemExit('--volume must be 1 or more.')
+    source = Path(source)
+    if source.is_dir():
+        raise SystemExit(f'{source}: is a folder, a book file is expected.')
+    if not source.is_file():
+        raise SystemExit(f'{source}: no such file; give the path of a .txt, .md, .epub or .pdf book.')
     text_dir = Path(novel) / 'text'
     text_dir.mkdir(parents=True, exist_ok=True)
     if volume is None:

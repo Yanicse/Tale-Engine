@@ -82,6 +82,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The pack test no longer creates and removes a campaign in the real `campaigns/` folder: a campaign named like the test one would have been deleted by running the suite.
 - The possessions prompt and the pack reference say what the engine does with an `exchange_only` currency: it changes only through an exchange, in a direction the rates allow, and never through a payment, a purchase or a sale. They said "only as the destination".
 - The agenda check no longer stops on an event without a date or on a mechanical operation that is not an object: the event is left as written for the schema check to refuse. New tests cover the stretched clock, the cases where a fight or an interruption overtakes quiet news, and the validation of `opening_minute_of_day` and `quiet_news`.
+- The `novel` commands answer a user mistake with one line instead of a traceback: no usable active campaign (missing, unreadable or empty `active.json`), a damaged or missing save, a book `novel ingest` cannot read, `--volume` below 1, a pack name that is empty or a path (`novel init ""` wrote into `novels/` itself), and a pack file that is a folder. A pack JSON file saved with a UTF-8 byte order mark is read instead of being reported as invalid JSON.
 
 ### Removed
 
