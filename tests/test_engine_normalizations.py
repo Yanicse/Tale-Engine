@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT))
 from novel_engine.campaign import Campaign
 
 from novel_engine.consequences import normalize_commitments, reconcile_public
-from novel_engine.demo import configuration, initial_state, proposal
+from novel_engine.demo import configuration, event, initial_state, proposal
 
 
 def claim(kind, path, value):
@@ -66,6 +66,29 @@ class NormalizeCommitmentsTests(unittest.TestCase):
         out = normalize_commitments(self.make({'status': 'completed'}, path='/commitments/harvest_fair_signup'))
         self.assertEqual(out['changes'][0]['value']['description'], 'harvest fair signup')
         self.assertEqual(out['changes'][0]['value']['status'], 'kept')
+
+    def test_a_missing_status_defaults_to_open_and_a_known_synonym_is_mapped(self):
+        for value, expected in (({'title': 'Escort'}, 'open'), ({'title': 'Escort', 'status': None}, 'open'),
+                                ({'title': 'Escort', 'status': 'Done'}, 'kept')):
+            with self.subTest(value=value):
+                self.assertEqual(normalize_commitments(self.make(value))['changes'][0]['value']['status'], expected)
+
+    def test_an_unknown_status_is_left_as_written(self):
+        for status in ('cancelled', 'withdrawn', 'renegotiated', 7):
+            with self.subTest(status=status):
+                out = normalize_commitments(self.make({'title': 'Escort', 'status': status}))
+                self.assertEqual(out['changes'][0]['value']['status'], status)
+
+    def test_an_unknown_commitment_status_is_a_recorded_rejection_not_a_traceback(self):
+        (ROOT / '.tmp-tests').mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tmp-tests') as folder:
+            campaign = Campaign(Path(folder) / 'campaign.sqlite').create(initial_state(), configuration())
+            state = campaign.state()
+            change = {'operation': 'set', 'path': '/commitments/escort',
+                      'value': {'title': 'Escort', 'status': 'cancelled'}}
+            result = campaign.apply(proposal(state, 'The guard looks up.', [event(state, 'Escort ended.', [change])]))
+            self.assertEqual(result['status'], 'rejected', result)
+            self.assertNotIn('escort', campaign.state()['commitments'])
 
 
 class EscapedNarrationTests(unittest.TestCase):

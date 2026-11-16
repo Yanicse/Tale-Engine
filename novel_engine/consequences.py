@@ -25,7 +25,6 @@ def materialize_public(after, events):
     return resolved
 
 
-COMMITMENT_FIELDS = ('reminder_location', 'description', 'status', 'references', 'audience')
 COMMITMENT_STATUS = {'open': 'open', 'kept': 'kept', 'broken': 'broken',
                      'accepted': 'open', 'active': 'open', 'pending': 'open', 'in_progress': 'open',
                      'ongoing': 'open', 'offered': 'open', 'completed': 'kept', 'complete': 'kept',
@@ -35,8 +34,9 @@ COMMITMENT_STATUS = {'open': 'open', 'kept': 'kept', 'broken': 'broken',
 def normalize_commitments(event):
     """A commitment written as a free-form object is brought to the state schema
     (description, status open/kept/broken, references, audience; nothing else). The description
-    falls back on title, summary, name or the key; the status on a known synonym or 'open'; the
-    references on the event's first cause; the audience on the event's. Extra fields are dropped.
+    falls back on title, summary, name or the key; the status on a known synonym, or 'open' when
+    absent; any other status is kept as written so that the state schema refuses it; the references
+    on the event's first cause; the audience on the event's. Extra fields are dropped.
     Only a set on /commitments/<key> with an object value is touched."""
     changes = event.get('changes') or []
     if not any(c.get('operation') == 'set' and str(c.get('path', '')).startswith('/commitments/')
@@ -56,8 +56,10 @@ def normalize_commitments(event):
             if isinstance(value.get('references'), list) else []
         audience = [a for a in value.get('audience', []) if isinstance(a, str) and a] \
             if isinstance(value.get('audience'), list) else []
+        if status is None:
+            status = 'open'
         clean = {'description': description,
-                 'status': COMMITMENT_STATUS.get(str(status).lower(), 'open'),
+                 'status': COMMITMENT_STATUS.get(status.lower(), status) if isinstance(status, str) else status,
                  'references': references or list(event.get('causes') or [])[:1] or ['action:unknown'],
                  'audience': audience or list(event.get('audience') or ['narrator', 'player'])}
         if isinstance(value.get('reminder_location'), str) and value['reminder_location']:
