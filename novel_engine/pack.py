@@ -118,9 +118,9 @@ def campaign_config(pack_dir, base):
         config['character_rules'] = {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100), **{k: v for k, v in rules.items() if k != 'costs'}}
         if isinstance(costs, dict) and (isinstance(costs.get('full_power_cost_percent'), dict)
                                         or isinstance(costs.get('fixed_cost_points'), dict)):
-            config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 100),
-                                          'full_power_cost_percent': costs.get('full_power_cost_percent', {}),
-                                          'free_output_up_to_percent': costs.get('free_output_up_to_percent', {})}
+            tables = {key: costs[key] if isinstance(costs.get(key), dict) else {}
+                      for key in ('full_power_cost_percent', 'free_output_up_to_percent')}
+            config['spell_cost_rules'] = {'default_output_percent': costs.get('default_output_percent', 100), **tables}
             if isinstance(costs.get('fixed_cost_points'), dict):
                 config['spell_cost_rules']['fixed_cost_points'] = costs['fixed_cost_points']
     config.setdefault('character_rules', {'hp_max': sheet.get('hp_max', 100), 'mana_max': sheet.get('mana_max', 100)})

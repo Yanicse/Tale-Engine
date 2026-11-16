@@ -289,7 +289,9 @@ def check_costs(costs, abilities, report):
     if not isinstance(fixed, dict):
         report.error(name, 'rules.costs.fixed_cost_points must be an object: ability id -> mana points')
         fixed = {}
-    if (not isinstance(full, dict) or not full) and not fixed:
+    if 'full_power_cost_percent' in costs and not isinstance(full, dict):
+        report.error(name, 'rules.costs.full_power_cost_percent must be an object: ability id -> percent of maximum mana at 100% power')
+    elif not full and not fixed:
         report.error(name, 'rules.costs.full_power_cost_percent is required: ability id -> percent of maximum mana at 100% power')
     if not isinstance(full, dict):
         full = {}

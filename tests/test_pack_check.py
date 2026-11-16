@@ -190,6 +190,20 @@ class RulesInTheCampaign(PackFiles):
         self.assertNotIn('regeneration_rules', context)
         self.assertNotIn('subjective_hunger', context)
 
+    def test_a_cost_table_that_is_not_an_object_is_an_error_and_never_reaches_the_campaign(self):
+        for key in ('full_power_cost_percent', 'free_output_up_to_percent'):
+            for bad in ('x', ['gale'], 5, None):
+                with self.subTest(key=key, bad=bad):
+                    sheet = json.loads(json.dumps(self.SHEET))
+                    sheet['rules']['costs'] = {'fixed_cost_points': {'gale': 5}, key: bad}
+                    report = self.report(character_json=sheet)
+                    self.assertError(report, f'rules.costs.{key} must be an object')
+                    tables = pack.campaign_config(self.dir, {})['spell_cost_rules']
+                    self.assertEqual(tables[key], {})
+        sheet = json.loads(json.dumps(self.SHEET))
+        sheet['rules']['costs'] = {'full_power_cost_percent': {'gale': 30}, 'free_output_up_to_percent': {'gale': 10}}
+        self.assertEqual(self.report(character_json=sheet).errors, [])
+
 
 class ThemeOpeningTests(unittest.TestCase):
     def test_opening_minute_of_day_is_kept_only_when_valid(self):
