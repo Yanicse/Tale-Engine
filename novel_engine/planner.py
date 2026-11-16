@@ -38,18 +38,33 @@ def normalized(text):
                    if not unicodedata.combining(c))
 
 
+ROUTINE_VERB=(r'\b(wait\w*|routine|work\w*|sleep\w*|slept|rest\w*|spend\w*|pass\w*|keep\w*|go on|going on|search\w*|'
+              r'read\w*|train\w*|watch\w*|liv\w*|stay\w*|continu\w*|carry on|carrying on|skip\w*)\b')
+SEVERAL_DAYS=(r'\b(week\w*|month\w*|year\w*)\b|\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|several|few|'
+              r'couple of|couple|many|multiple)\s+days?\b|\b(some|next) days\b')
+
+
+def player_time_text(text):
+    """Normalized action, with the usual spellings of "until" and "few" reduced to one form."""
+    return re.sub(r'\bfews\b','few',re.sub(r"(?<!\w)(?:till|'?til)\b",'until',normalized(text)))
+
+
 def long_wait(text):
     """Local trigger, not a mechanical estimate of the time to play."""
-    text=normalized(text)
-    if not re.search(r'\b(wait\w*|routine|work\w*|sleep\w*|slept|rest\w*|spend\w*|pass\w*|keep\w*|go on|going on|search\w*|read\w*|train\w*|watch\w*)\b',text):
+    text=player_time_text(text)
+    if not re.search(ROUTINE_VERB,text):
         return False
-    return bool(re.search(('\\b(week\\w*|month\\w*|year\\w*)\\b|\\b(\\d+|one|two|three|several|few)\\s+days?\\b|until.{0,45}\\b(evening|dawn|tomorrow|night)\\b|\\b(24|48|72)\\s*(h|hours)\\b'),text))
+    return bool(re.search(SEVERAL_DAYS+'|until.{0,45}\\b(evening|dawn|tomorrow|night)\\b|\\b(24|48|72)\\s*(h|hours)\\b',text))
 
 
 def long_activity(text):
-    """Activity with no fixed end, to carry on until a concrete fact or an interruption."""
-    text=normalized(text)
-    return bool(re.search(('until (something|anything)\\b|until (the interruption|my return|the end|further '
+    """Activity spread over several days, or with no fixed end, to carry on until a concrete fact or an interruption."""
+    text=player_time_text(text)
+    # The routine tool always names its length in its action and sets its own review period.
+    if not text.startswith('routine of ') and re.search(ROUTINE_VERB,text) and re.search(SEVERAL_DAYS,text):
+        return True
+    return bool(re.search(('until (something|anything)\\b|until (an?|some|the next) (\\w+ ){0,2}(event|incident|emergency|'
+                           'crisis|alert|attack|news)\\b|until (the interruption|my return|the end|further '
                            'notice)|as long as|for as long as|without (stopping|interruption|a pause|a '
                            'break)|(for|during) (many|several|long) hours?\\b'),text))
 
@@ -377,7 +392,7 @@ class WorldPlanner:
                 if long_activity(prepared['context']['player_action']):
                     # The delay only applies to this review; without a request from the player it stays at two days.
                     rp['max_review_delay']=LONG_REVIEW_DELAY
-                    rp['delay_instruction']=(('The player asked for a long activity with no fixed end: set next_review to the '
+                    rp['delay_instruction']=(('The player asked for a long activity: set next_review to the '
                                            'really useful date, up to max_review_delay, rather than a few hours away. A concrete '
                                            'fact stays interrupted by the agenda, not by the review.'))
                 packet['chronicle']['arcs_registry']=rp

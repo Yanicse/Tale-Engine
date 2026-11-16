@@ -109,17 +109,23 @@ class PlannerTests(unittest.TestCase):
 
     def test_long_wait_detection_not_conversation(self):
         for text in ('Routine for a month','I work for several days','I sleep until tomorrow',
-                     'The weeks keep passing','I wait 24 hours','I work until the evening'):
+                     'The weeks keep passing','I wait 24 hours','I work until the evening',
+                     'I spend the next fews days normally till an event arive','I live normally for 5 days',
+                     'I live normally for a week','I stay home for a couple of days'):
             self.assertTrue(long_wait(text),text)
-        for text in ('Hello','What are the market days?','I work for ten minutes','I wait for an answer'):
+        for text in ('Hello','What are the market days?','I work for ten minutes','I wait for an answer',
+                     'I live in the capital','I stay here until he answers'):
             self.assertFalse(long_wait(text),text)
 
     def test_long_activity_detection(self):
         for text in ('I train until something interrupts me','I read as long as nobody comes',
                      'I keep watch for as long as necessary','I search for several hours',
-                     'I keep going until the interruption'):
+                     'I keep going until the interruption',
+                     'I spend the next fews days normally till an event arive','I live normally for 5 days',
+                     'I keep studying till something happens','I work until an important event'):
             self.assertTrue(long_activity(text),text)
-        for text in ('Hello','I work for ten minutes','I wait for an answer','I sleep until tomorrow'):
+        for text in ('Hello','I work for ten minutes','I wait for an answer','I sleep until tomorrow',
+                     'What are the market days?','I live in the capital','I wait till the bus arrives'):
             self.assertFalse(long_activity(text),text)
 
     def test_startup_and_consultations_call_neither_role(self):
