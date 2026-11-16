@@ -72,8 +72,9 @@ h1 span{color:var(--accent)}
 #audioBtn span{display:none}
 #audioBtn{padding:7px 10px}
 .subtitleEl{margin:4px 0 0;font:italic 15px/1.3 var(--serif);color:var(--muted);letter-spacing:.04em}
-.clock{flex:none;display:flex;flex-direction:column;align-items:center;gap:0;font:600 12px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.clock{flex:none;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:12px;margin:0 auto 6px;font:600 12px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .dial{width:150px;height:54px;overflow:visible}
+.clock .dial{width:96px;height:34px}
 .dial .horizon{stroke:var(--line);stroke-width:1.2}
 .dial .archShape{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:1.5 4;stroke-linecap:round;opacity:.7}
 .dial .celestial{fill:var(--gold);filter:drop-shadow(0 0 5px var(--gold));transition:cx .8s,cy .8s}
@@ -257,7 +258,7 @@ html.zen main{padding-top:18px}
 html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,select,.clock-scene{transition:background-color .6s,border-color .6s,color .6s}
 @media (max-width:640px){
   :root{--bodyFont:19px}
-  .clock{display:none}
+  .clock .dial{display:none}
   .emblem{width:46px;height:46px}
   .action{margin-left:5%}
   .narration p.dialogue,.scene-text p.dialogue{margin-left:.2em;padding-left:.7em}
@@ -298,10 +299,6 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 <h1 id="titleEl"><span id="name"></span></h1>
 <p class="subtitleEl" id="subtitleEl" hidden></p>
 </div>
-<div class="clock" aria-hidden="true">
-<svg class="dial" id="dial" viewBox="0 0 150 54"><path class="archShape" d="M14 44A61 38 0 0 1 136 44"/><path class="horizon" d="M4 44H146"/><circle class="celestial" cx="75" cy="6" r="6"/></svg>
-<span id="clockTime"></span>
-</div>
 </div>
 <p class="state" id="state"></p>
 </header>
@@ -328,7 +325,12 @@ html,body,.card,.action,.scene-text,.hpRow,nav,.navbar,footer,.chip,textarea,sel
 <main>
 <div id="content" class="c-story"></div>
 </main>
-<footer id="footer"><form class="input" id="input">
+<footer id="footer">
+<div class="clock" aria-hidden="true">
+<svg class="dial" id="dial" viewBox="0 0 150 54"><path class="archShape" d="M14 44A61 38 0 0 1 136 44"/><path class="horizon" d="M4 44H146"/><circle class="celestial" cx="75" cy="6" r="6"/></svg>
+<span id="clockTime"></span>
+</div>
+<form class="input" id="input">
 <button id="jumpDown" class="fab" type="button" aria-label="Go to the latest exchange" data-t-aria="jump.latest" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
 <textarea id="text" rows="2" placeholder="What does your character do? (Ctrl+Enter to send)" aria-label="Action" data-t-aria="input.aria"></textarea>
 <div class="controls">
