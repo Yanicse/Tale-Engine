@@ -59,10 +59,15 @@ def select_modules(packet):
     return sorted(modules)
 
 
+def word_range(word_target):
+    """Phrase for the narration length: a range above 60 words, a single target otherwise."""
+    return '60 to %d' % word_target if word_target > 60 else 'about %d' % word_target
+
+
 def build_instructions(packet, modules, word_target):
     modules = set(modules)
     language = packet.get('campaign_rules', {}).get('narration_language', 'English')
-    blocks = [text.OPENING, text.STORY.format(word_target=word_target), text.narration_language_block(language), text.TRANSPORT,
+    blocks = [text.OPENING, text.STORY.format(word_range=word_range(word_target)), text.narration_language_block(language), text.TRANSPORT,
               text.MEMORY, text.STRUCTURE, text.DIALOGUE]
     from .creation_policy import INSTRUCTIONS
     blocks.append(INSTRUCTIONS)

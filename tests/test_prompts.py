@@ -35,7 +35,7 @@ class PromptFiles(unittest.TestCase):
 
     def test_placeholders_that_the_code_fills_exist(self):
         story = prompts.load('instructions.story')
-        self.assertEqual(sorted(set(re.findall(r'(?<!\{)\{([a-z_]+)\}(?!\})', story))), ['word_target'])
+        self.assertEqual(sorted(set(re.findall(r'(?<!\{)\{([a-z_]+)\}(?!\})', story))), ['word_range'])
         extractor = prompts.load('canon_build.prompt')
         self.assertEqual(sorted(set(re.findall(r'(?<!\{)\{([a-z_]+)\}(?!\})', extractor))), ['excerpt', 'first', 'last', 'limit'])
 
@@ -76,6 +76,16 @@ class EnvelopeVersion(unittest.TestCase):
         mechanics = build_instructions({'campaign_rules': {'mechanics': {'version': 'mana-1.0'}}}, list(ALL_MODULES), 180)
         self.assertIn('envelope is version 1.3', mechanics)
         self.assertNotIn('version 1.2', mechanics)
+
+    def test_word_target_sentence_is_always_coherent(self):
+        from novel_engine.narrative_preparation import build_instructions
+        template = prompts.load('instructions.story')
+        head = 'aim for a natural narration of '
+        for target, phrase in ((40, 'about 40'), (60, 'about 60'), (61, '60 to 61'), (180, '60 to 180')):
+            story = build_instructions({}, [], target)
+            self.assertIn(head + phrase + ' words; this target is flexible', story, target)
+            self.assertNotIn('{', template.format(word_range=phrase))
+        self.assertEqual(template.format(word_range='60 to 180'), template.replace('{word_range}', '60 to 180'))
 
 
 if __name__ == '__main__':

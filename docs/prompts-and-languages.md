@@ -27,7 +27,7 @@ so that a `language` written as a name, such as `French`, resolves to its code.
 
 The long instruction texts are files, read exactly as written: `novel_engine/prompts/en/<module>.<name>.md`, for
 example `instructions.opening.md` or `agenda_protocol.instructions.md` (30 files). Code fills a few placeholders with
-`str.format` (`{word_target}` in `instructions.story.md`; `{limit}`, `{first}`, `{last}` and `{excerpt}` in
+`str.format` (`{word_range}` in `instructions.story.md`; `{limit}`, `{first}`, `{last}` and `{excerpt}` in
 `canon_build.prompt.md`), so keep those and double any other brace you add.
 
 To translate them, create `novel_engine/prompts/<language>/` and copy the files you translate under the same names.
