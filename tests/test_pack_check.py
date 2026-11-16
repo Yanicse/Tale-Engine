@@ -84,6 +84,43 @@ class ValidateTest(PackFiles):
         self.assertWarning(report, "unknown key 'extra'")
         self.assertWarning(report, 'has no goal')
 
+    def test_the_missing_title_warning_says_what_the_page_does(self):
+        report = self.report(novel_json={'language': 'en'})
+        self.assertWarning(report, "no 'title': the reader title comes from theme.json")
+        self.assertFalse(any('folder name' in line for line in report.warnings))
+
+    def test_tracked_npc_fields_are_checked_like_the_campaign_cleans_them(self):
+        report = self.report(novel_json={'title': 'T', 'tracked_npcs': [
+            {'id': 5, 'name': 'Ana', 'goal': 'x'}, {'name': 'Bo', 'place': 3, 'goal': ['x']}]})
+        self.assertError(report, 'tracked_npcs[0].id must be text')
+        self.assertError(report, 'tracked_npcs[1].place must be text')
+        self.assertError(report, 'tracked_npcs[1].goal must be text')
+        long_name = 'A name that goes on and on until the sixtieth character is long gone, then '
+        report = self.report(novel_json={'title': 'T', 'tracked_npcs': [
+            {'name': long_name + 'one', 'goal': 'x'}, {'name': long_name + 'two', 'goal': 'x'},
+            {'id': 'Ana B', 'name': 'First', 'goal': 'x'}, {'id': 'ana-b', 'name': 'Second', 'goal': 'x'}]})
+        self.assertEqual(len([line for line in report.errors if 'duplicate id' in line]), 2, report.errors)
+        self.assertEqual(report.errors.count("novel.json: tracked_npcs[1]: duplicate id '" + pack.npc_id({'name': long_name}) + "'"), 1)
+        write(self.dir, 'novel.json', {'title': 'T', 'tracked_npcs': [{'name': long_name + 'one'}, {'name': 'Bo', 'goal': 'x'}]})
+        names = [npc['id'] for npc in pack.clean_npcs(json.loads((self.dir / 'novel.json').read_text())['tracked_npcs'])]
+        self.assertEqual(names, [pack.npc_id({'name': long_name}), 'bo'])
+
+    def test_passives_cannot_declare_what_only_abilities_honour(self):
+        report = self.report(character_json={'name': 'Ana', 'rules': {'passives': {
+            'eyes': {'label': 'Eyes', 'free': True, 'cooldown': {'resource': 'eyes_ready', 'seconds': 60}},
+            'ward': {'label': 'Ward', 'free': True, 'effect': 'death_prevention',
+                     'parameters': {'duration_seconds': 5, 'lethal_prevention_capacity_hp_max_percent': 10,
+                                    'survival_hp_max_percent': 10}}}}})
+        self.assertError(report, 'rules.passives.eyes.cooldown: only works on abilities')
+        self.assertError(report, 'rules.passives.ward.effect: only works on abilities')
+        report = self.report(character_json={'name': 'Ana', 'rules': {'passives': {
+            'dusk': {'label': 'Dusk', 'free': True, 'phase': 'night'}}}})
+        self.assertError(report, 'rules.passives.dusk.phase requires solar_schedule')
+        report = self.report(character_json={'name': 'Ana', 'rules': {'passives': {
+            'dusk': {'label': 'Dusk', 'free': True, 'phase': 'night'}},
+            'solar_schedule': {'first_sunrise_minute': 360, 'first_sunset_minute': 1080}}})
+        self.assertEqual(report.errors, [])
+
     def test_character_rules_problems(self):
         report = self.report(character_json={'name': 'Ana', 'hp_max': 0, 'rules': {
             'charges': {}, 'regeneration': {}, 'speed': 1,

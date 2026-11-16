@@ -70,6 +70,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - An action is a long activity only with a real span of several days or an open end. "I wait one day", "the monthly report", a quoted title and "as long as he pays" said about someone else no longer relax the agenda deadlines.
 - Routines follow `opening_minute_of_day`: their dates read as local times, the daily checkpoint falls at 18:00 local time instead of 18 hours of elapsed time, and its marker matches the day shown. Without the key nothing changes.
 - `novel validate` refuses `rules.costs.full_power_cost_percent` when it is not an object, also next to `fixed_cost_points`; such a table used to pass, reach the campaign and crash `novel play --skills`.
+- `novel validate` reports a `cooldown` or an `effect` on a passive (only abilities honor them), a day or night phase on a passive without `solar_schedule`, a tracked NPC whose `id`, `place` or `goal` is not text, and two tracked NPCs whose ids become the same once cleaned. The warning for a missing title says what the page really shows.
 
 ### Removed
 

@@ -8,7 +8,7 @@ import math
 import re
 from pathlib import Path
 
-from .pack import COLOR_KEYS, COLOR_VALUE, ICON_CATEGORIES, ICON_DIR, ICON_NAME, ICON_PATTERN, PRESETS, TEXT_LIMIT
+from .pack import COLOR_KEYS, COLOR_VALUE, ICON_CATEGORIES, ICON_DIR, ICON_NAME, ICON_PATTERN, PRESETS, TEXT_LIMIT, npc_id
 from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 
 NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening', 'quiet_news'}
@@ -71,7 +71,7 @@ def check_novel(novel, report):
     name = 'novel.json'
     unknown_keys(novel, NOVEL_KEYS, name, report)
     if not isinstance(novel.get('title'), str) or not novel['title'].strip():
-        report.warn(name, "no 'title': the pack folder name is used")
+        report.warn(name, "no 'title': the reader title comes from theme.json, and the page shows its default title if that has none")
     language = novel.get('language', 'en')
     if not isinstance(language, str) or not language.strip():
         report.error(name, "'language' must be text such as 'en' or 'fr'")
@@ -88,7 +88,12 @@ def check_novel(novel, report):
             if not isinstance(item, dict) or not isinstance(item.get('name'), str) or not item['name'].strip():
                 report.error(name, f'tracked_npcs[{number}] needs "name" as text')
                 continue
-            ident = re.sub(r'[^a-z0-9_]+', '_', str(item.get('id') or item['name']).casefold()).strip('_')
+            for key in ('id', 'place', 'goal'):
+                if item.get(key) is not None and not isinstance(item[key], str):
+                    report.error(name, f'tracked_npcs[{number}].{key} must be text')
+            if item.get('id') and not isinstance(item['id'], str):
+                continue
+            ident = npc_id(item)
             if ident in seen:
                 report.error(name, f"tracked_npcs[{number}]: duplicate id '{ident}'")
             seen.add(ident)
@@ -233,6 +238,9 @@ def check_ability(kind, key, spec, report):
         return
     for extra in sorted(set(spec) - ABILITY_KEYS):
         report.error(name, f"{where}.{extra}: unknown key")
+    for only in ('cooldown', 'effect'):
+        if kind == 'passives' and only in spec:
+            report.error(name, f'{where}.{only}: only works on abilities, not on passives (move it to rules.abilities)')
     if 'label' in spec and (not isinstance(spec['label'], str) or not spec['label'].strip()):
         report.error(name, f'{where}.label must be non-empty text')
     if 'phase' in spec and not isinstance(spec['phase'], str):
@@ -403,6 +411,10 @@ def check_charge_rules(rules, abilities, report):
             consumers.add(consumer)
         if (spec['period'] == 'night' or spec.get('phase') in ('day', 'night')) and schedule is None:
             report.error(name, f'{where} requires solar_schedule')
+    passives = rules.get('passives', {})
+    for key, spec in (passives.items() if isinstance(passives, dict) else ()):
+        if isinstance(spec, dict) and spec.get('phase') in ('day', 'night') and schedule is None:
+            report.error(name, f'rules.passives.{key}.phase requires solar_schedule')
     for key, spec in abilities.items():
         if not isinstance(spec, dict):
             continue

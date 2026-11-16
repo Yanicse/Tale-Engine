@@ -74,11 +74,15 @@ def clean_theme(theme):
             **({'opening_minute_of_day': opening} if type(opening) is int and 0 <= opening < 1440 else {})}
 
 
+def npc_id(item):
+    """Id of a tracked NPC entry: its `id` (or its name) reduced to a-z, 0-9 and _; '' when there is none."""
+    return re.sub(r'[^a-z0-9_]+', '_', text(item.get('id') or item.get('name'), 60).casefold()).strip('_')
+
+
 def clean_npcs(npcs):
     result = []
     for item in npcs if isinstance(npcs, list) else []:
-        ident = re.sub(r'[^a-z0-9_]+', '_', text(item.get('id') or item.get('name'), 60).casefold()).strip('_') \
-            if isinstance(item, dict) else ''
+        ident = npc_id(item) if isinstance(item, dict) else ''
         if ident and text(item.get('name'), 80):
             result.append({'id': ident, 'name': text(item['name'], 80), 'place': text(item.get('place'), 120),
                            'goal': text(item.get('goal'), 300)})
