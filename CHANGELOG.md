@@ -67,6 +67,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - An interrupted goal may point to an event that a mechanical operation stretches: the agenda compared the stated time of that event with the stretched end of the turn and refused it with "The turn goes past its situational interruption". Every date of an outcome or interruption event is now read after the stretch.
 - A commitment written with an unknown status ("cancelled", "withdrawn") is no longer recorded as open: only a missing status defaults to open and a known synonym is mapped; any other value is refused by the state schema.
 - A quest can be accepted with the usual wordings ("I'll take the job", "deal", "agreed", "yes please", "count me in") and in a campaign narrated in another language, where the English wording check never matched: there only the rule that a question is not a decision applies.
+- An action is a long activity only with a real span of several days or an open end. "I wait one day", "the monthly report", a quoted title and "as long as he pays" said about someone else no longer relax the agenda deadlines.
 
 ### Removed
 

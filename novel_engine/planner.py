@@ -57,15 +57,27 @@ def long_wait(text):
     return bool(re.search(SEVERAL_DAYS+'|until.{0,45}\\b(evening|dawn|tomorrow|night)\\b|\\b(24|48|72)\\s*(h|hours)\\b',text))
 
 
+QUOTED=r"\"[^\"]*\"|\u201c[^\u201d]*\u201d|\u00ab[^\u00bb]*\u00bb|(?<!\w)'[^']*'(?!\w)"
+SPAN=(r'\b(\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|several|few|couple of|couple|many|'
+      r'multiple)\s+(days|nights|weeks|months|years)\b(?!\s+(later|ago|earlier|before|after|from now|old))|'
+      r'\b(some|next|following|coming)\s+(days|weeks|months)\b|'
+      r'\b(for|during|over|throughout)\s+(days|weeks|months|years)\b|'
+      r'\b(for|during|over|throughout)\s+(a|one|the|the next|the following|the whole|the entire)\s+'
+      r'(week|month|year|fortnight)\b|\b(all|the whole|the entire)\s+(week|month|year)\b')
+# "as long as" is open-ended when it names no one else's condition: no third party before it in its sentence.
+OPEN_LONG=(r'\bas long as (it takes|needed|necessary|possible|required|i can|i must|i have to)\b|'
+           r'(?:^|[.;!?]\s*)(?:(?!\b(?:he|she|they|him|her|them|you|we)\b)[^.;!?])*?\bas long as\b')
+
+
 def long_activity(text):
     """Activity spread over several days, or with no fixed end, to carry on until a concrete fact or an interruption."""
-    text=player_time_text(text)
+    text=re.sub(QUOTED,' ',player_time_text(text))  # A quoted title or speech is not the player's own schedule.
     # The routine tool always names its length in its action and sets its own review period.
-    if not text.startswith('routine of ') and re.search(ROUTINE_VERB,text) and re.search(SEVERAL_DAYS,text):
+    if not text.startswith('routine of ') and re.search(ROUTINE_VERB,text) and re.search(SPAN,text):
         return True
     return bool(re.search(('until (something|anything)\\b|until (an?|some|the next) (\\w+ ){0,2}(event|incident|emergency|'
                            'crisis|alert|attack|news)\\b|until (the interruption|my return|the end|further '
-                           'notice)|as long as|for as long as|without (stopping|interruption|a pause|a '
+                           'notice)|'+OPEN_LONG+'|without (stopping|interruption|a pause|a '
                            'break)|(for|during) (many|several|long) hours?\\b'),text))
 
 

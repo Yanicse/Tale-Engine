@@ -128,6 +128,20 @@ class PlannerTests(unittest.TestCase):
                      'What are the market days?','I live in the capital','I wait till the bus arrives'):
             self.assertFalse(long_activity(text),text)
 
+    def test_long_activity_needs_a_real_span_or_an_open_end(self):
+        for text in ('I work for five days','I live normally for a week','I rest during the next two weeks',
+                     'I work all week','I wait for a few days','I spend three days in the library',
+                     'I stay as long as it takes',"I keep studying 'til something happens",
+                     'I read "Seven Days" for a week','Routine for a month','I work for weeks'):
+            self.assertTrue(long_activity(text),text)
+        for text in ('I wait one day','I read the monthly report','I keep the weekly ledger up to date',
+                     'I work on the yearbook','I tell him he can stay as long as he pays',
+                     'I read "Seven Days in Harbor" tonight',"I read 'Seven Days in Harbor' tonight",
+                     'I read '+chr(0x201c)+'Seven Days'+chr(0x201d),
+                     'I keep walking, a few days later it rains'):
+            self.assertFalse(long_activity(text),text)
+        self.assertTrue(long_wait('I wait one day'))
+
     def test_startup_and_consultations_call_neither_role(self):
         before=self.c.state()
         self.loop.run_turn();self.c.world_agenda();self.c.memories('guard')
