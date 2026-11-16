@@ -73,9 +73,9 @@ periodic **planner** that summarizes the story every 20 narrator replies. A pack
 
 | File | Content |
 | --- | --- |
-| `chronology.json` | `{"nodes": [{"id", "title", "phase", "relative_time"}], "edges": [{"before", "after"}]}`: the episodes that clocks and arcs may cite as `chronology:<id>` |
-| `clocks.json` | a list of at most 8 clocks `{id, faction, goal, segments (3 to 10), progression, status: "in_progress", signs, event, origin: "canon" or "invention", reason, references}`. A clock drawn from the canon cites a `chronology:<id>` reference |
-| `arcs.json` | `{"version": 1, "arcs": [{id, title, nodes, dependencies, opening_days, end_days, steps, clock}], "outside_arcs": {}}`. Every chronology node belongs to an arc or is listed in `outside_arcs` with a reason |
+| `chronology.json` | `{"nodes": [{"id", "title", "phase", "relative_time"}], "edges": [{"before", "after"}]}`: the episodes that clocks and arcs may cite as `chronology:<id>`. An edge names two existing nodes and the edges form no cycle |
+| `clocks.json` | a list of at most 8 clocks `{id, faction, goal, segments (3 to 10), progression, status: "in_progress", signs, event, origin: "canon" or "invention", reason, references}`. A clock drawn from the canon cites a `chronology:<id>` reference. Each clock id is unique |
+| `arcs.json` | `{"version": 1, "arcs": [{id, title, nodes, dependencies, opening_days, end_days, steps, clock}], "outside_arcs": {}}`. Every chronology node belongs to an arc or is listed in `outside_arcs` with a reason. The `clock` of an arc, when given, is the id of a clock of `clocks.json` |
 
 Having `clocks.json` or `chronology.json` installs the chronicler; `arcs.json` (which needs `chronology.json`) also installs the
 arcs registry. The chronicler reviews the world on the first turn, after seven fictional days, and after a long ellipsis;

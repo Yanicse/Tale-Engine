@@ -197,6 +197,86 @@ class WorldFileValidationTests(Fixture):
             self.assertEqual(len(WorldPlanner(con).clocks()), 2)
             self.assertFalse(ArcRegistry(con).exists())
 
+    def fresh(self):
+        shutil.rmtree(self.tmp / self.slug, True)
+        return self.pack()
+
+    def test_chronology_edges_are_checked_and_campaign_new_refuses_them_without_a_traceback(self):
+        nodes = json.loads((self.pack() / 'chronology.json').read_text(encoding='utf-8'))['nodes']
+        node, other = nodes[0]['id'], nodes[1]['id']
+        cases = {
+            'missing after': ([{'before': node}], "chronology.json: edges[0] needs 'before' and 'after', two node ids"),
+            'not a list': ('zzz', 'chronology.json: "edges" must be a list'),
+            'unknown node': ([{'before': node, 'after': 'nowhere'}],
+                             'chronology.json: edges[0].after names an unknown node: nowhere'),
+            'cycle': ([{'before': node, 'after': other}, {'before': other, 'after': node}],
+                      'chronology.json: edges form a cycle'),
+            'self loop': ([{'before': node, 'after': node}], 'chronology.json: edges form a cycle'),
+        }
+        for label, (edges, message) in cases.items():
+            with self.subTest(label):
+                pack = self.fresh()
+                self.edit(pack, 'chronology.json', lambda data: data.update(edges=edges))
+                self.assertTrue(any(e.startswith(message) for e in check_pack(pack).errors), check_pack(pack).errors)
+                with redirect_stdout(io.StringIO()), self.assertRaises(SystemExit):
+                    cli.campaign_new(argparse.Namespace(novel=self.slug, start='start'))
+                self.assertFalse((self.target / 'campaign.sqlite').exists())
+                with self.assertRaises(ValueError):
+                    world_setup.load(pack)
+
+    def test_a_chronology_with_valid_edges_still_installs(self):
+        pack = self.fresh()
+        ids = [n['id'] for n in json.loads((pack / 'chronology.json').read_text(encoding='utf-8'))['nodes']]
+        self.edit(pack, 'chronology.json', lambda data: data.update(edges=[{'before': ids[0], 'after': ids[1]}]))
+        self.assertEqual(check_pack(pack).errors, [])
+
+    def test_malformed_arcs_give_one_readable_line_and_never_a_traceback(self):
+        def arc(change):
+            return lambda plan: change(plan['arcs'][0])
+        cases = {
+            'outside_arcs list': (lambda plan: plan.update(outside_arcs=[]),
+                                  'arcs.json: outside_arcs must be an object'),
+            'dependencies null': (arc(lambda a: a.update(dependencies=None)),
+                                  'arcs.json: arcs[0].dependencies must be a list of arc ids'),
+            'end_days text': (arc(lambda a: a.update(end_days='20')),
+                              'arcs.json: arcs[0].end_days must be a whole number of days'),
+            'steps text': (arc(lambda a: a.update(steps='abc')),
+                           'arcs.json: arcs[0].steps must be a list of texts'),
+            'opening_days bool': (arc(lambda a: a.update(opening_days=True)),
+                                  'arcs.json: arcs[0].opening_days must be a whole number of days'),
+            'unknown clock': (arc(lambda a: a.update(clock='ghost')),
+                              'arcs.json: arc missing_lens names clock "ghost", which is not in clocks.json'),
+            'missing key': (arc(lambda a: a.pop('steps')), 'arcs.json: arcs[0] needs "steps"'),
+        }
+        for label, (change, message) in cases.items():
+            with self.subTest(label):
+                pack = self.fresh()
+                self.edit(pack, 'arcs.json', change)
+                self.assertTrue(any(e.startswith(message) for e in check_pack(pack).errors), check_pack(pack).errors)
+                with redirect_stdout(io.StringIO()), self.assertRaises(SystemExit):
+                    cli.campaign_new(argparse.Namespace(novel=self.slug, start='start'))
+        pack = self.fresh()
+        (pack / 'arcs.json').write_text('{}', encoding='utf-8')
+        self.assertTrue(any('needs "version": 1 and "arcs"' in e for e in check_pack(pack).errors))
+
+    def test_a_duplicate_clock_id_in_one_file_is_an_error(self):
+        pack = self.fresh()
+        self.edit(pack, 'clocks.json', lambda clocks: clocks.append(dict(clocks[0])))
+        errors = [e for e in check_pack(pack).errors if e.startswith('clocks.json')]
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn('duplicate clock id', errors[0])
+        with redirect_stdout(io.StringIO()), self.assertRaises(SystemExit):
+            cli.campaign_new(argparse.Namespace(novel=self.slug, start='start'))
+
+    def test_installing_the_same_clocks_again_still_skips_the_existing_ones(self):
+        pack = self.fresh()
+        clocks = json.loads((pack / 'clocks.json').read_text(encoding='utf-8'))
+        with closing(sqlite3.connect(':memory:')) as con:
+            con.row_factory = sqlite3.Row
+            planner = world_setup._DryPlanner(con, world_setup.load(pack)[0]['nodes'])
+            self.assertEqual(planner.install_chronicle(clocks, 'chronology.json'), len(clocks))
+            self.assertEqual(planner.install_chronicle(clocks, 'chronology.json'), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

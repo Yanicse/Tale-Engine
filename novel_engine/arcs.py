@@ -59,10 +59,41 @@ class ArcRegistry:
         return self.con.execute("SELECT 1 FROM sqlite_master WHERE name='chronicle_arc_meta'").fetchone() is not None
 
     @staticmethod
-    def verify(plan, nodes):
-        """The plan is a campaign choice; the sources stay immutable."""
-        if plan.get('version') != 1 or not 1 <= len(plan.get('arcs', [])) <= 24:
-            raise ValueError('Invalid arcs plan.')
+    def shape(plan):
+        """Readable ValueError when the plan is not made of the expected JSON types; checks nothing else."""
+        if not isinstance(plan, dict) or plan.get('version') != 1 or not isinstance(plan.get('arcs'), list):
+            raise ValueError('needs "version": 1 and "arcs": a list of 1 to 24 arcs')
+        if not 1 <= len(plan['arcs']) <= 24:
+            raise ValueError('needs "version": 1 and "arcs": a list of 1 to 24 arcs')
+        if not isinstance(plan.get('outside_arcs', {}), dict):
+            raise ValueError('outside_arcs must be an object {episode id: reason}')
+        def texts(value):
+            return isinstance(value, list) and all(isinstance(v, str) for v in value)
+        kinds = {'id': (lambda v: isinstance(v, str), 'text'), 'title': (lambda v: isinstance(v, str), 'text'),
+                 'steps': (texts, 'a list of texts'), 'nodes': (texts, 'a list of episode ids'),
+                 'dependencies': (texts, 'a list of arc ids'),
+                 'opening_days': (lambda v: type(v) is int, 'a whole number of days'),
+                 'end_days': (lambda v: type(v) is int, 'a whole number of days')}
+        for i, arc in enumerate(plan['arcs']):
+            if not isinstance(arc, dict):
+                raise ValueError(f'arcs[{i}] must be an object')
+            for key, (ok, wanted) in kinds.items():
+                if key not in arc:
+                    raise ValueError(f'arcs[{i}] needs "{key}"')
+                if not ok(arc[key]):
+                    raise ValueError(f'arcs[{i}].{key} must be {wanted}')
+            if not isinstance(arc.get('clock'), (str, type(None))):
+                raise ValueError(f'arcs[{i}].clock must be a clock id or absent')
+
+    @staticmethod
+    def verify(plan, nodes, clocks=None):
+        """The plan is a campaign choice; the sources stay immutable. `clocks`, when given, is the set of clock ids
+        an arc may link to."""
+        ArcRegistry.shape(plan)
+        if clocks is not None:
+            for a in plan['arcs']:
+                if a.get('clock') and a['clock'] not in clocks:
+                    raise ValueError(f'arc {a["id"]} names clock "{a["clock"]}", which is not in clocks.json')
         arcs = {a['id']: a for a in plan['arcs']}
         if len(arcs) != len(plan['arcs']):
             raise ValueError('Duplicate arc identifier.')
@@ -100,8 +131,8 @@ class ArcRegistry:
             raise ValueError('Episodes without follow-up: ' + ', '.join(sorted(nodes - covered - excluded.keys())))
         return arcs
 
-    def install(self, plan, nodes, minute):
-        definitions = self.verify(plan, nodes)
+    def install(self, plan, nodes, minute, clocks=None):
+        definitions = self.verify(plan, nodes, clocks)
         signature = hashlib.sha256(check_json(plan).encode()).hexdigest()
         if self.exists():
             if self.con.execute('SELECT signature FROM chronicle_arc_meta').fetchone()[0] != signature:

@@ -26,6 +26,32 @@ def present(pack_dir):
     return any((Path(pack_dir) / name).is_file() for name in FILES)
 
 
+def check_edges(edges, ids):
+    """ValueError when the edges of a chronology are not pairs of known nodes without a cycle."""
+    if not isinstance(edges, list):
+        raise ValueError('chronology.json: "edges" must be a list of {"before", "after"} pairs')
+    after = {}
+    for i, edge in enumerate(edges):
+        if not isinstance(edge, dict) or not all(isinstance(edge.get(k), str) for k in ('before', 'after')):
+            raise ValueError(f"chronology.json: edges[{i}] needs 'before' and 'after', two node ids")
+        for key in ('before', 'after'):
+            if edge[key] not in ids:
+                raise ValueError(f'chronology.json: edges[{i}].{key} names an unknown node: {edge[key]}')
+        after.setdefault(edge['after'], []).append(edge['before'])
+    state = {}
+    def visit(node):
+        if state.get(node) == 'open':
+            raise ValueError('chronology.json: edges form a cycle through node ' + node)
+        if node in state:
+            return
+        state[node] = 'open'
+        for earlier in after.get(node, []):
+            visit(earlier)
+        state[node] = 'done'
+    for node in after:
+        visit(node)
+
+
 def load(pack_dir):
     """(chronology, clocks, arcs plan or None); ValueError names the file that is wrong."""
     pack_dir = Path(pack_dir)
@@ -49,7 +75,15 @@ def load(pack_dir):
         raise ValueError('chronology.json: "nodes" must list objects with a text "id" and "title"')
     if len({n['id'] for n in nodes}) != len(nodes):
         raise ValueError('chronology.json: duplicate node id')
+    check_edges(chronology.get('edges', []), {n['id'] for n in nodes})
     clocks = read('clocks.json', list, [])
+    seen = set()
+    for i, clock in enumerate(clocks):
+        if not isinstance(clock, dict) or not isinstance(clock.get('id'), str):
+            raise ValueError(f'clocks.json: clocks[{i}] must be an object with a text "id"')
+        if clock['id'] in seen:
+            raise ValueError(f'clocks.json: duplicate clock id "{clock["id"]}"')
+        seen.add(clock['id'])
     plan = read('arcs.json', dict, None)
     if plan is not None and not nodes:
         raise ValueError('arcs.json: arcs cite chronology.json episodes, which is missing or empty')
@@ -64,11 +98,28 @@ def install(con, pack_dir, chronology_path, minute=0):
     if not present(pack_dir):
         return {'planner': True, 'chronicler': False, 'arcs': 0}
     _, clocks, plan = load(pack_dir)
-    added = planner.install_chronicle(clocks, chronology_path)
-    arcs = 0
-    if plan is not None:
-        arcs = ArcRegistry(con).install(plan, {n['id'] for n in planner.chronology_nodes()}, minute)
+    added, arcs = install_world(planner, clocks, plan, chronology_path, minute)
     return {'planner': True, 'chronicler': True, 'clocks': added, 'arcs': arcs}
+
+
+def install_world(planner, clocks, plan, chronology_path, minute):
+    """(clocks added, arcs installed); a ValueError names the file that is wrong. Shared by the real installation
+    and by `check`, so both refuse the same packs with the same message."""
+    try:
+        added = planner.install_chronicle(clocks, chronology_path)
+    except (ValueError, KeyError, TypeError) as error:
+        raise ValueError(f'clocks.json: {describe(error)}')
+    if plan is None:
+        return added, 0
+    try:
+        nodes = {n['id'] for n in planner.chronology_nodes()}
+        return added, ArcRegistry(planner.con).install(plan, nodes, minute, {c['id'] for c in clocks})
+    except (ValueError, KeyError, TypeError) as error:
+        raise ValueError(f'arcs.json: {describe(error)}')
+
+
+def describe(error):
+    return f'missing key {error.args[0]!r}' if isinstance(error, KeyError) and error.args else str(error)
 
 
 def install_into_campaign(campaign, pack_dir):
@@ -112,12 +163,10 @@ def check(pack_dir):
         con.row_factory = sqlite3.Row
         planner = _DryPlanner(con, chronology['nodes'])
         try:
-            planner.install_chronicle(clocks, 'chronology.json')
-        except (ValueError, KeyError, TypeError) as error:
-            return [f'clocks.json: {error}']
-        if plan is not None:
-            try:
-                ArcRegistry(con).install(plan, {n['id'] for n in chronology['nodes']}, 0)
-            except (ValueError, KeyError, TypeError) as error:
-                return [f'arcs.json: {error}']
+            install_world(planner, clocks, plan, 'chronology.json', 0)
+        except ValueError as error:
+            return [str(error)]
+        except Exception as error:
+            # Safety net of last resort: the shapes are checked first, so this only reports an unforeseen mistake.
+            return [f'world files: cannot be installed ({type(error).__name__}: {error})']
     return []
