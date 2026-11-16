@@ -22,7 +22,17 @@ def manifests(entry):
     return bool(entry['interrupt'] or entry['entry_id'].startswith(CHRONICLE_PREFIX))
 
 
-def date(minute):
+def opening_minute(config):
+    """Local minute of the day at which the campaign opens, when its pack gives one."""
+    value = (config.get('reader') or {}).get('opening_minute_of_day')
+    return value if type(value) is int and 0 <= value < 1440 else None
+
+
+def date(minute, opening=None):
+    if opening is not None:
+        # A real local time, so that an elapsed offset can never be read as an hour of the day.
+        day, local = divmod(opening + minute, 1440)
+        return f'Day {day + 1}, {local // 60:02d}:{local % 60:02d}'
     # T0 matches the opening, without importing a canonical civil date.
     day, clock = divmod(minute, 1440)
     hour, minute = divmod(clock, 60)
@@ -137,6 +147,19 @@ class Agenda:
                      'outcome_event_index': None}
             self._put(entry, 'agenda:tracked_npc', state['world_minute'])
 
+    def opening(self):
+        row=self.con.execute('SELECT config FROM campaign WHERE id=1').fetchone()
+        return opening_minute(json.loads(row[0])) if row else None
+
+    def turns_without_time(self, minute):
+        """Latest recorded turns that left the clock on this minute, not counting the turn that reached it."""
+        turns=0
+        for (raw,) in self.con.execute('SELECT result FROM requests ORDER BY rowid DESC LIMIT 12'):
+            if json.loads(raw).get('world_minute_after')!=minute:
+                break
+            turns+=1
+        return max(0,turns-1)
+
     def get(self, identifier):
         row=self.con.execute('SELECT * FROM world_agenda WHERE entry_id=?',(identifier,)).fetchone()
         if not row:
@@ -149,9 +172,10 @@ class Agenda:
             (SELECT 1 FROM json_each(json_extract(payload,'$.audience')) WHERE value=?)
             ORDER BY due_minute,entry_id''',(recipient,))
         output=[];size=0;groups={}
+        opening=self.opening()
         for row in rows:
             item={**json.loads(row['payload']),'revision':row['revision'],
-                  'date':date(row['due_minute']),'reference':'agenda:'+row['entry_id']}
+                  'date':date(row['due_minute'],opening),'reference':'agenda:'+row['entry_id']}
             groups.setdefault(row['due_minute'],[]).append(item)
         self.selection_diagnostic=None
         for minute,group in groups.items():
@@ -210,8 +234,13 @@ class Agenda:
         root=roots[0] if roots else (pending or {}).get('request_id')
         from .arcs import ArcRegistry
         arc_horizon=ArcRegistry(self.con).horizon(state['world_minute']) if recipient=='narrator' else None
-        return {'clock':{'world_minute':state['world_minute'],'date':date(state['world_minute']),
-                          'origin':'T0: common opening, without a canonical civil date'},
+        opening=self.opening()
+        clock={'world_minute':state['world_minute'],'date':date(state['world_minute'],opening),
+               'origin':('T0: common opening, without a canonical civil date' if opening is None else
+                         'date and the deadline dates are real local times; world_minute counts the minutes elapsed since the opening')}
+        if recipient=='narrator':
+            clock['turns_without_time']=self.turns_without_time(state['world_minute'])
+        return {'clock':clock,
                 'events':entries,'context_limit':PACKET_LIMIT,'character_budget':PACKET_CHARS,
                 'chronicle_constraints':self.chronicle_constraints(entries) if recipient=='narrator' else {},
                 'max_horizon_if_limited':max(state['world_minute'],omitted[0]-1) if omitted else None,

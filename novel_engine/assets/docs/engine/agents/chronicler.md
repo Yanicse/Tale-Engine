@@ -32,6 +32,8 @@ Advance by 0 to 2 segments per revision. A clock can go back if the campaign thw
 
 A manifestation is what reaches the player character, within the next seven fictional days (absolute due_minute, strictly in the future). At most three per revision and four pending. type=sign for a clock in progress: rumor at the inn, refugees, rising prices, patrols, proclamation, disappearances. Favor the clocks that have already advanced, and produce at least one when a clock passes the halfway mark. type=event for the clock that bursts: the event itself, dated, with its actors and its effects.
 
+due_minute counts minutes elapsed since the opening, never a time of day. If next_local_midnight_minute is provided, it is the due_minute of the next local 00:00: add the local hour in minutes to it, so that a manifestation described at night is really dated at night.
+
 description says what happens in the world; perception says how it can reach the player character according to their position. place and actor are precise. The narrator must show each manifestation on its date; a big event interrupts the player character's turn.
 
 ## Limits

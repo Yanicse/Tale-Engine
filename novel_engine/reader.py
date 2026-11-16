@@ -11,7 +11,7 @@ import re
 import sqlite3
 
 from . import schema
-from .agenda import Agenda, date
+from .agenda import Agenda, date, opening_minute
 from .abilities import packet as skills_packet
 from .creations import CreationRegistry
 from .planner import WorldPlanner
@@ -30,6 +30,15 @@ def _clean(value):
         return [_clean(item) for item in value
                 if not (isinstance(item, str) and item.startswith('canon:'))]
     return value
+
+
+def _clock(minute, config):
+    """World clock for display. World minutes count from the opening, which need not be midnight."""
+    opening = opening_minute(config)
+    clock = {'world_minute': minute, 'date': date(minute, opening)}
+    if opening is not None:
+        clock['minute_of_day'] = (opening + minute) % 1440
+    return clock
 
 
 class Reader:
@@ -67,7 +76,7 @@ class Reader:
                 if self._table(con, 'exchanges') else 0
             last = con.execute('SELECT MAX(seq) FROM exchanges').fetchone()[0] if self._table(con, 'exchanges') else None
             return {'campaign': state['campaign_id'], 'state_version': state['state_version'],
-                    'clock': {'world_minute': state['world_minute'], 'date': date(state['world_minute'])},
+                    'clock': _clock(state['world_minute'], config),
                     'scene': session.get('scene', ''), 'phase': session.get('phase'),
                     'has_pending_action': bool(session.get('pending_action')),
                     'exchange_count': count, 'last_seq': last,
@@ -185,11 +194,11 @@ class Reader:
 
     def agenda(self):
         with closing(self._connect()) as con:
-            state, _ = self._campaign(con)
+            state, config = self._campaign(con)
             agenda = Agenda(con)
             entries = agenda.entries('player', required_through=state['world_minute']) if agenda.exists() else []
             visible = ('entry_id', 'title', 'actor', 'location', 'kind', 'due_minute', 'status', 'date')
-            return {'clock': {'date': date(state['world_minute'])},
+            return {'clock': {'date': _clock(state['world_minute'], config)['date']},
                     'events': [{key: item[key] for key in visible if key in item} for item in entries]}
 
     def summaries(self):

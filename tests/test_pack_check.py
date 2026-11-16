@@ -56,7 +56,7 @@ class ValidateTest(PackFiles):
         report = self.report(theme_json={'preset': 'neon', 'colors': {'accent': 'red', 'sparkle': '#fff'},
                                          'labels': {'tab.npc': 'People', 'nope': 'x', 'search.results': 'none'},
                                          'icons': {'places': [['harbor', 'no-such-icon']], 'weather': []},
-                                         'clock': 'yes', 'mood': 1})
+                                         'clock': 'yes', 'opening_minute_of_day': 1440, 'mood': 1})
         self.assertError(report, "preset 'neon'")
         self.assertError(report, 'colors.accent')
         self.assertError(report, 'colors.sparkle')
@@ -64,6 +64,7 @@ class ValidateTest(PackFiles):
         self.assertError(report, "icon 'no-such-icon'")
         self.assertError(report, 'icons.weather')
         self.assertError(report, "'clock'")
+        self.assertError(report, "'opening_minute_of_day'")
         self.assertWarning(report, "unknown key 'mood'")
         self.assertWarning(report, 'labels.search.results should keep the placeholders')
 
@@ -186,6 +187,15 @@ class RulesInTheCampaign(PackFiles):
         self.assertNotIn('form', context)
         self.assertNotIn('regeneration_rules', context)
         self.assertNotIn('subjective_hunger', context)
+
+
+class ThemeOpeningTests(unittest.TestCase):
+    def test_opening_minute_of_day_is_kept_only_when_valid(self):
+        from novel_engine.pack import clean_theme
+        self.assertEqual(clean_theme({'opening_minute_of_day': 1300})['opening_minute_of_day'], 1300)
+        for bad in (1440, -1, '8:00', True, 12.5):
+            self.assertNotIn('opening_minute_of_day', clean_theme({'opening_minute_of_day': bad}))
+        self.assertNotIn('opening_minute_of_day', clean_theme({}))
 
 
 if __name__ == '__main__':

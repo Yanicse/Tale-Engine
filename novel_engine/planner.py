@@ -327,6 +327,7 @@ class WorldPlanner:
         index=MemoryIndex(self.con);index.sync()
         meta=dict(self.con.execute('SELECT * FROM planner_meta').fetchone())
         state=prepared['state']
+        opening=Agenda(self.con).opening()
         exchanges=[];size=0
         for row in self.con.execute("SELECT * FROM memory_sources WHERE kind='exchange' AND seq>? ORDER BY seq LIMIT ?",
                                     (meta['last_summary_seq'],SUMMARY_PERIOD)):
@@ -347,7 +348,7 @@ class WorldPlanner:
         recent=self.summaries('player',4 if chronicle else 2)
         packet={'triggers':reasons,'meta':meta,
                 'current_state':{'state_version':state['state_version'],'versions':state['versions'],
-                                'world_minute':state['world_minute'],'date':date(state['world_minute']),
+                                'world_minute':state['world_minute'],'date':date(state['world_minute'],opening),
                                 'positions':state.get('positions',{})},
                 'action_to_resolve':prepared['context']['player_action'],
                 'exchanges_to_summarize':exchanges,'summaries_to_consolidate':consolidation,'recent_summaries':recent}
@@ -366,6 +367,8 @@ class WorldPlanner:
                 'limits':{'active_clocks':MAX_CLOCKS,'new_clocks':MAX_NEW_CLOCKS,'max_advance':MAX_STEP,
                            'manifestations_per_review':MAX_MANIFESTATIONS,'pending_manifestations':MAX_PENDING,
                            'horizon_minutes':CHRONICLE_HORIZON}}
+            if opening is not None:
+                packet['chronicle']['next_local_midnight_minute']=state['world_minute']+1440-(opening+state['world_minute'])%1440
             allowed|={c['reference'] for c in clocks}|{'chronology:'+n['id'] for n in nodes}
             allowed|={'agenda:'+a['entry_id'] for a in agenda}
             registry=ArcRegistry(self.con)

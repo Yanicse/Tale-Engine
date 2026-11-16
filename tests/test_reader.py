@@ -243,6 +243,38 @@ class ReaderTests(unittest.TestCase):
             campaign = Campaign(Path(folder) / 'campaign.sqlite').create(state, config)
             self.assertEqual(Reader(campaign.path).creations(), {'creations': []})
 
+    def test_clock_uses_the_opening_time_when_the_campaign_gives_one(self):
+        from novel_engine.reader import Reader
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tmp-tests') as folder:
+            state, config = initial_state(), configuration()
+            state['world_minute'] = 1060
+            plain = Campaign(Path(folder) / 'plain.sqlite').create(state, config)
+            self.assertEqual(Reader(plain.path).state()['clock'],
+                             {'world_minute': 1060, 'date': 'D0, T0 + 17 h 40'})
+            config['reader'] = {'opening_minute_of_day': 1300}
+            anchored = Campaign(Path(folder) / 'anchored.sqlite').create(state, config)
+            self.assertEqual(Reader(anchored.path).state()['clock'],
+                             {'world_minute': 1060, 'date': 'Day 2, 15:20', 'minute_of_day': 920})
+
+    def test_narrator_receives_the_local_time_and_the_turns_without_time(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tmp-tests') as folder:
+            state, config = initial_state(), configuration()
+            state['world_minute'] = 1060
+            config['reader'] = {'opening_minute_of_day': 1300}
+            campaign = Campaign(Path(folder) / 'campaign.sqlite').create(state, config)
+            with campaign.transaction() as con:
+                for n, minute in enumerate((900, 1060, 1060, 1060)):
+                    con.execute('INSERT INTO requests VALUES (?,?,?)',
+                                (f'r{n}', 'x', json.dumps({'world_minute_after': minute})))
+                agenda = Agenda(con)
+                agenda.initialize()
+                agenda._put({'entry_id': 'sign', 'audience': ['narrator'], 'status': 'planned', 'interrupt': False,
+                             'due_minute': 1200}, 'test', 1060)
+                packet = agenda.packet(json.loads(con.execute('SELECT state FROM campaign').fetchone()[0]))
+            self.assertEqual(packet['clock']['date'], 'Day 2, 15:20')
+            self.assertEqual(packet['clock']['turns_without_time'], 2)
+            self.assertEqual(packet['events'][0]['date'], 'Day 2, 17:40')
+
     def test_creations_tab_only_when_the_format_is_active(self):
         self.assertEqual(self.request('/api/creations')[0], 404)
         self.assertFalse(self.get('/api/state')['creations_tab'])

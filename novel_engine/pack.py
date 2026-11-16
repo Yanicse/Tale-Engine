@@ -67,9 +67,11 @@ def clean_theme(theme):
     colors = {k: v for k, v in (theme.get('colors') or {}).items()
               if k in COLOR_KEYS and isinstance(v, str) and COLOR_VALUE.match(v)}
     labels = {k: text(v, LABEL_LIMIT) for k, v in (theme.get('labels') or {}).items() if k in LABEL_KEYS and text(v, LABEL_LIMIT)}
+    opening = theme.get('opening_minute_of_day')
     return {'preset': preset, 'colors': colors, 'labels': labels, 'icons': clean_icons(theme.get('icons')),
             'title': text(theme.get('title')), 'subtitle': text(theme.get('subtitle')),
-            'input_hint': text(theme.get('input_hint')), 'clock': theme.get('clock', True) is not False}
+            'input_hint': text(theme.get('input_hint')), 'clock': theme.get('clock', True) is not False,
+            **({'opening_minute_of_day': opening} if type(opening) is int and 0 <= opening < 1440 else {})}
 
 
 def clean_npcs(npcs):

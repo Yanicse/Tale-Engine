@@ -12,7 +12,7 @@ from .pack import COLOR_KEYS, COLOR_VALUE, ICON_CATEGORIES, ICON_DIR, ICON_NAME,
 from .ui_text import EN, PACKS, PLACEHOLDER, language_code
 
 NOVEL_KEYS = {'title', 'language', 'tracked_npcs', 'currencies', 'currency_rates', 'world_rules', 'opening'}
-THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock'}
+THEME_KEYS = {'preset', 'colors', 'labels', 'icons', 'title', 'subtitle', 'input_hint', 'clock', 'opening_minute_of_day'}
 SHEET_KEYS = {'name', 'hp_max', 'mana_max', 'description', 'rules'}
 RULE_KEYS = {'passives', 'abilities', 'forbidden_resources', 'costs', 'charges', 'solar_schedule',
              'resurrection_hp_percent', 'always_complete_sheets'}
@@ -182,6 +182,9 @@ def check_theme(theme, report):
             report.warn(name, f'{key} is longer than {TEXT_LIMIT} characters and is cut')
     if 'clock' in theme and not isinstance(theme['clock'], bool):
         report.error(name, "'clock' must be true or false")
+    opening = theme.get('opening_minute_of_day', 0)
+    if type(opening) is not int or not 0 <= opening < 1440:
+        report.error(name, "'opening_minute_of_day' must be a whole minute of the day, from 0 to 1439")
     icons = theme.get('icons', {})
     if not isinstance(icons, dict):
         report.error(name, "'icons' must be an object")
