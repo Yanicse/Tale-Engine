@@ -79,6 +79,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The reading page recovers by itself when its first request fails (it stayed blank until a reload) and refreshes the tab that is open after a turn, whichever it is, without disturbing a search or a filter in use.
 - A search on the reading page shows its results in place of the story, and "Open in the story" and the NPC link "See in the story" open the story on the cited exchange; the latest turns are no longer appended under an older slice.
 - The reading server answers 400 to a turn request whose body is not an object or names an unknown mode, and to a story request with a bad `n` or `before`; `novel read` reports an unavailable port or a missing save in one line instead of a traceback.
+- The pack test no longer creates and removes a campaign in the real `campaigns/` folder: a campaign named like the test one would have been deleted by running the suite.
 
 ### Removed
 
