@@ -268,10 +268,15 @@ def validate_narration(before, after, proposal, config):
     if not config.get('possession_rules'):
         return
     operations = [op for event in proposal['events'] for op in event.get('asset_operations', [])]
-    from .narrative_coherence import assertions
+    from .narrative_coherence import NUMBER, assertions
     text = '\n'.join(assertions(proposal['narration']))
     positive = _positive(text)
-    if re.search(r'\byou (?:pay|pays|spend|spends|collect|collects)\b', positive) and not any(op['money_delta'] for op in operations):
+    duration = (rf'(?:(?:the rest of|the better part of|half)\s+)?'
+                rf'(?:(?:a|an|the|all|some|another|several|a few|{NUMBER})\s+)?'
+                r'(?:time|seconds?|minutes?|hours?|days?|mornings?|afternoons?|evenings?|nights?|weeks?|months?|years?)'
+                r"\b(?!['\u2019-]|\s+(?:of|worth)\b)")
+    payment_text = re.sub(rf'\byou spends?\s+{duration}', '', positive)
+    if re.search(r'\byou (?:pays?|spends?|collects?)\b', payment_text) and not any(op['money_delta'] for op in operations):
         raise ValueError('Expense or gain in the narration without a monetary operation')
     if _goods_claim(positive) and before['inventory'] == after['inventory']:
         raise ValueError('Goods announced in the narration without an inventory change')

@@ -284,6 +284,22 @@ class PossessionTests(unittest.TestCase):
     def test_displayed_numeric_balance_must_match_saved_money(self):
         self.rejected([op('payment', 3)], narration='You have 30 silver coins.')
 
+    def test_spending_time_requires_no_payment(self):
+        balance = self.c.state()['resources']['player_silver']
+        for narration in ('You spend the day at home.', 'You spend the rest of the afternoon with your family.',
+                          'You spend two hours unpacking.', 'You spend half an hour sorting the tools.'):
+            with self.subTest(narration=narration):
+                result, _ = self.apply([], narration=narration)
+                self.assertEqual(result['status'], 'recorded', result)
+                self.assertEqual(self.c.state()['resources']['player_silver'], balance)
+
+    def test_spending_money_still_requires_payment(self):
+        for narration in ('You spend three silver coins.', "You spend the day's wages.",
+                          'You spend the day at home, and you pay for lunch.'):
+            with self.subTest(narration=narration):
+                result = self.rejected([], narration=narration)
+                self.assertEqual(result['reason'], 'Expense or gain in the narration without a monetary operation')
+
     def test_local_inventory_and_private_filter_call_no_model_and_play_no_turn(self):
         self.set_inventory('secret', {**item(), 'audience': ['narrator']})
         before = self.c.resume()
