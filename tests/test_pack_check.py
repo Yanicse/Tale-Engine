@@ -148,6 +148,64 @@ class ValidateTest(PackFiles):
         self.assertWarning(report, 'not built yet')
 
 
+class ThemeOpeningMinuteCheckTests(PackFiles):
+    def test_values_that_are_not_a_minute_of_the_day_are_errors(self):
+        for value in (None, 1440, -1, 1.5, '480', True, False, [480]):
+            with self.subTest(value=value):
+                self.assertError(self.report(theme_json={'opening_minute_of_day': value}), "'opening_minute_of_day'")
+
+    def test_the_first_and_last_minutes_of_the_day_and_an_absent_key_pass(self):
+        for value in (0, 480, 1439):
+            with self.subTest(value=value):
+                self.assertEqual(self.report(theme_json={'opening_minute_of_day': value}).errors, [])
+        self.assertEqual(self.report(theme_json={}).errors, [])
+
+
+class QuietNewsCheckTests(PackFiles):
+    def news(self, value):
+        return self.report(novel_json={'title': 'Demo', 'language': 'en', 'quiet_news': value})
+
+    def assertNoNewsComplaint(self, report):
+        self.assertEqual([line for line in report.errors + report.warnings if 'quiet_news' in line], [])
+
+    def test_a_valid_option_has_no_error_and_no_warning(self):
+        report = self.news({'interval_minutes': 360, 'urgent_every': 0, 'instruction': 'Prefer harbor news.'})
+        self.assertNoNewsComplaint(report)
+        for interval in (30, 43200):
+            self.assertEqual(self.news({'interval_minutes': interval}).errors, [])
+        for every in (0, 100):
+            self.assertEqual(self.news({'interval_minutes': 60, 'urgent_every': every}).errors, [])
+
+    def test_the_option_must_be_an_object_with_an_interval(self):
+        self.assertError(self.news([]), "'quiet_news' must be an object")
+        for value in ({}, {'urgent_every': 3}):
+            with self.subTest(value=value):
+                self.assertError(self.news(value), 'quiet_news.interval_minutes')
+
+    def test_the_interval_must_be_a_whole_number_inside_the_bounds(self):
+        for value in (True, 29, 43201, 60.5, '60', None):
+            with self.subTest(value=value):
+                self.assertError(self.news({'interval_minutes': value}), 'quiet_news.interval_minutes')
+
+    def test_urgent_every_must_be_a_whole_number_from_zero_to_one_hundred(self):
+        for value in (-1, 101, True, 2.5, '3', None):
+            with self.subTest(value=value):
+                self.assertError(self.news({'interval_minutes': 60, 'urgent_every': value}), 'quiet_news.urgent_every')
+
+    def test_the_instruction_must_be_text_and_a_long_one_only_warns(self):
+        self.assertError(self.news({'interval_minutes': 60, 'instruction': None}), 'quiet_news.instruction must be text')
+        self.assertError(self.news({'interval_minutes': 60, 'instruction': 5}), 'quiet_news.instruction must be text')
+        report = self.news({'interval_minutes': 60, 'instruction': 'a' * 401})
+        self.assertEqual(report.errors, [])
+        self.assertWarning(report, 'quiet_news.instruction is longer than 400 characters')
+        self.assertNoNewsComplaint(self.news({'interval_minutes': 60, 'instruction': 'a' * 400}))
+
+    def test_an_unknown_key_is_a_warning_not_an_error(self):
+        report = self.news({'interval_minutes': 60, 'mood': 1})
+        self.assertEqual(report.errors, [])
+        self.assertWarning(report, "unknown key 'mood'")
+
+
 class CommandsTest(PackFiles):
     def run_cli(self, *argv):
         out = io.StringIO()

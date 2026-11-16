@@ -232,6 +232,89 @@ class QuietNewsTests(SceneFixture):
         self.assertNotIn('pacing_guidance', self.c.world_agenda('narrator'))
 
 
+class QuietNewsOvertakenTests(unittest.TestCase):
+    NEWS = QUIET_NEWS_PREFIX + '1'
+    DUE = 100
+
+    def state(self, fight=0):
+        return {'resources': {'player_combat_active': fight}}
+
+    def fact(self, minute, operations=(), changes=()):
+        return {'world_minute': minute, 'mechanical_operations': list(operations), 'changes': list(changes)}
+
+    def update(self, entry_id, index, status='done', interrupt=False):
+        return {'entry_id': entry_id, 'outcome_event_index': index, 'status': status, 'interrupt': interrupt}
+
+    def overtaken(self, events, updates=(), continuation=None, fight=0):
+        return scene_pacing.quiet_news_overtaken(self.state(fight), events, list(updates), self.DUE, continuation)
+
+    def test_nothing_at_all_does_not_overtake_the_news(self):
+        self.assertFalse(self.overtaken([]))
+        self.assertFalse(self.overtaken([self.fact(90)], [self.update(self.NEWS, 0)]))
+
+    def test_a_fight_already_active_overtakes_the_news(self):
+        self.assertTrue(self.overtaken([], fight=1))
+
+    def test_a_combat_start_operation_counts_only_up_to_the_due_minute(self):
+        start = {'kind': 'combat_start'}
+        self.assertTrue(self.overtaken([self.fact(self.DUE - 5, [start])]))
+        self.assertTrue(self.overtaken([self.fact(self.DUE, [start])]))
+        self.assertFalse(self.overtaken([self.fact(self.DUE + 1, [start])]))
+        self.assertFalse(self.overtaken([self.fact(self.DUE - 5, [{'kind': 'damage'}])]))
+
+    def test_a_combat_flag_change_counts_like_a_combat_start(self):
+        path = '/resources/player_combat_active'
+        self.assertTrue(self.overtaken([self.fact(self.DUE, changes=[{'path': path, 'value': 1}])]))
+        self.assertFalse(self.overtaken([self.fact(self.DUE + 1, changes=[{'path': path, 'value': 1}])]))
+        self.assertFalse(self.overtaken([self.fact(self.DUE, changes=[{'path': path, 'value': 0}])]))
+        self.assertFalse(self.overtaken([self.fact(self.DUE, changes=[{'path': '/resources/other', 'value': 1}])]))
+
+    def test_a_suspended_continuation_on_another_event_overtakes_the_news(self):
+        events = [self.fact(self.DUE - 10), self.fact(self.DUE)]
+        news = [self.update(self.NEWS, 1)]
+        self.assertTrue(self.overtaken(events, news, {'event_index': 0}))
+
+    def test_a_continuation_on_the_news_outcome_does_not_overtake_it(self):
+        events = [self.fact(self.DUE - 10), self.fact(self.DUE)]
+        news = [self.update(self.NEWS, 1)]
+        self.assertFalse(self.overtaken(events, news, {'event_index': 1}))
+
+    def test_a_continuation_after_the_due_minute_or_out_of_range_does_not_overtake(self):
+        events = [self.fact(self.DUE + 1)]
+        self.assertFalse(self.overtaken(events, [], {'event_index': 0}))
+        for index in (None, 5, -1, True, '0'):
+            with self.subTest(index=index):
+                self.assertFalse(self.overtaken([self.fact(self.DUE - 10)], [], {'event_index': index}))
+        self.assertFalse(self.overtaken([self.fact(self.DUE - 10)], [], {}))
+
+    def test_another_interrupting_update_overtakes_the_news_when_resolved_in_time(self):
+        events = [self.fact(self.DUE - 10), self.fact(self.DUE)]
+        for status in ('done', 'finished'):
+            with self.subTest(status=status):
+                self.assertTrue(self.overtaken(events, [self.update('alarm', 1, status, True)]))
+
+    def test_other_updates_do_not_overtake_the_news(self):
+        events = [self.fact(self.DUE - 10), self.fact(self.DUE + 1)]
+        cases = {'after the due minute': self.update('alarm', 1, 'done', True),
+                 'not interrupting': self.update('visit', 0, 'done', False),
+                 'not resolved': self.update('alarm', 0, 'planned', True),
+                 'postponed': self.update('alarm', 0, 'postponed', True),
+                 'no outcome event': self.update('alarm', None, 'done', True),
+                 'outcome out of range': self.update('alarm', 7, 'done', True),
+                 'another quiet news': self.update(QUIET_NEWS_PREFIX + '2', 0, 'done', True)}
+        for label, update in cases.items():
+            with self.subTest(label):
+                self.assertFalse(self.overtaken(events, [update]))
+
+    def test_combat_starts_reads_operations_and_changes(self):
+        self.assertFalse(scene_pacing.combat_starts({}))
+        self.assertTrue(scene_pacing.combat_starts({'mechanical_operations': [{'kind': 'combat_start'}]}))
+        self.assertTrue(scene_pacing.combat_starts(
+            {'changes': [{'path': '/resources/player_combat_active', 'value': 1}]}))
+        self.assertFalse(scene_pacing.combat_starts(
+            {'changes': [{'path': '/resources/player_combat_active', 'value': 0}]}))
+
+
 class QuietNewsOptionTests(unittest.TestCase):
     def test_option_is_reduced_to_valid_values(self):
         clean = scene_pacing.clean_quiet_news
@@ -240,6 +323,31 @@ class QuietNewsOptionTests(unittest.TestCase):
                          {'interval_minutes': 720, 'urgent_every': 0, 'instruction': 'Harbor first.'})
         for bad in (None, [], {}, {'interval_minutes': 5}, {'interval_minutes': '360'}, {'interval_minutes': True}):
             self.assertIsNone(clean(bad))
+
+    def test_numbers_must_be_whole_and_inside_the_bounds(self):
+        clean = scene_pacing.clean_quiet_news
+        for value in (True, False, 360.0, '360', None, 29, 43201, -30):
+            with self.subTest(interval=value):
+                self.assertIsNone(clean({'interval_minutes': value}))
+        self.assertEqual(clean({'interval_minutes': 30})['interval_minutes'], 30)
+        self.assertEqual(clean({'interval_minutes': 43200})['interval_minutes'], 43200)
+
+    def test_urgent_every_falls_back_to_three_when_unusable(self):
+        clean = scene_pacing.clean_quiet_news
+        for value in (True, False, '2', 2.0, None, -1, 101):
+            with self.subTest(urgent_every=value):
+                self.assertEqual(clean({'interval_minutes': 60, 'urgent_every': value})['urgent_every'], 3)
+        for value in (0, 1, 100):
+            self.assertEqual(clean({'interval_minutes': 60, 'urgent_every': value})['urgent_every'], value)
+
+    def test_instruction_is_cut_at_400_characters_and_blank_ones_are_dropped(self):
+        clean = scene_pacing.clean_quiet_news
+        self.assertEqual(len(clean({'interval_minutes': 60, 'instruction': 'a' * 500})['instruction']), 400)
+        self.assertEqual(clean({'interval_minutes': 60, 'instruction': 'a' * 400})['instruction'], 'a' * 400)
+        for value in ('', '   \n', None, 7, ['text']):
+            with self.subTest(instruction=value):
+                self.assertNotIn('instruction', clean({'interval_minutes': 60, 'instruction': value}))
+        self.assertNotIn('instruction', clean({'interval_minutes': 60}))
 
 
 if __name__ == '__main__':

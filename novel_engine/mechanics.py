@@ -145,10 +145,11 @@ def effective_events(state,events,config):
     for event in events:
         try:
             fixed=_absolute_clock(clock,event)
-        except (KeyError,TypeError):
+            clock={'world_minute':fixed['world_minute'],'world_second':fixed.get('world_second',0)}
+        except (KeyError,TypeError,AttributeError):
+            # A malformed event is left as written and does not move the clock; the schema check refuses it later.
             fixed=event
         result.append(fixed)
-        clock={'world_minute':fixed['world_minute'],'world_second':fixed.get('world_second',0)}
     return result
 
 
