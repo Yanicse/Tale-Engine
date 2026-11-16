@@ -7,14 +7,32 @@ from .indexed_memory import MemoryIndex, normalized
 from .validation import validate
 
 
-def explicit_acceptance(action):
-    text=normalized(action)
-    if '?' in action or re.search(('\\b(?:not|never|refuse\\w*|hesitat\\w*|if|unless|condition\\w*|maybe|perhaps|possibly)\\b|\\bdon '
-                                   't accept|\\bnot sure\\b'),text):
+REFUSAL = re.compile(r"\b(?:not|never|refuse\w*|decline\w*|hesitat\w*|if|unless|condition\w*|maybe|perhaps|"
+                     r"possibly)\b|\bdon t accept|\bnot sure\b|^(?:no|nope)\b|\bno (?:deal|thanks|thank you|way)\b")
+ACCEPTANCE = re.compile(
+    r"\b(?:i accept\w*|i agree\w*|i commit\w*|count me in|"
+    r"(?:i|i ll|i will) take (?:the|this|your|that) (?:job|mission|quest|offer|contract))\b|"
+    r"\b(?:i|i ll|i will) take it$")
+SHORT_ACCEPTANCES = {'yes', 'yes please', 'i agree', 'agreed', 'deal', 'it s a deal', 'i m in', 'count me in'}
+
+
+def is_english(language):
+    code = str(language or 'en').strip().lower().replace('_', '-')
+    return code == 'english' or code == 'en' or code.startswith('en-')
+
+
+def explicit_acceptance(action, language='en'):
+    """A quest is accepted only by an explicit decision of the player. The wording check is
+    English; for a campaign narrated in another language only the language-neutral rule applies
+    (a non-empty action that is not a question)."""
+    if '?' in action:
         return False
-    return text in ('yes','i agree') or bool(re.search(
-        ('\\b(?:i accept\\w*|i (?:accept\\w*|agree\\w*|commit\\w*|take (?:the|this|your) '
-         '(?:mission|quest|offer)))\\b'),text))
+    text = normalized(action)
+    if not is_english(language):
+        return bool(text)
+    if REFUSAL.search(text):
+        return False
+    return text in SHORT_ACCEPTANCES or bool(ACCEPTANCE.search(text))
 
 
 def updates_schema():
@@ -93,7 +111,8 @@ class CreationRegistry:
                 # The text comes from the persisted input, never from the model's story.
                 session = json.loads(row[0]) if row else {}
                 action = (session.get('pending_action') or {}).get('text','')
-                if not explicit_acceptance(action):
+                config = json.loads(self.con.execute('SELECT config FROM campaign WHERE id=1').fetchone()[0])
+                if not explicit_acceptance(action, config.get('narration_language')):
                     raise ValueError('Quest accepted without an explicit decision by the player.')
 
     def apply(self, updates, proposal):

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from novel_engine.adapters import ModelUnavailable
 from novel_engine.campaign import Campaign
-from novel_engine.creations import CreationRegistry
+from novel_engine.creations import CreationRegistry, explicit_acceptance
 from novel_engine.demo import configuration, initial_state
 from novel_engine.indexed_memory import MemoryIndex
 from novel_engine.narration_codex import normalize_response, response_schema
@@ -177,6 +177,42 @@ class RegistryTests(Fixture):
                 self.assertEqual(self.registry('mission')[0]['status'], 'proposed')
                 with self.c.transaction() as con:
                     con.execute("UPDATE session SET payload=json_set(payload,'$.pending_action',NULL)")
+
+    def test_usual_english_acceptances_are_explicit_and_lookalikes_are_not(self):
+        for text in ("I'll take the job", 'I take the job.', "I'll take it.", 'I take it', 'I will take the offer',
+                     'Deal.', "It's a deal!", 'Agreed', 'Yes please', 'Count me in', "I'm in", 'I accept the mission.'):
+            with self.subTest(text=text):
+                self.assertTrue(explicit_acceptance(text))
+        for text in ('I agree, no questions asked', 'I accept, no problem'):
+            with self.subTest(text=text):
+                self.assertTrue(explicit_acceptance(text))
+        for text in ("I'll take a look first", 'No deal', 'I take the sword', 'I take it back', "I'm in trouble",
+                     'Deal?', 'Is it a deal?', "I'd take the job if the pay is good", 'I decline the offer', ''):
+            with self.subTest(text=text):
+                self.assertFalse(explicit_acceptance(text))
+
+    def test_the_wording_check_is_skipped_when_the_narration_language_is_not_english(self):
+        self.assertFalse(explicit_acceptance('Ich nehme den Auftrag an', 'English'))
+        for language in ('German', 'de'):
+            self.assertTrue(explicit_acceptance('Ich nehme den Auftrag an', language))
+            self.assertFalse(explicit_acceptance('Nehme ich den Auftrag an?', language))
+            self.assertFalse(explicit_acceptance('', language))
+        for language in (None, '', 'en', 'English', 'en-GB'):
+            self.assertFalse(explicit_acceptance('Ich nehme den Auftrag an', language))
+
+    def test_a_quest_is_accepted_in_a_campaign_narrated_in_another_language(self):
+        self.configure(narration_language='German')
+        quest = entity('mission')
+        quest.update(kind='quest', status='proposed')
+        self.create([quest])
+        accepted = deepcopy(quest)
+        accepted['status'] = 'accepted'
+        with self.assertRaises(ModelUnavailable):
+            self.create([accepted], 'Nehme ich den Auftrag an?')
+        with self.c.transaction() as con:
+            con.execute("UPDATE session SET payload=json_set(payload,'$.pending_action',NULL)")
+        self.assertEqual(self.create([accepted], 'Ich nehme den Auftrag an.')['status'], 'recorded')
+        self.assertEqual(self.registry('mission')[0]['status'], 'accepted')
 
     def test_questions_and_memory_requests_cannot_create(self):
         base = self.n.generate(NarrativeLoop(self.c, self.n).build_prompt(self.c.prepare_turn('Hello')))
