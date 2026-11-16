@@ -271,8 +271,12 @@ class Agenda:
         for change in event['changes']:
             group,key=pointer(state,change['path'])
             if change['operation']=='set':group[key]=deepcopy(change['value'])
-            elif change['operation']=='increment':group[key]+=change['value']
-            else:group.pop(key)
+            elif change['operation']=='increment':
+                if type(group.get(key)) is not int or type(change['value']) is not int:raise ValueError('Non-numeric increment')
+                group[key]+=change['value']
+            else:
+                if key not in group:raise ValueError('Cannot delete a value that does not exist')
+                del group[key]
         state['world_minute']=event['world_minute']
         if config.get('mechanics'):state['world_second']=event.get('world_second',0)
 

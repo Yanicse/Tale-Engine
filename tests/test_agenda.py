@@ -204,6 +204,21 @@ class AgendaTests(unittest.TestCase):
             self.mechanical_check(self.now+65)
         self.mechanical_check(self.now+5)
 
+    def test_agenda_check_refuses_a_change_that_cannot_apply_instead_of_crashing(self):
+        entry=self.put(self.entry(after=10,secret=True,kind='project'))
+        for operation in ('increment','delete'):
+            with self.subTest(operation=operation),self.c.transaction() as con:
+                agenda=Agenda(con);state=self.c._state(con)
+                first=self.event(self.now+5)
+                first['changes']=[{'operation':operation,'path':'/resources/nope','value_json':json.dumps(1)}]
+                first['changes'][0]['value']=1
+                second=self.event(self.now+10,cause='agenda:courier',secret=True)
+                second['event_id']='test:second';first['event_id']='test:first'
+                proposal={'request_id':'test','blocking_questions':[],'events':[first,second]}
+                update=self.resolved(entry,index=1,status='finished')
+                with self.assertRaisesRegex(ValueError,'Non-numeric increment|Cannot delete a value'):
+                    agenda.validate(proposal,[update],None,[],{self.reference},state,agenda.packet(state))
+
     def test_tracked_npc_steps_stay_due_instead_of_rejecting(self):
         for identifier in ('npc_step4:mira','npc_step:aldric'):
             self.put(self.entry(identifier,after=1,secret=True,kind='project'))

@@ -63,6 +63,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - "You spend the day at home" is no longer read as an expense without a monetary operation.
 - The reading page no longer shows an exchange twice when two refreshes overlap.
 - `turns_without_time` counts only recorded turns: a refused answer or a question to the player kept the clock still and was counted, so two refusals told the narrator that two turns had passed without time moving.
+- The agenda check refuses a turn whose earlier event increments a missing or non-numeric value or deletes a missing one; it used to stop on a `KeyError` instead of recording the refusal.
 
 ### Removed
 
