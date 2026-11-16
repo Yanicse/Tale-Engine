@@ -201,7 +201,7 @@ class AgendaTests(unittest.TestCase):
     def test_mechanical_operation_cannot_stretch_the_turn_over_a_deadline(self):
         self.put(self.entry(after=60,secret=True,kind='risk'))
         with self.assertRaisesRegex(ValueError,'Forgotten deadline: courier .*from minute '+str(self.now+10)):
-            self.mechanical_check(self.now+300)
+            self.mechanical_check(self.now+65)
         self.mechanical_check(self.now+5)
 
     def test_tracked_npc_steps_stay_due_instead_of_rejecting(self):

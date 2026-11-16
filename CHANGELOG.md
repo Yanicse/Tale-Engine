@@ -58,6 +58,7 @@ Instruction texts and rules changed in this release (the narrator, common, posse
 - The common rules say that a missing knowledge attribution does not mean an NPC does not know a fact (a calque of "ignorer"), and that reopening or resuming never refills a charge or ends a cooldown. The possessions rules say "buying what is still missing within the available funds" instead of "buying the balance".
 - A narrator may cite a private arc fact (`arc_fact:`) it was given when it schedules a deadline in a manual application.
 - Narration that arrives with escaped quotes or line breaks is recorded and shown as prose.
+- A mechanical operation can no longer throw the clock days ahead: an absolute date written a little more than a minute before the turn began was read as an offset and added to the clock, and a date far after its event stretched the turn without limit. Offsets are now recognized only when they fit the event, a correction moves the end of an event by one hour at most, and any other date is refused as outside the interval.
 - "You spend the day at home" is no longer read as an expense without a monetary operation.
 - The reading page no longer shows an exchange twice when two refreshes overlap.
 

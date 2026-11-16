@@ -91,8 +91,15 @@ def _advance(resources, start, end, rules):
         _reset(resources, rules, 'night')
 
 
+# An operation may stretch its event by at most this many seconds. Past it the date is a mistake, not a longer scene.
+MAX_STRETCH_SECONDS=3600
+
+
 def _absolute_clock(state,event):
-    """Correct relative offsets and absolute timestamps up to a minute early."""
+    """Correct relative offsets and absolute timestamps up to a minute early.
+
+    A correction never moves the end of the event by more than MAX_STRETCH_SECONDS: a date further away is left
+    as written, and the interval check refuses it."""
     operations=event.get('mechanical_operations') or []
     current=instant(state)
     if not operations:
@@ -109,7 +116,8 @@ def _absolute_clock(state,event):
         fixed=deepcopy(event)
         for op in fixed['mechanical_operations']:
             op['at_second']=max(op['at_second'],current)
-    elif dates[-1]<current:
+    elif dates[-1]<current and dates[-1]<=max(end-current,0)+MAX_STRETCH_SECONDS:
+        # Offsets from the start of the turn. A stale absolute date is close to the clock, far above this bound.
         fixed=deepcopy(event)
         for op in fixed['mechanical_operations']:
             op['at_second']+=current
@@ -117,6 +125,8 @@ def _absolute_clock(state,event):
         return event
     last=fixed['mechanical_operations'][-1]['at_second']
     if last>end:
+        if last-end>MAX_STRETCH_SECONDS:
+            return event
         fixed['world_minute'],fixed['world_second']=divmod(last,60)
     return fixed
 

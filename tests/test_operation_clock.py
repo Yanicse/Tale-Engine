@@ -5,7 +5,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from novel_engine.mechanics import _absolute_clock
+from novel_engine.mechanics import MAX_STRETCH_SECONDS, _absolute_clock
 
 
 def op(at, kind='damage'):
@@ -64,6 +64,26 @@ class AbsoluteClockTests(unittest.TestCase):
         state = {'world_minute': 300, 'world_second': 0}
         original = event(301, 0, [op(20), op(18030)])
         self.assertIs(_absolute_clock(state, original), original)
+
+    def test_stale_absolute_date_is_not_read_as_an_offset(self):
+        state = {'world_minute': 5000, 'world_second': 0}
+        original = event(5010, 0, [op(299900)])
+        self.assertIs(_absolute_clock(state, original), original)
+
+    def test_date_far_after_the_event_does_not_stretch_it(self):
+        state = {'world_minute': 5000, 'world_second': 0}
+        original = event(5010, 0, [op(5010 * 60 + MAX_STRETCH_SECONDS + 1)])
+        self.assertIs(_absolute_clock(state, original), original)
+        fixed = _absolute_clock(state, event(5010, 0, [op(5010 * 60 + MAX_STRETCH_SECONDS)]))
+        self.assertEqual((fixed['world_minute'], fixed['world_second']), (5070, 0))
+
+    def test_offsets_far_beyond_the_event_are_not_guessed(self):
+        state = {'world_minute': 5000, 'world_second': 0}
+        original = event(5010, 0, [op(0), op(600 + MAX_STRETCH_SECONDS + 1)])
+        self.assertIs(_absolute_clock(state, original), original)
+        fixed = _absolute_clock(state, event(5010, 0, [op(0), op(900)]))
+        self.assertEqual([o['at_second'] for o in fixed['mechanical_operations']], [300000, 300900])
+        self.assertEqual((fixed['world_minute'], fixed['world_second']), (5015, 0))
 
     def test_clock_at_zero_changes_nothing(self):
         state = {'world_minute': 0, 'world_second': 0}
