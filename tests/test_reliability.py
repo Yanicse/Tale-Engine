@@ -514,6 +514,12 @@ def history_fixture(campaign,pairs):
 
 
 class ContextTests(Fixture):
+    def test_dialogue_prompt_explains_player_knowledge_and_intention_paths(self):
+        prepared = self.c.prepare_turn('What did the scout see?', narrative_memory=True)
+        instructions = self.loop().build_prompt(prepared).rsplit('\nCURRENT TURN\n', 1)[0]
+        self.assertIn('A public knowledge claim uses /knowledge/player, the final list', instructions)
+        self.assertIn('Use /intentions/player for the player\'s intention.', instructions)
+
     def test_thousand_items_selection_preserves_target_and_recall_path(self):
         inventory_fixture(self.c,1000)
         prepared=self.c.prepare_turn('I take object_0999.',narrative_memory=True)

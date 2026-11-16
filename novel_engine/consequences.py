@@ -25,6 +25,75 @@ def materialize_public(after, events):
     return resolved
 
 
+COMMITMENT_FIELDS = ('reminder_location', 'description', 'status', 'references', 'audience')
+COMMITMENT_STATUS = {'open': 'open', 'kept': 'kept', 'broken': 'broken',
+                     'accepted': 'open', 'active': 'open', 'pending': 'open', 'in_progress': 'open',
+                     'ongoing': 'open', 'offered': 'open', 'completed': 'kept', 'complete': 'kept',
+                     'done': 'kept', 'fulfilled': 'kept', 'failed': 'broken', 'abandoned': 'broken'}
+
+
+def normalize_commitments(event):
+    """A commitment written as a free-form object is brought to the state schema
+    (description, status open/kept/broken, references, audience; nothing else). The description
+    falls back on title, summary, name or the key; the status on a known synonym or 'open'; the
+    references on the event's first cause; the audience on the event's. Extra fields are dropped.
+    Only a set on /commitments/<key> with an object value is touched."""
+    changes = event.get('changes') or []
+    if not any(c.get('operation') == 'set' and str(c.get('path', '')).startswith('/commitments/')
+               and isinstance(c.get('value'), dict) for c in changes):
+        return event
+    fixed = deepcopy(event)
+    for change in fixed['changes']:
+        path = str(change.get('path', ''))
+        value = change.get('value')
+        if change.get('operation') != 'set' or not path.startswith('/commitments/') or not isinstance(value, dict):
+            continue
+        key = path.split('/')[-1]
+        description = next((value[name] for name in ('description', 'title', 'summary', 'name')
+                            if isinstance(value.get(name), str) and value[name].strip()), key.replace('_', ' '))
+        status = value.get('status')
+        references = [r for r in value.get('references', []) if isinstance(r, str) and r] \
+            if isinstance(value.get('references'), list) else []
+        audience = [a for a in value.get('audience', []) if isinstance(a, str) and a] \
+            if isinstance(value.get('audience'), list) else []
+        clean = {'description': description,
+                 'status': COMMITMENT_STATUS.get(str(status).lower(), 'open'),
+                 'references': references or list(event.get('causes') or [])[:1] or ['action:unknown'],
+                 'audience': audience or list(event.get('audience') or ['narrator', 'player'])}
+        if isinstance(value.get('reminder_location'), str) and value['reminder_location']:
+            clean['reminder_location'] = value['reminder_location'][:120]
+        change['value'] = clean
+    return fixed
+
+
+RECONCILED_KINDS = {'commitment', 'knowledge', 'project'}
+
+
+def reconcile_public(after, events):
+    """The final state is authoritative for declarative consequences. A commitment, a piece
+    of knowledge or a project that the narrator announced but did not write is dropped from the public
+    list; one whose value differs from the final state takes that value. Computable consequences
+    (damage, payment, acquisition...) are never touched."""
+    resolved = deepcopy(events)
+    for event in resolved:
+        if 'public_consequences' not in event:
+            continue
+        kept = []
+        for claim in event['public_consequences']:
+            if claim['kind'] in RECONCILED_KINDS and claim['value_json'] != FINAL_STATE:
+                try:
+                    group, key = pointer(after, claim['path'])
+                except (ValueError, KeyError, TypeError):
+                    kept.append(claim)
+                    continue
+                if key not in group:
+                    continue
+                claim['value_json'] = json.dumps(group[key], ensure_ascii=False, allow_nan=False)
+            kept.append(claim)
+        event['public_consequences'] = kept
+    return resolved
+
+
 def same_value(left,right):
     return json.dumps(left,sort_keys=True,allow_nan=False)==json.dumps(right,sort_keys=True,allow_nan=False)
 

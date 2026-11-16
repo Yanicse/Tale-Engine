@@ -516,6 +516,8 @@ class Campaign:
                     from .mechanics import materialize as mechanical_materialize
                     event = mechanical_materialize(updated,event,config)
                     event = materialize(updated, event, config)
+                    from .consequences import normalize_commitments
+                    event = normalize_commitments(event)
                     from .cooldowns import validate_event
                     validate_event(updated, event, config)
                     before_event = deepcopy(updated) if config.get('character_rules') else None
@@ -551,12 +553,15 @@ class Campaign:
                 validate_character_transition(state, updated, config)
                 from .narrative_coherence import render_state_links, validate_facts
                 from .mechanics import validate_narration as validate_ability_narration
-                narration = render_state_links(proposal['narration'], updated, config)
+                narration = proposal['narration'].replace(r'\"', '"')
+                narration = narration.replace(r'\r\n', '\n').replace(r'\n', '\n')
+                narration = render_state_links(narration, updated, config)
                 visible_proposal = {**proposal, 'narration': narration}
                 validate_ability_narration(visible_proposal, config)
                 validate_narration(state, updated, visible_proposal, config)
                 validate_facts(state, updated, visible_proposal, config)
-                from .consequences import materialize_public, validate_public
+                from .consequences import materialize_public, reconcile_public, validate_public
+                resolved_events = reconcile_public(updated, resolved_events)
                 resolved_events = materialize_public(updated, resolved_events)
                 validate_public(state,updated,resolved_events,config,agenda._source_audience)
                 check('state', updated)
